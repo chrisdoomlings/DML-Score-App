@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.vercel/
+.shopify/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.DS_Store

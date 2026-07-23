@@ -1,0 +1,33 @@
+# DML Score — register this as a brand new app in the Shopify Partner Dashboard,
+# then fill in client_id and application_url.
+# This app is fully independent: its own Vercel project, its own Supabase DB.
+
+client_id = "REPLACE_WITH_NEW_CLIENT_ID"
+name = "DML Score"
+application_url = "https://dml-score.vercel.app"
+embedded = false
+
+[webhooks]
+api_version = "2026-01"
+
+  [[webhooks.subscriptions]]
+  topics = ["app/uninstalled"]
+  uri = "/api/webhooks"
+
+[access_scopes]
+# Customer read access only — the score tool identifies logged-in customers
+# via the app proxy; it does not write to customer records in phase 1.
+scopes = "read_customers"
+
+[auth]
+redirect_urls = [
+  "https://dml-score.vercel.app/auth/callback"
+]
+
+[pos]
+embedded = false
+
+[app_proxy]
+url = "https://dml-score.vercel.app/api/proxy"
+subpath = "score"
+prefix = "apps"

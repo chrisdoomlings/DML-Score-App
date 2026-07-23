@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Doomlings</title>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@600&display=swap"
+			rel="stylesheet"
+		/>
+		<link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,800&display=swap" rel="stylesheet" />
+		<link href="normalize.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="styles.css" rel="stylesheet" type="text/css" media="all" />
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+	</head>
+
+	<body>
+		<div class="container meaning">
+			<div class="header animate__bounceInDown">
+				<img id="logo" src="img/logo.png" alt="Doomlings" />
+			</div>
+
+			<img class="animate__animated animate__tada" id="logo" src="img/eccentric.png" alt="P Clever Penguin" />
+
+			<div class="animate__animated animate__fadeIn instructions">Ready to see who won the game?</div>
+
+			<div class="footer">
+				<div id="keyboard-tip">
+					<a href="https://play.google.com/store/apps/details?id=com.google.android.inputmethod.latin&hl=en_IN">
+						<img width="72" height="72" src="img/googlekeyboard.png" />
+					</a>
+					<div id="keyboard-text">TIP: add Google’s keyboard if your phone doesn’t have a minus “-" symbol.</div>
+				</div>
+				<img class="footer-next btn-next" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<div class="container meaning">
+			<div class="header animate__bounceIn">
+				<img id="logo" src="img/logo.png" alt="Doomlings" />
+			</div>
+
+			<div class="animate__animated animate__fadeIn instructions">Enter everyone's names!</div>
+
+			<div id="myDIV" class="animate__animated animate__fadeIn header">
+				<input type="text" id="myInput" placeholder="Enter Name Here..." maxlength="15" />
+				<button class="addBtn">Add</button>
+			</div>
+
+			<ul id="myUL"></ul>
+
+			<div class="footer">
+				<img class="footer-back btn-back" src="img/back.png" alt="Back" />
+				<img class="footer-next btn-next-list" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<div class="container meaning">
+			<div class="header animate__bounceIn">
+				<img id="logo" src="img/logo.png" alt="Doomlings" />
+			</div>
+
+			<div class="animate__animated animate__fadeIn instructions">
+				<b>Step 1:</b> Enter your World's End Points.
+				<img class="symbol" src="img/worldsend.png" alt="World's End" />
+			</div>
+
+			<ul class="animate__animated animate__fadeIn" id="world-list">
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+			</ul>
+
+			<div class="footer">
+				<img class="footer-back btn-back" src="img/back.png" alt="Back" />
+				<img class="footer-next btn-next" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<div class="container meaning">
+			<div class="header animate__bounceIn">
+				<img id="logo" src="img/logo.png" alt="Doomlings" />
+			</div>
+
+			<div class="animate__animated animate__fadeIn instructions">
+				<b>Step 2:</b> Enter your Face Value Point totals.<br /><small
+					>(Ignore <img class="symbol" src="img/compassstar.png" alt="Compass Star" /> symbols for now.)</small
+				>
+			</div>
+
+			<ul class="animate__animated animate__fadeIn" id="face-list">
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+			</ul>
+
+			<div class="footer">
+				<img class="footer-back btn-back" src="img/back.png" alt="Back" />
+				<img class="footer-next btn-next" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<div class="container meaning">
+			<div class="header animate__bounceIn">
+				<img id="logo" src="img/logo.png" alt="Doomlings" />
+			</div>
+
+			<div class="animate__animated animate__fadeIn instructions">
+				<b>Step 3:</b> Enter your Bonus Points.
+				<img class="symbol" src="img/drop-of-life-grey.png" alt="Drop of Life" /><img
+					class="symbol"
+					width="32"
+					height="32"
+					src="img/suppress.png"
+					alt="Suppress"
+				/>
+			</div>
+
+			<ul class="animate__animated animate__fadeIn" id="bonus-list">
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+			</ul>
+
+			<div class="footer">
+				<img class="footer-back btn-back" src="img/back.png" alt="Back" />
+				<button id="meaning-btn" class="btn-next">Expansions</button>
+				<img class="footer-next btn-next-2" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<div class="container red-meaning">
+			<div class="header animate__bounceIn">
+				<img id="logo" src="img/logo.png" alt="Doomlings" />
+			</div>
+
+			<div class="animate__animated animate__fadeIn instructions">
+				Enter Meaning of Life, Magical Merchants, and/or Class Bonus&nbsp;Points!
+			</div>
+
+			<ul class="animate__animated animate__fadeIn" id="meaning-list">
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+				<li>
+					<span class="list-name">Stephanie</span
+					><span class="point-input"><input type="number" class="point-input" placeholder="0" /></span>
+				</li>
+			</ul>
+
+			<div class="footer">
+				<img class="footer-back btn-back" src="img/back.png" alt="Back" />
+				<img class="footer-next btn-next" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<!-- <div class="container">
+
+
+
+            <img class="animate__animated animate__tada penguin" id="logo" src="img/rReckless.png" alt="P Clever Penguin">
+
+
+            <div class="animate__animated animate__fadeIn instructions">Alright, the moment we've all been waiting for.</div>
+
+            <div class="loading">The winner is</div>
+
+            
+
+            <div class="footer">
+                <img class="footer-back btn-back-2" src="img/back.png" alt="Back">
+                <img class="footer-next btn-next" src="img/next.png" alt="Next">
+            </div>
+
+        </div> -->
+
+		<div class="container meaning">
+			<div class="animate__animated animate__bounceInUp winning-instructions"><b>The winner is...</b></div>
+
+			<div class="animate__animated animate__tada animate__delay-3s">
+				<div class="winner animate__animated animate__zoomInDown animate__delay-1s winner-name">STEPHANIE!</div>
+			</div>
+
+			<div class="animate__animated animate__bounceInUp animate__delay-2s winning-instructions">
+				<b><span class="winner-context">with</span> <span id="winner-points">20</span> points!</b>
+			</div>
+
+			<div id="monster-container" class="animate__animated animate__bounceInUp animate__delay-3s">
+				<img
+					class="animate__animated animate__tada animate__delay-5s"
+					id="logo"
+					src="img/_hero_screamer.png"
+					alt="Hero Screamer"
+				/>
+				<div id="leaderboard" class="" style="display: none">
+					Marcus (17 pts)<br />
+					Chelsea (15 pts)<br />
+					Alex (12 pts)
+				</div>
+			</div>
+
+			<div class="footer">
+				<img class="footer-back btn-back" src="img/back.png" alt="Back" />
+				<button class="btn-next rematch-btn" style="margin: 20px 0 0 0">Rematch!</button>
+				<img class="footer-next btn-next" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<div class="container meaning">
+			<div class="header animate__bounceIn">
+				<img id="logo" src="img/logo.png" alt="Doomlings Logo" />
+			</div>
+
+			<div class="container-content">
+				<div class="animate__animated animate__fadeIn instructions">
+					<span class="winner-name-long">Stephanie</span> WON the End of the World!!
+				</div>
+
+				<img class="content-image animate__animated animate__bounceInUp" src="img/bScutes.png" alt="Cutes" />
+
+				<button class="rematch-btn animate__animated animate__fadeIn animate__delay-1s">Rematch!</button>
+			</div>
+
+			<div class="footer">
+				<img class="footer-back btn-back" src="img/back.png" alt="Back" />
+				<span style="color: white; line-height: 100px; font-size: small">Or play again with new players.</span>
+				<img class="footer-next reset" src="img/next.png" alt="Next" />
+			</div>
+		</div>
+
+		<script src="js/jquery-3.4.1.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+		<script src="js/scripts.js"></script>
+
+		<script></script>
+	</body>
+</html>

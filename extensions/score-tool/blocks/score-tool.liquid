@@ -1,0 +1,107 @@
+{% comment %}
+  Doomlings Score Tool — app block.
+  Add to a page template (e.g. /pages/score) via the theme editor.
+  Talks to the DML Score app through the app proxy at /apps/score.
+{% endcomment %}
+
+<style>
+  @font-face {
+    font-family: "DMLS Catastrophe";
+    src: url("{{ 'dmls-catastrophe.woff' | asset_url }}") format("woff");
+    font-display: swap;
+  }
+</style>
+
+{{ 'dmls-score.css' | asset_url | stylesheet_tag }}
+
+<div id="dmls-root"
+  data-heading="{{ block.settings.heading | escape }}"
+  data-signup-url="{{ routes.account_register_url }}"
+  data-login-url="{{ routes.account_login_url }}">
+
+  <div id="dmls-app" aria-live="polite"></div>
+
+  {% if block.settings.show_products and block.settings.recs_collection != blank %}
+    <div id="dmls-products" hidden>
+      <h3 class="dmls-widget-title">{{ block.settings.products_heading | escape }}</h3>
+      <div class="dmls-prods">
+        {% for product in block.settings.recs_collection.products limit: 3 %}
+          <div class="dmls-prod">
+            {% if product.featured_image %}
+              <img class="dmls-prod-img" src="{{ product.featured_image | image_url: width: 120 }}" alt="{{ product.featured_image.alt | escape }}" width="60" height="60" loading="lazy">
+            {% endif %}
+            <div class="dmls-prod-info">
+              <a href="{{ product.url }}" class="dmls-prod-title">{{ product.title | escape }}</a>
+              <span class="dmls-prod-price">{{ product.price | money }}</span>
+            </div>
+            {% if product.available %}
+              <button class="dmls-prod-buy" type="button"
+                data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+                data-title="{{ product.title | escape }}">
+                Add to cart
+              </button>
+            {% else %}
+              <a class="dmls-prod-buy dmls-prod-view" href="{{ product.url }}">View</a>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <p class="dmls-prod-note">{{ block.settings.products_note | escape }}</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  window.DMLS_CONFIG = {
+    proxyBase: "/apps/score",
+    customer: {% if customer %}{ id: {{ customer.id | json }}, firstName: {{ customer.first_name | default: "" | json }} }{% else %}null{% endif %},
+    assets: {
+      worldsend: "{{ 'dmls-worldsend.png' | asset_url }}",
+      compass: "{{ 'dmls-compassstar.png' | asset_url }}",
+      drop: "{{ 'dmls-drop.png' | asset_url }}",
+      suppress: "{{ 'dmls-suppress.png' | asset_url }}",
+      characters: "{{ 'dmls-characters.png' | asset_url }}",
+      winner: "{{ 'dmls-winner.png' | asset_url }}"
+    }
+  };
+</script>
+<script src="{{ 'dmls-score.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Doomlings Score Tool",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Welcome heading",
+      "default": "Ready to see who won the game?"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_products",
+      "label": "Show recommended products on the winner screen",
+      "default": true
+    },
+    {
+      "type": "collection",
+      "id": "recs_collection",
+      "label": "Recommendations collection",
+      "info": "Products shown after the winner reveal (first 3). Create a collection like \"Score Page Picks\" and manage it anytime."
+    },
+    {
+      "type": "text",
+      "id": "products_heading",
+      "label": "Products heading",
+      "default": "Level up your next game"
+    },
+    {
+      "type": "text",
+      "id": "products_note",
+      "label": "Products note (optional)",
+      "default": ""
+    }
+  ]
+}
+{% endschema %}
