@@ -4,14 +4,6 @@
   Talks to the DML Score app through the app proxy at /apps/score.
 {% endcomment %}
 
-<style>
-  @font-face {
-    font-family: "DMLS Catastrophe";
-    src: url("{{ 'dmls-catastrophe.woff' | asset_url }}") format("woff");
-    font-display: swap;
-  }
-</style>
-
 {{ 'dmls-score.css' | asset_url | stylesheet_tag }}
 
 <div id="dmls-root"
@@ -46,7 +38,9 @@
           </div>
         {% endfor %}
       </div>
-      <p class="dmls-prod-note">{{ block.settings.products_note | escape }}</p>
+      {% if block.settings.products_note != blank %}
+        <p class="dmls-prod-note">{{ block.settings.products_note | escape }}</p>
+      {% endif %}
     </div>
   {% endif %}
 </div>
@@ -100,7 +94,7 @@
       "type": "text",
       "id": "products_note",
       "label": "Products note (optional)",
-      "default": ""
+      "default": "One tap to add to cart."
     }
   ]
 }
