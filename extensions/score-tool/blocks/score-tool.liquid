@@ -48,7 +48,7 @@
 <script>
   window.DMLS_CONFIG = {
     proxyBase: "/apps/score",
-    customer: {% if customer %}{ id: {{ customer.id | json }}, firstName: {{ customer.first_name | default: "" | json }} }{% else %}null{% endif %},
+    customer: {% if customer %}{ id: {{ customer.id | json }}, firstName: {{ customer.first_name | default: "" | json | replace: '/', '\/' }} }{% else %}null{% endif %},
     assets: {
       worldsend: "{{ 'dmls-worldsend.png' | asset_url }}",
       compass: "{{ 'dmls-compassstar.png' | asset_url }}",

@@ -5,7 +5,7 @@
 client_id = "d734ad498a12a1cb97c00a4c3acff70f"
 name = "DML Score"
 application_url = "https://dml-score-nine.vercel.app"
-embedded = false
+embedded = true
 
 [webhooks]
 api_version = "2026-01"

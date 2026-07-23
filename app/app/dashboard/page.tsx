@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authedFetch } from "@/lib/hooks/useAuthedFetch";
 
 interface MilestoneRule {
   enabled: boolean;
@@ -47,17 +48,24 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/settings").then((r) => r.json()).then((d) => setSettings(d.settings ?? null));
-    fetch("/api/admin/summary").then((r) => r.json()).then((d) => setSummary(d.shop ? d : null));
+    authedFetch("/api/admin/settings").then((r) => {
+      if (r.status === 401) { setAuthError(true); return; }
+      return r.json();
+    }).then((d) => d && setSettings(d.settings ?? null));
+    authedFetch("/api/admin/summary").then((r) => {
+      if (r.status === 401) { setAuthError(true); return; }
+      return r.json();
+    }).then((d) => d && setSummary(d.shop ? d : null));
   }, []);
 
   async function save() {
     if (!settings) return;
     setSaving(true);
     setMsg("");
-    const res = await fetch("/api/admin/settings", {
+    const res = await authedFetch("/api/admin/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(settings),
@@ -68,6 +76,7 @@ export default function Dashboard() {
     else setMsg(d.error ?? "Save failed.");
   }
 
+  if (authError) return <main style={{ padding: 40 }}>This app must be opened from your Shopify admin.</main>;
   if (!settings) return <main style={{ padding: 40 }}>Loading…</main>;
 
   return (
