@@ -2,9 +2,9 @@
 # then fill in client_id and application_url.
 # This app is fully independent: its own Vercel project, its own Supabase DB.
 
-client_id = "REPLACE_WITH_NEW_CLIENT_ID"
+client_id = "d734ad498a12a1cb97c00a4c3acff70f"
 name = "DML Score"
-application_url = "https://dml-score.vercel.app"
+application_url = "https://dml-score-nine.vercel.app"
 embedded = false
 
 [webhooks]
@@ -21,13 +21,13 @@ scopes = "read_customers"
 
 [auth]
 redirect_urls = [
-  "https://dml-score.vercel.app/auth/callback"
+  "https://dml-score-nine.vercel.app/auth/callback"
 ]
 
 [pos]
 embedded = false
 
 [app_proxy]
-url = "https://dml-score.vercel.app/api/proxy"
+url = "https://dml-score-nine.vercel.app/api/proxy"
 subpath = "score"
 prefix = "apps"

@@ -73,7 +73,10 @@ export async function GET(req: NextRequest) {
     res.cookies.set(COOKIE_NAME, cookieValue, {
       httpOnly: true,
       secure: true,
-      sameSite: "none",
+      // Lax, not None: this app is not embedded (no iframe), so the cookie
+      // never needs to travel cross-site — Lax also blocks it on cross-site
+      // POSTs, closing the CSRF gap on /api/admin/* for free.
+      sameSite: "lax",
       maxAge: STANDALONE_SESSION_MAX_AGE_SECONDS,
       path: "/",
     });

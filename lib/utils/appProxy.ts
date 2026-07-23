@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { safeEqualHex } from "@/lib/utils/timingSafeEqual";
 
 /**
  * Verifies a Shopify App Proxy request signature.
@@ -18,7 +19,7 @@ export function verifyProxySignature(
     .join("&");
 
   const digest = crypto.createHmac("sha256", apiSecret).update(message).digest("hex");
-  return digest === signature;
+  return safeEqualHex(digest, signature);
 }
 
 /**
