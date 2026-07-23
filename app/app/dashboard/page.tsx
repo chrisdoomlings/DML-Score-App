@@ -49,16 +49,19 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
   const [authError, setAuthError] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     authedFetch("/api/admin/settings").then((r) => {
       if (r.status === 401) { setAuthError(true); return; }
       return r.json();
-    }).then((d) => d && setSettings(d.settings ?? null));
+    }).then((d) => d && setSettings(d.settings ?? null))
+      .catch((e) => setLoadError(String(e?.message ?? e)));
     authedFetch("/api/admin/summary").then((r) => {
       if (r.status === 401) { setAuthError(true); return; }
       return r.json();
-    }).then((d) => d && setSummary(d.shop ? d : null));
+    }).then((d) => d && setSummary(d.shop ? d : null))
+      .catch((e) => setLoadError(String(e?.message ?? e)));
   }, []);
 
   async function save() {
@@ -77,6 +80,7 @@ export default function Dashboard() {
   }
 
   if (authError) return <main style={{ padding: 40 }}>This app must be opened from your Shopify admin.</main>;
+  if (loadError) return <main style={{ padding: 40 }}>Couldn&rsquo;t load: {loadError}</main>;
   if (!settings) return <main style={{ padding: 40 }}>Loading…</main>;
 
   return (

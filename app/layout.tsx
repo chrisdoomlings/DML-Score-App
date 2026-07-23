@@ -1,26 +1,19 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "DML Score",
-  description: "Doomlings score tool — admin",
-  other: {
-    "shopify-api-key": process.env.SHOPIFY_API_KEY ?? "",
-  },
-};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <Script
-          src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
-          strategy="beforeInteractive"
-        />
-        {children}
-      </body>
+      <head>
+        <title>DML Score</title>
+        <meta name="description" content="Doomlings score tool — admin" />
+        <meta name="shopify-api-key" content={process.env.SHOPIFY_API_KEY ?? ""} />
+        {/* Must be a literal, static <script> tag (not next/script) — App Bridge
+            refuses to run if the tag has async/defer, which next/script's dynamic
+            DOM insertion sets by default even under strategy="beforeInteractive". */}
+        <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+      </head>
+      <body>{children}</body>
     </html>
   );
 }
