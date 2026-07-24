@@ -16,11 +16,15 @@ export async function GET(req: NextRequest) {
 
   try {
     const settings = await getSettings(shop);
+    const images = Object.fromEntries(
+      Object.entries(settings.images).filter(([, url]) => url)
+    );
     return NextResponse.json(
       {
         pointsPerGame: settings.pointsPerGame,
         guessPoints: settings.guessEnabled ? settings.guessPoints : 0,
         loggedIn: Boolean(params.logged_in_customer_id),
+        images,
       },
       { headers: HEADERS }
     );

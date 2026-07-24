@@ -479,7 +479,27 @@
 
   /* --- boot --- */
   apiGet("/config")
-    .then(function (c) { if (c && !c.error) serverConfig = c; })
+    .then(function (c) {
+      if (!c || c.error) return;
+      serverConfig = c;
+      var images = c.images || {};
+      // Backgrounds are pure CSS (custom properties) — safe to apply any time,
+      // no re-render needed, the browser repaints whatever's on screen.
+      if (images.bg) root.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")');
+      if (images.bgExp) root.style.setProperty("--dmls-bg-exp-url", 'url("' + images.bgExp + '")');
+      // Everything else is baked into already-rendered HTML strings — merge
+      // into ICONS so any future render() picks up the override, and only
+      // force an immediate re-render if we're still on the one screen
+      // (welcome) that already painted with the old default.
+      var iconChanged = false;
+      for (var key in images) {
+        if (key !== "bg" && key !== "bgExp" && images[key] && ICONS[key] !== images[key]) {
+          ICONS[key] = images[key];
+          iconChanged = true;
+        }
+      }
+      if (iconChanged && state.screen === 0) render();
+    })
     .catch(function () { /* tool works without config */ });
 
   render();

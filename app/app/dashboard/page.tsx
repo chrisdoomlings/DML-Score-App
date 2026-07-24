@@ -16,7 +16,19 @@ interface Settings {
   guessPoints: number;
   guessGapMax: number;
   guessEveryN: number;
+  images: Record<string, string>;
 }
+
+const IMAGE_FIELDS: { key: string; label: string }[] = [
+  { key: "characters", label: "Welcome screen character art" },
+  { key: "winner", label: "Winner reveal art" },
+  { key: "bg", label: "Background (main screens)" },
+  { key: "bgExp", label: "Background (expansion-points screen)" },
+  { key: "worldsend", label: "World's End symbol icon" },
+  { key: "compass", label: "Compass Star icon" },
+  { key: "drop", label: "Drop of Life icon" },
+  { key: "suppress", label: "Suppress icon" },
+];
 
 const MILESTONE_NAMES: Record<string, string> = {
   first_game: "First game logged",
@@ -50,6 +62,8 @@ export default function Dashboard() {
   const [msg, setMsg] = useState("");
   const [authError, setAuthError] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [uploadErr, setUploadErr] = useState("");
 
   useEffect(() => {
     authedFetch("/api/admin/settings").then((r) => {
@@ -77,6 +91,28 @@ export default function Dashboard() {
     setSaving(false);
     if (d.settings) { setSettings(d.settings); setMsg("Saved."); }
     else setMsg(d.error ?? "Save failed.");
+  }
+
+  async function uploadImage(key: string, file: File) {
+    if (!settings) return;
+    setUploading(key);
+    setUploadErr("");
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("imageKey", key);
+    const res = await authedFetch("/api/admin/upload", { method: "POST", body: fd });
+    const d = await res.json();
+    setUploading(null);
+    if (d.url) {
+      setSettings({ ...settings, images: { ...settings.images, [key]: d.url } });
+    } else {
+      setUploadErr(d.error ?? "Upload failed.");
+    }
+  }
+
+  function clearImage(key: string) {
+    if (!settings) return;
+    setSettings({ ...settings, images: { ...settings.images, [key]: "" } });
   }
 
   if (authError) return <main style={{ padding: 40 }}>This app must be opened from your Shopify admin.</main>;
@@ -141,6 +177,48 @@ export default function Dashboard() {
               })}
             />
             <span style={{ fontSize: 12, color: "#6d7175" }}>pts</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={card}>
+        <h2 style={{ fontSize: 16, marginBottom: 4 }}>Images</h2>
+        <p style={{ fontSize: 13, color: "#6d7175", marginBottom: 12 }}>
+          Replace any art asset with your own. Leave blank to use the built-in default.
+          Uploads take effect after you click Save settings below.
+        </p>
+        {uploadErr && <p style={{ fontSize: 13, color: "#d72c0d", marginBottom: 12 }}>{uploadErr}</p>}
+        {IMAGE_FIELDS.map(({ key, label: fieldLabel }) => (
+          <div key={key} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: "1px solid #f1f2f3" }}>
+            {settings.images[key] ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={settings.images[key]} alt="" style={{ width: 44, height: 44, objectFit: "cover", borderRadius: 6, border: "1px solid #e1e3e5" }} />
+            ) : (
+              <div style={{ width: 44, height: 44, borderRadius: 6, border: "1px dashed #c9cccf", flexShrink: 0 }} />
+            )}
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{fieldLabel}</div>
+              <div style={{ fontSize: 12, color: "#6d7175" }}>{settings.images[key] ? "Custom image" : "Using default"}</div>
+            </div>
+            <label style={{
+              padding: "6px 12px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+              background: "#f1f2f3", borderRadius: 8,
+            }}>
+              {uploading === key ? "Uploading…" : "Upload"}
+              <input
+                type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                disabled={uploading !== null}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(key, f); e.target.value = ""; }}
+              />
+            </label>
+            {settings.images[key] && (
+              <button
+                type="button" onClick={() => clearImage(key)}
+                style={{ padding: "6px 10px", fontSize: 13, background: "none", border: "1px solid #c9cccf", borderRadius: 8, cursor: "pointer" }}
+              >
+                Reset
+              </button>
+            )}
           </div>
         ))}
       </div>
