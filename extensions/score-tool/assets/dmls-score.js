@@ -23,6 +23,7 @@
   };
   var serverConfig = null; // {pointsPerGame, loggedIn}
   var lastResult = null;   // response from POST /game
+  var saveFailed = false;  // true once /game has definitively failed (not just still in flight)
 
   var saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch (e) { /* ignore */ }
@@ -263,7 +264,12 @@
 
     apiPost("/game", { players: state.players })
       .then(function (res) {
-        if (!res || !res.saved) { if (!revealed) { clearTimeout(fallback); revealed = true; renderWinner(); } return; }
+        if (!res || !res.saved) {
+          saveFailed = true;
+          if (revealed) { renderWinner(); return; } // late failure: correct the message on screen
+          clearTimeout(fallback); revealed = true; renderWinner();
+          return;
+        }
         lastResult = res;
         if (revealed) { renderWinner(); return; } // arrived after fallback: refresh stats only
         clearTimeout(fallback);
@@ -272,7 +278,9 @@
         else renderWinner();
       })
       .catch(function () {
-        if (!revealed) { clearTimeout(fallback); revealed = true; renderWinner(); }
+        saveFailed = true;
+        if (revealed) { renderWinner(); return; } // late failure: correct the message on screen
+        clearTimeout(fallback); revealed = true; renderWinner();
       });
   }
 
@@ -354,16 +362,26 @@
           ? '<li><b>+' + guessPts + "</b> Guessed the winner!</li>"
           : "<li>Nice try — wrong guess this time.</li>";
       }
-      loyaltyHTML =
-        '<div class="dmls-widget"><h3 class="dmls-widget-title">Your stats</h3>' +
-        '<div class="dmls-pointsline">' +
-        (pts ? '<div class="dmls-coin">+' + pts + "</div>" : "") +
-        "<p>" +
-        (pts ? "<strong>+" + pts + " points</strong> earned this game.<br>" : "Game saved to your account.<br>") +
-        (stats ? "Games: <strong>" + stats.gamesLogged + "</strong> · Wins: <strong>" + stats.wins + "</strong> · Points: <strong>" + (stats.points + guessPts) + "</strong>" : "") +
-        "</p></div>" +
-        (bonusLines ? '<ul class="dmls-bonuses">' + bonusLines + "</ul>" : "") +
-        "</div>";
+      if (lastResult) {
+        loyaltyHTML =
+          '<div class="dmls-widget"><h3 class="dmls-widget-title">Your stats</h3>' +
+          '<div class="dmls-pointsline">' +
+          (pts ? '<div class="dmls-coin">+' + pts + "</div>" : "") +
+          "<p>" +
+          (pts ? "<strong>+" + pts + " points</strong> earned this game.<br>" : "Game saved to your account.<br>") +
+          (stats ? "Games: <strong>" + stats.gamesLogged + "</strong> · Wins: <strong>" + stats.wins + "</strong> · Points: <strong>" + (stats.points + guessPts) + "</strong>" : "") +
+          "</p></div>" +
+          (bonusLines ? '<ul class="dmls-bonuses">' + bonusLines + "</ul>" : "") +
+          "</div>";
+      } else if (saveFailed) {
+        loyaltyHTML =
+          '<div class="dmls-widget"><h3 class="dmls-widget-title">Your stats</h3>' +
+          "<p>We couldn’t save this game to your account — check your connection. This game won’t count toward your stats or points.</p></div>";
+      } else {
+        loyaltyHTML =
+          '<div class="dmls-widget"><h3 class="dmls-widget-title">Your stats</h3>' +
+          "<p>Saving your game…</p></div>";
+      }
     } else {
       loyaltyHTML =
         '<div class="dmls-widget"><h3 class="dmls-widget-title">Save this victory</h3>' +
