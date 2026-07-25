@@ -60,9 +60,9 @@ export function GlobalStyle() {
       }
       .dml-input:focus { outline: none; border-color: #008060; box-shadow: 0 0 0 3px rgba(0,128,96,0.12); }
       .dml-input-sm { width: 100%; }
-      .dml-field-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+      .dml-field-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 18px; }
 
-      .dml-checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #202223; }
+      .dml-checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #202223; margin-top: 4px; }
 
       .dml-stats { display: flex; gap: 32px; flex-wrap: wrap; }
       .dml-stat-value { font-size: 28px; font-weight: 700; color: #202223; }
