@@ -202,3 +202,49 @@ export async function getShopSummary(shop: string) {
     gamesWithCustomer: games[0]?.identified ?? 0,
   };
 }
+
+export interface ShopAnalytics {
+  milestones: { reason: string; count: number; totalPoints: number }[];
+  guess: { offered: number; played: number; correct: number };
+  playerCounts: { playerCount: number; games: number }[];
+  expansion: { withExpansion: number; total: number };
+}
+
+export async function getShopAnalytics(shop: string): Promise<ShopAnalytics> {
+  const db = getDb();
+  const [milestones, guess, playerCounts, expansion] = await Promise.all([
+    db<{ reason: string; count: number; totalPoints: number }[]>`
+      SELECT reason, COUNT(*)::int AS count, SUM(points)::int AS "totalPoints"
+      FROM score_points_ledger
+      WHERE shop = ${shop} AND reason LIKE 'milestone_%'
+      GROUP BY reason ORDER BY count DESC
+    `,
+    db<{ offered: number; played: number; correct: number }[]>`
+      SELECT
+        COUNT(*) FILTER (WHERE guess_offered)::int      AS offered,
+        COUNT(*) FILTER (WHERE guess_name IS NOT NULL)::int AS played,
+        COUNT(*) FILTER (WHERE guess_correct)::int       AS correct
+      FROM score_games WHERE shop = ${shop}
+    `,
+    db<{ playerCount: number; games: number }[]>`
+      SELECT player_count AS "playerCount", COUNT(*)::int AS games
+      FROM score_games WHERE shop = ${shop}
+      GROUP BY player_count ORDER BY player_count
+    `,
+    db<{ withExpansion: number; total: number }[]>`
+      SELECT
+        COUNT(*) FILTER (WHERE EXISTS (
+          SELECT 1 FROM jsonb_array_elements(players) elem WHERE (elem->>'mp')::int > 0
+        ))::int AS "withExpansion",
+        COUNT(*)::int AS total
+      FROM score_games WHERE shop = ${shop}
+    `,
+  ]);
+
+  return {
+    milestones,
+    guess: guess[0] ?? { offered: 0, played: 0, correct: 0 },
+    playerCounts,
+    expansion: expansion[0] ?? { withExpansion: 0, total: 0 },
+  };
+}
