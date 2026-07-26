@@ -16,7 +16,7 @@ export function verifyProxySignature(
   const message = Object.keys(rest)
     .sort()
     .map((k) => `${k}=${rest[k]}`)
-    .join("&");
+    .join("");
 
   const digest = crypto.createHmac("sha256", apiSecret).update(message).digest("hex");
   return safeEqualHex(digest, signature);
