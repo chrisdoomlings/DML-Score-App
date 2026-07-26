@@ -108,6 +108,22 @@ export function GlobalStyle() {
 
       .dml-empty { font-size: 13px; color: #8a8d91; padding: 8px 0; }
 
+      .dml-trend { display: flex; align-items: stretch; gap: 10px; }
+      .dml-trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+      .dml-trend-count { font-size: 11px; font-weight: 700; color: #6d7175; height: 14px; }
+      .dml-trend-bararea { height: 64px; width: 100%; display: flex; align-items: flex-end; }
+      .dml-trend-bar { width: 100%; max-width: 28px; margin: 0 auto; background: #008060; border-radius: 4px 4px 0 0; }
+      .dml-trend-day { font-size: 11px; color: #8a8d91; }
+
+      .dml-recent-list { display: flex; flex-direction: column; }
+      .dml-recent-row {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        padding: 10px 0; border-top: 1px solid #f1f2f3; font-size: 13px; color: #202223;
+      }
+      .dml-recent-row:first-child { border-top: 0; }
+      .dml-recent-meta { color: #6d7175; margin-left: 8px; }
+      .dml-recent-time { color: #8a8d91; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+
       @media (max-width: 700px) {
         .dml-field-row { grid-template-columns: 1fr; }
         .dml-milestone-head { display: none; }

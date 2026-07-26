@@ -9,6 +9,51 @@ interface Summary {
   totalGames: number;
   gamesLast30Days: number;
   gamesWithCustomer: number;
+  totalPoints: number;
+  last7Days: { date: string; games: number }[];
+  recentGames: { playedAt: string; winnerNames: string[]; topScore: number; playerCount: number }[];
+}
+
+function TrendChart({ data }: { data: { date: string; games: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.games));
+  return (
+    <div className="dml-trend">
+      {data.map((d) => {
+        const h = d.games === 0 ? 3 : Math.max(6, Math.round((d.games / max) * 64));
+        const day = new Date(`${d.date}T00:00:00Z`);
+        const weekday = day.toLocaleDateString(undefined, { weekday: "short", timeZone: "UTC" });
+        const full = day.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
+        return (
+          <div className="dml-trend-col" key={d.date} title={`${d.games} game${d.games === 1 ? "" : "s"} on ${full}`}>
+            <span className="dml-trend-count">{d.games}</span>
+            <div className="dml-trend-bararea"><div className="dml-trend-bar" style={{ height: h }} /></div>
+            <span className="dml-trend-day">{weekday}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RecentGames({ games }: { games: Summary["recentGames"] }) {
+  if (games.length === 0) return <p className="dml-empty">No games logged yet.</p>;
+  return (
+    <ul className="dml-recent-list">
+      {games.map((g, i) => {
+        const d = new Date(g.playedAt);
+        const when = `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+        return (
+          <li key={i} className="dml-recent-row">
+            <div className="dml-recent-main">
+              <strong>{g.winnerNames.join(" & ")}</strong> won with {g.topScore} pts
+              <span className="dml-recent-meta">{g.playerCount} players</span>
+            </div>
+            <span className="dml-recent-time">{when}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 export default function DashboardPage() {
@@ -41,7 +86,20 @@ export default function DashboardPage() {
             <Stat label="Last 30 days" value={summary.gamesLast30Days} />
             <Stat label="By logged-in customers" value={summary.gamesWithCustomer} />
             <Stat label="Signed-in rate" value={`${pct}%`} />
+            <Stat label="Points awarded" value={summary.totalPoints} />
           </div>
+        </section>
+
+        <section className="dml-card dml-card-wide">
+          <h2 className="dml-card-title">Last 7 days</h2>
+          <p className="dml-card-hint">Games logged per day.</p>
+          <TrendChart data={summary.last7Days} />
+        </section>
+
+        <section className="dml-card">
+          <h2 className="dml-card-title">Recent games</h2>
+          <p className="dml-card-hint">The latest games logged through the tool.</p>
+          <RecentGames games={summary.recentGames} />
         </section>
 
         <section className="dml-card">

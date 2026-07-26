@@ -189,17 +189,46 @@ export async function getCustomerStats(shop: string, customerId: string): Promis
 
 export async function getShopSummary(shop: string) {
   const db = getDb();
-  const games = await db<{ total: number; last30: number; identified: number }[]>`
-    SELECT
-      COUNT(*)::int AS total,
-      COUNT(*) FILTER (WHERE played_at > NOW() - INTERVAL '30 days')::int AS last30,
-      COUNT(*) FILTER (WHERE customer_id IS NOT NULL)::int AS identified
-    FROM score_games WHERE shop = ${shop}
-  `;
+  const [games, pointsRow, dailyRows, recentGames] = await Promise.all([
+    db<{ total: number; last30: number; identified: number }[]>`
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE played_at > NOW() - INTERVAL '30 days')::int AS last30,
+        COUNT(*) FILTER (WHERE customer_id IS NOT NULL)::int AS identified
+      FROM score_games WHERE shop = ${shop}
+    `,
+    db<{ total: number | null }[]>`
+      SELECT SUM(points)::int AS total FROM score_points_ledger WHERE shop = ${shop}
+    `,
+    db<{ day: unknown; count: number }[]>`
+      SELECT played_at::date AS day, COUNT(*)::int AS count
+      FROM score_games WHERE shop = ${shop} AND played_at > NOW() - INTERVAL '7 days'
+      GROUP BY day
+    `,
+    db<{ playedAt: string; winnerNames: string[]; topScore: number; playerCount: number }[]>`
+      SELECT played_at AS "playedAt", winner_names AS "winnerNames",
+             top_score AS "topScore", player_count AS "playerCount"
+      FROM score_games WHERE shop = ${shop} ORDER BY played_at DESC LIMIT 6
+    `,
+  ]);
+
+  const dayKey = (d: unknown) => (d instanceof Date ? d.toISOString().slice(0, 10) : String(d).slice(0, 10));
+  const dailyMap = new Map(dailyRows.map((r) => [dayKey(r.day), r.count]));
+  const last7Days: { date: string; games: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    last7Days.push({ date: key, games: dailyMap.get(key) ?? 0 });
+  }
+
   return {
     totalGames: games[0]?.total ?? 0,
     gamesLast30Days: games[0]?.last30 ?? 0,
     gamesWithCustomer: games[0]?.identified ?? 0,
+    totalPoints: pointsRow[0]?.total ?? 0,
+    last7Days,
+    recentGames,
   };
 }
 
