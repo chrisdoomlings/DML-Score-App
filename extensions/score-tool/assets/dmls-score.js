@@ -88,6 +88,7 @@
     if (state.screen === 0) renderWelcome();
     else if (state.screen === 1) renderPlayers();
     else if (state.screen >= 2 && state.screen <= 5) renderStep(state.screen);
+    else if (state.screen === 7) renderStats();
     else renderWinner();
     root.scrollIntoView({ block: "start", behavior: "auto" });
   }
@@ -101,6 +102,7 @@
       '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
       (hasResume ? '<div class="dmls-resume">You have a game in progress. <button type="button" id="dmls-resume">Resume it</button></div>' : "") +
       '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-start">Start scoring</button><span class="dmls-spacer"></span></div>' +
+      (CUSTOMER ? '<div class="dmls-welcome-links"><button type="button" class="dmls-btn-link" id="dmls-mystats">My Stats</button></div>' : "") +
       "</div>";
     document.getElementById("dmls-start").addEventListener("click", function () {
       state.players = [];
@@ -118,6 +120,12 @@
       save();
       render();
       toast("Game restored");
+    });
+    var ms = document.getElementById("dmls-mystats");
+    if (ms) ms.addEventListener("click", function () {
+      state.screen = 7;
+      save();
+      render();
     });
   }
 
@@ -328,6 +336,76 @@
     document.getElementById("dmls-guess-skip").addEventListener("click", function () {
       if (!picked) { picked = true; renderWinner(); }
     });
+  }
+
+  /* --- my stats --- */
+  function goHome() { state.screen = 0; save(); render(); }
+
+  function renderStats() {
+    app.innerHTML =
+      '<div class="dmls-card dmls-stats">' +
+      '<p class="dmls-eyebrow">Your Doomlings career</p>' +
+      '<h2 class="dmls-title">My Stats</h2>' +
+      '<p class="dmls-sub">Loading your history…</p>' +
+      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
+      "</div>";
+    document.getElementById("dmls-stats-back").addEventListener("click", goHome);
+
+    apiGet("/stats")
+      .then(function (s) {
+        if (state.screen !== 7) return; // navigated away before this resolved
+        if (!s || s.error || s.authenticated === false) { renderStatsError(); return; }
+        renderStatsData(s);
+      })
+      .catch(function () {
+        if (state.screen !== 7) return;
+        renderStatsError();
+      });
+  }
+
+  function renderStatsError() {
+    app.innerHTML =
+      '<div class="dmls-card dmls-stats">' +
+      '<p class="dmls-eyebrow">Your Doomlings career</p>' +
+      '<h2 class="dmls-title">My Stats</h2>' +
+      '<p class="dmls-sub">Couldn’t load your stats right now — check your connection and try again.</p>' +
+      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
+      "</div>";
+    document.getElementById("dmls-stats-back").addEventListener("click", goHome);
+  }
+
+  function renderStatsData(s) {
+    var games = s.recentGames || [];
+    var tiles =
+      '<div class="dmls-stat-grid">' +
+      '<div class="dmls-stat-tile"><span class="dmls-stat-n">' + (s.gamesLogged || 0) + '</span><span class="dmls-stat-l">Games</span></div>' +
+      '<div class="dmls-stat-tile"><span class="dmls-stat-n">' + (s.wins || 0) + '</span><span class="dmls-stat-l">Wins</span></div>' +
+      '<div class="dmls-stat-tile"><span class="dmls-stat-n">' + (s.bestScore || 0) + '</span><span class="dmls-stat-l">Best score</span></div>' +
+      '<div class="dmls-stat-tile"><span class="dmls-stat-n">' + (s.points || 0) + '</span><span class="dmls-stat-l">Points</span></div>' +
+      "</div>";
+
+    var history = games.length
+      ? '<p class="dmls-hist-title">Recent games</p><ul class="dmls-history">' +
+        games.map(function (g) {
+          var d = new Date(g.playedAt);
+          var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+          return '<li class="' + (g.customerWon ? "dmls-won" : "") + '">' +
+            '<span class="dmls-hist-date">' + when + "</span>" +
+            '<span class="dmls-hist-info">' + esc((g.winnerNames || []).join(" & ")) + " won · " + g.topScore + " pts · " + g.playerCount + " players</span>" +
+            '<span class="dmls-hist-badge">' + (g.customerWon ? "WIN" : "") + "</span>" +
+            "</li>";
+        }).join("") + "</ul>"
+      : '<p class="dmls-sub" style="margin-top:16px">No games logged yet — play one to get started!</p>';
+
+    app.innerHTML =
+      '<div class="dmls-card dmls-stats">' +
+      '<p class="dmls-eyebrow">Your Doomlings career</p>' +
+      '<h2 class="dmls-title">My Stats</h2>' +
+      tiles +
+      history +
+      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
+      "</div>";
+    document.getElementById("dmls-stats-back").addEventListener("click", goHome);
   }
 
   /* --- winner --- */

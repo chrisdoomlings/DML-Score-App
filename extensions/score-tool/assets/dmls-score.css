@@ -292,3 +292,30 @@
   padding: 4px 0; border-top: 1px dashed var(--dmls-line);
 }
 .dmls-bonuses li b { color: var(--dmls-gold); }
+
+/* my stats */
+.dmls-welcome-links { margin-top: 14px; text-align: center; }
+
+.dmls-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0 4px; }
+.dmls-stat-tile {
+  background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
+  border-radius: 14px; padding: 14px 10px; display: flex; flex-direction: column; gap: 3px;
+}
+.dmls-stat-n { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dmls-gold); }
+.dmls-stat-l { font-size: 12px; color: var(--dmls-ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.dmls-hist-title {
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--dmls-gold); margin: 20px 0 10px; font-weight: 700; text-align: left;
+}
+.dmls-history { display: flex; flex-direction: column; gap: 8px; text-align: left; margin: 0; }
+.dmls-history li {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
+  border-radius: 12px; padding: 10px 14px; font-size: 13.5px;
+}
+.dmls-history .dmls-hist-date { flex: none; width: 46px; color: var(--dmls-ink-faint); font-weight: 700; }
+.dmls-history .dmls-hist-info { flex: 1; color: var(--dmls-ink-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dmls-history .dmls-hist-badge { flex: none; font-size: 11px; font-weight: 800; color: var(--dmls-ink-faint); letter-spacing: 0.06em; }
+.dmls-history li.dmls-won { border-color: var(--dmls-green); }
+.dmls-history li.dmls-won .dmls-hist-badge { color: var(--dmls-green); }
