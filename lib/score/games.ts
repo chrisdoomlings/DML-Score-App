@@ -1,6 +1,8 @@
+import { after } from "next/server";
 import { getDb, jsonb } from "@/lib/supabase/client";
 import { getSettings } from "@/lib/score/settings";
 import { evaluateMilestones, milestoneReason, type MilestoneAward } from "@/lib/score/milestones";
+import { pushToLoyaltyBridge } from "@/lib/score/loyaltyBridge";
 
 export interface GamePlayer {
   name: string;
@@ -126,18 +128,22 @@ export async function saveGame(
   let pointsAwarded = 0;
   if (customerId) {
     if (basePoints > 0) {
-      const inserted = await db`
+      const inserted = await db<{ id: string }[]>`
         INSERT INTO score_points_ledger (shop, customer_id, points, reason, game_id)
         VALUES (${shop}, ${customerId}, ${basePoints}, 'game_logged', ${game.id})
         ON CONFLICT DO NOTHING
         RETURNING id
       `;
-      if (inserted.length) pointsAwarded += basePoints;
+      if (inserted.length) {
+        pointsAwarded += basePoints;
+        const ledgerId = inserted[0].id;
+        after(() => pushToLoyaltyBridge({ shop, customerId, ledgerId, points: basePoints, reason: "game_logged" }));
+      }
     }
     const kept: MilestoneAward[] = [];
     for (const m of milestones) {
       // Unique partial indexes make replays and double-submits no-ops.
-      const inserted = await db`
+      const inserted = await db<{ id: string }[]>`
         INSERT INTO score_points_ledger (shop, customer_id, points, reason, game_id)
         VALUES (${shop}, ${customerId}, ${m.points}, ${milestoneReason(m.key)}, ${game.id})
         ON CONFLICT DO NOTHING
@@ -146,6 +152,9 @@ export async function saveGame(
       if (inserted.length) {
         kept.push(m);
         pointsAwarded += m.points;
+        const ledgerId = inserted[0].id;
+        const reason = milestoneReason(m.key);
+        after(() => pushToLoyaltyBridge({ shop, customerId, ledgerId, points: m.points, reason }));
       }
     }
     milestones = kept;

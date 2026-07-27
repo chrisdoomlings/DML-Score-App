@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getVerifiedProxyParams } from "@/lib/utils/appProxy";
 import { rateLimit } from "@/lib/utils/rateLimit";
 import { getDb, jsonb } from "@/lib/supabase/client";
 import { getSettings } from "@/lib/score/settings";
+import { pushToLoyaltyBridge } from "@/lib/score/loyaltyBridge";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,13 +58,17 @@ export async function POST(req: NextRequest) {
     if (guessCorrect) {
       const settings = await getSettings(shop);
       if (settings.guessPoints > 0) {
-        const inserted = await db`
+        const inserted = await db<{ id: string }[]>`
           INSERT INTO score_points_ledger (shop, customer_id, points, reason, game_id)
           VALUES (${shop}, ${customerId}, ${settings.guessPoints}, 'guess_correct', ${gameId})
           ON CONFLICT DO NOTHING
           RETURNING id
         `;
-        if (inserted.length) pointsAwarded = settings.guessPoints;
+        if (inserted.length) {
+          pointsAwarded = settings.guessPoints;
+          const ledgerId = inserted[0].id;
+          after(() => pushToLoyaltyBridge({ shop, customerId, ledgerId, points: settings.guessPoints, reason: "guess_correct" }));
+        }
       }
     }
 
