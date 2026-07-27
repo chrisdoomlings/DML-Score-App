@@ -34,10 +34,16 @@
 #dmls-root ul { list-style: none; margin: 0; padding: 0; }
 
 .dmls-card {
-  background: linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
-  background-image: linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)), var(--dmls-bg-url, url("dmls-bg.jpg"));
-  background-size: cover;
-  background-position: center;
+  /* Three layers: dark tint on top, the admin's uploaded photo in the middle
+     (transparent if none is set), and a flat brand gradient as the guaranteed
+     base — so "no image configured" renders as a clean color card, not a
+     bundled stock photo. */
+  background-image:
+    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
+    var(--dmls-bg-url, none),
+    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+  background-size: cover, cover, cover;
+  background-position: center, center, center;
   border: 1px solid var(--dmls-line);
   border-radius: 22px;
   padding: 26px 22px 30px;
@@ -48,7 +54,10 @@
 }
 /* expansion-points step gets its own art (client spec, May 2026) */
 .dmls-card-exp {
-  background-image: linear-gradient(180deg, rgba(4, 24, 18, 0.45), rgba(4, 24, 18, 0.72)), var(--dmls-bg-exp-url, url("dmls-bg-exp.jpg"));
+  background-image:
+    linear-gradient(180deg, rgba(4, 24, 18, 0.45), rgba(4, 24, 18, 0.72)),
+    var(--dmls-bg-exp-url, none),
+    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
 }
 
 .dmls-hero { display: block; max-width: min(340px, 78%); margin: 0 auto 4px; }
@@ -247,7 +256,7 @@
 /* winner desktop layout */
 @media (min-width: 920px) {
   #dmls-root.dmls-wide .dmls-card.dmls-winner {
-    display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 34px; align-items: start;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 34px; align-items: start;
     padding: 34px 34px 38px;
   }
   #dmls-root.dmls-wide .dmls-widgets { margin-top: 0; }
