@@ -390,9 +390,11 @@
           var d = new Date(g.playedAt);
           var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
           return '<li class="' + (g.customerWon ? "dmls-won" : "") + '">' +
+            '<div class="dmls-hist-top">' +
             '<span class="dmls-hist-date">' + when + "</span>" +
+            (g.customerWon ? '<span class="dmls-hist-badge">WIN</span>' : "") +
+            "</div>" +
             '<span class="dmls-hist-info">' + esc((g.winnerNames || []).join(" & ")) + " won · " + g.topScore + " pts · " + g.playerCount + " players</span>" +
-            '<span class="dmls-hist-badge">' + (g.customerWon ? "WIN" : "") + "</span>" +
             "</li>";
         }).join("") + "</ul>"
       : '<p class="dmls-sub" style="margin-top:16px">No games logged yet — play one to get started!</p>';
@@ -476,8 +478,8 @@
       (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" width="220" loading="lazy">' : "") +
       '<ul class="dmls-board">' + board + "</ul>" +
       '<div class="dmls-nav dmls-nav-winner">' +
-      '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-rematch">REMATCH!</button>' +
-      '<button type="button" class="dmls-btn-link" id="dmls-new">Or play again with new players…</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-rematch">Rematch!</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-new">New players</button>' +
       "</div></div>" +
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
       "</div>";
