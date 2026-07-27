@@ -412,6 +412,9 @@
 
   /* --- winner --- */
   function renderWinner() {
+    // Reached directly from finishGame()/renderGuess(), bypassing render()'s
+    // dispatcher — so the wide-layout class has to be set here, not there.
+    root.classList.add("dmls-wide");
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var top = ranked.length ? total(ranked[0]) : 0;
     var winners = ranked.filter(function (p) { return total(p) === top; });
