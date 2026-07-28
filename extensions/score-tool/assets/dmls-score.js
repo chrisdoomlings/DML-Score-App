@@ -12,6 +12,15 @@
   var ICONS = cfg.assets || {};
   var STORE_KEY = "dmls_state_v1";
 
+  // Screen number <-> URL hash, so each step is a real, refreshable, shareable
+  // URL (e.g. .../score-tool#winner) instead of one opaque in-memory state.
+  var SCREEN_HASH = ["", "players", "we", "fv", "bp", "mp", "winner", "stats"];
+  function hashFor(screen) { return SCREEN_HASH[screen] || ""; }
+  function screenForHash(h) {
+    var i = SCREEN_HASH.indexOf(h);
+    return i > 0 ? i : null; // "" (screen 0) is never an explicit restore target
+  }
+
   var app = document.getElementById("dmls-app");
   var productsEl = document.getElementById("dmls-products");
   var heading = root.getAttribute("data-heading") || "Ready to see who won the game?";
@@ -23,15 +32,53 @@
   };
   var serverConfig = null; // {pointsPerGame, loggedIn}
   var lastResult = null;   // response from POST /game
+  var guessResult = null;  // {correct, pointsAwarded} from POST /guess
   var saveFailed = false;  // true once /game has definitively failed (not just still in flight)
 
   var saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch (e) { /* ignore */ }
   var hasResume = !!(saved && saved.players && saved.players.length >= 2 && saved.screen > 0 && saved.screen < 6);
 
-  function save() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  // A refresh (or a bookmarked/shared link) carries the screen in the URL hash.
+  // When it agrees with what's actually saved, jump straight back there —
+  // including the winner screen — instead of dropping to Welcome and making
+  // the player click "Resume" for something that wasn't a deliberate restart.
+  var hashScreen = screenForHash(location.hash.slice(1));
+  if (saved && hashScreen !== null && saved.screen === hashScreen) {
+    state.screen = saved.screen;
+    state.players = saved.players || [];
+    lastResult = saved.lastResult || null;
+    guessResult = saved.guessResult || null;
+    saveFailed = !!saved.saveFailed;
+    hasResume = false;
   }
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        screen: state.screen,
+        players: state.players,
+        lastResult: lastResult,
+        guessResult: guessResult,
+        saveFailed: saveFailed,
+      }));
+    } catch (e) { /* ignore */ }
+    syncHash(true);
+  }
+  function syncHash(push) {
+    var h = hashFor(state.screen);
+    if (location.hash.slice(1) === h) return;
+    var url = location.pathname + location.search + (h ? "#" + h : "");
+    try {
+      if (push) history.pushState({ dmlsScreen: state.screen }, "", url);
+      else history.replaceState({ dmlsScreen: state.screen }, "", url);
+    } catch (e) { /* ignore */ }
+  }
+  window.addEventListener("popstate", function () {
+    var s = screenForHash(location.hash.slice(1));
+    state.screen = s === null ? 0 : s;
+    render();
+  });
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -122,7 +169,8 @@
     });
     var r = document.getElementById("dmls-resume");
     if (r) r.addEventListener("click", function () {
-      state = saved;
+      state.screen = saved.screen;
+      state.players = saved.players || [];
       hasResume = false;
       save();
       render();
@@ -312,8 +360,6 @@
   }
 
   /* --- Guess Who Won? mini-game --- */
-  var guessResult = null; // {correct, pointsAwarded} from POST /guess
-
   function renderGuess(res) {
     var pts = (serverConfig && serverConfig.guessPoints) || 10;
     var names = state.players.map(function (p) { return p.name; });
@@ -598,6 +644,8 @@
   }
 
   /* --- boot --- */
+  syncHash(false); // normalize the URL to match the restored/default screen, no extra history entry
+
   apiGet("/config")
     .then(function (c) {
       if (!c || c.error) return;
