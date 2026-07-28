@@ -91,16 +91,18 @@
   padding: 13px 26px; border-radius: 12px; font-weight: 700; font-size: 16px;
   transition: transform 0.12s ease;
 }
-.dmls-btn:active { transform: scale(0.97); }
+.dmls-btn:active:not(:disabled) { transform: scale(0.97); }
 .dmls-btn-go { background: var(--dmls-green); color: #0d1200; box-shadow: 0 8px 20px rgba(128, 210, 53, 0.3); }
 .dmls-btn-ghost { border: 2px solid var(--dmls-line); color: var(--dmls-ink-dim); }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
+.dmls-btn:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 .dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; }
 .dmls-nav .dmls-spacer { flex: 1; }
 
 /* players */
-.dmls-addrow { display: flex; max-width: 360px; margin: 16px auto 4px; }
+.dmls-addrow { display: flex; max-width: 360px; margin: 16px auto 4px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); border-radius: 12px; transition: box-shadow 0.15s ease; }
+.dmls-addrow:focus-within { box-shadow: 0 0 0 3px rgba(128, 210, 53, 0.35), 0 6px 18px rgba(0, 0, 0, 0.18); }
 .dmls-addrow input {
   flex: 1; min-width: 0; padding: 13px 16px; font-size: 16px; border: 0;
   border-radius: 12px 0 0 12px; background: #fff; color: #1a1a2e;
@@ -108,16 +110,35 @@
 .dmls-addrow input::placeholder { color: #8a8aa0; }
 .dmls-addrow button {
   background: var(--dmls-green); color: #0d1200; font-weight: 700;
-  padding: 0 20px; border-radius: 0 12px 12px 0;
+  padding: 0 20px; border-radius: 0 12px 12px 0; transition: background 0.15s ease;
 }
-.dmls-hint { font-size: 12.5px; color: var(--dmls-ink-faint); margin-top: 10px; }
+.dmls-addrow button:hover { background: #93e04c; }
+.dmls-addrow button:active { background: #6fbb2c; }
+.dmls-hint { font-size: 12.5px; color: var(--dmls-ink-faint); margin-top: 0; }
+.dmls-player-progress { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 14px; }
+.dmls-player-progress-track {
+  display: block; width: 100%; max-width: 220px; height: 5px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14); overflow: hidden;
+}
+.dmls-player-progress-fill {
+  display: block; height: 100%; background: var(--dmls-green); border-radius: 999px;
+  transition: width 0.25s ease;
+}
 .dmls-chips { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin: 18px auto 2px; max-width: 400px; }
 .dmls-chips li {
   display: inline-flex; align-items: center; gap: 8px;
   background: rgba(255, 255, 255, 0.1); border: 1px solid var(--dmls-line);
   padding: 8px 8px 8px 14px; border-radius: 999px; font-size: 15px;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 .dmls-chips li.dmls-me { border-color: var(--dmls-green); background: rgba(128, 210, 53, 0.14); }
+@media (prefers-reduced-motion: no-preference) {
+  .dmls-chips li.dmls-chip-pop { animation: dmls-chip-pop 0.28s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes dmls-chip-pop {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: none; }
+  }
+}
 .dmls-chips .dmls-tag { font-size: 10.5px; color: var(--dmls-green); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
 .dmls-chips button {
   width: 22px; height: 22px; border-radius: 50%;
@@ -267,6 +288,33 @@
   @keyframes dmls-pop {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
+  }
+
+  /* Named so screen-to-screen navigation (see render() in dmls-score.js)
+     crossfades instead of hard-cutting; unsupported browsers just no-op. */
+  #dmls-app { view-transition-name: dmls-app; }
+  ::view-transition-old(dmls-app), ::view-transition-new(dmls-app) {
+    animation-duration: 0.22s;
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+}
+
+/* pre-JS skeleton, replaced the instant dmls-score.js runs its first render() */
+.dmls-skeleton { padding: 26px 22px 30px; }
+.dmls-skel-bar {
+  height: 14px; border-radius: 7px; margin: 0 auto;
+  background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+  background-size: 200% 100%;
+}
+.dmls-skel-title { height: 30px; width: 70%; margin-bottom: 14px; }
+.dmls-skel-sub { width: 85%; margin-bottom: 8px; }
+.dmls-skel-sub + .dmls-skel-sub { width: 60%; margin-bottom: 22px; }
+.dmls-skel-btn { height: 46px; width: 55%; border-radius: 12px; margin-top: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .dmls-skel-bar { animation: dmls-shimmer 1.3s ease-in-out infinite; }
+  @keyframes dmls-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 }
 

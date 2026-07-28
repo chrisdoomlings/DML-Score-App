@@ -11,7 +11,14 @@
   data-signup-url="{{ routes.account_register_url }}"
   data-login-url="{{ routes.account_login_url }}">
 
-  <div id="dmls-app" aria-live="polite"></div>
+  <div id="dmls-app" aria-live="polite">
+    <div class="dmls-card dmls-skeleton" aria-hidden="true">
+      <div class="dmls-skel-bar dmls-skel-title"></div>
+      <div class="dmls-skel-bar dmls-skel-sub"></div>
+      <div class="dmls-skel-bar dmls-skel-sub"></div>
+      <div class="dmls-skel-bar dmls-skel-btn"></div>
+    </div>
+  </div>
 
   {% if block.settings.show_products and block.settings.recs_collection != blank %}
     <div id="dmls-products" hidden>

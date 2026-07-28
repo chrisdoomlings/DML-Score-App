@@ -83,14 +83,21 @@
   }
 
   function render() {
-    root.classList.toggle("dmls-wide", state.screen === 6);
-    if (productsEl && state.screen !== 6) productsEl.hidden = true;
-    if (state.screen === 0) renderWelcome();
-    else if (state.screen === 1) renderPlayers();
-    else if (state.screen >= 2 && state.screen <= 5) renderStep(state.screen);
-    else if (state.screen === 7) renderStats();
-    else renderWinner();
-    root.scrollIntoView({ block: "start", behavior: "auto" });
+    var run = function () {
+      root.classList.toggle("dmls-wide", state.screen === 6);
+      if (productsEl && state.screen !== 6) productsEl.hidden = true;
+      if (state.screen === 0) renderWelcome();
+      else if (state.screen === 1) renderPlayers();
+      else if (state.screen >= 2 && state.screen <= 5) renderStep(state.screen);
+      else if (state.screen === 7) renderStats();
+      else renderWinner();
+      root.scrollIntoView({ block: "start", behavior: "auto" });
+    };
+    // Screen-to-screen navigation only (in-place updates like adding a player
+    // or nudging a score call renderX() directly and skip this) — gives a
+    // soft crossfade between steps instead of an abrupt swap, when supported.
+    if (!reduceMotion && document.startViewTransition) document.startViewTransition(run);
+    else run();
   }
 
   /* --- welcome --- */
@@ -130,16 +137,21 @@
   }
 
   /* --- players --- */
+  var justAddedIndex = -1; // marks the newest chip so only it plays the pop-in animation
   function renderPlayers() {
     if (CUSTOMER && !state.players.some(function (p) { return p.isCustomer; })) {
       state.players.unshift({ name: (CUSTOMER.firstName || "Me").slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: true });
     }
 
     var chips = state.players.map(function (p, i) {
-      return '<li class="' + (p.isCustomer ? "dmls-me" : "") + '">' + esc(p.name) +
+      return '<li class="' + (p.isCustomer ? "dmls-me" : "") + (i === justAddedIndex ? " dmls-chip-pop" : "") + '">' + esc(p.name) +
         (p.isCustomer ? ' <span class="dmls-tag">You</span>' : "") +
         '<button type="button" data-rm="' + i + '" aria-label="Remove ' + esc(p.name) + '">×</button></li>';
     }).join("");
+    justAddedIndex = -1; // consumed for this render pass
+
+    var enough = state.players.length >= 2;
+    var pct = Math.min(100, Math.round((state.players.length / 8) * 100));
 
     app.innerHTML =
       '<div class="dmls-card">' +
@@ -150,10 +162,13 @@
         : '<p class="dmls-sub">Add 2–8 players. Sign in to keep your game history and earn points.</p>') +
       '<div class="dmls-addrow"><input id="dmls-name" maxlength="30" placeholder="Enter name here…" autocomplete="off"><button type="button" id="dmls-add">ADD</button></div>' +
       '<ul class="dmls-chips" id="dmls-chips">' + chips + "</ul>" +
-      '<p class="dmls-hint">' + state.players.length + " of 8 players</p>" +
+      '<div class="dmls-player-progress">' +
+      '<span class="dmls-player-progress-track"><span class="dmls-player-progress-fill" style="width:' + pct + '%"></span></span>' +
+      '<span class="dmls-hint">' + state.players.length + " of 8 players" + (enough ? "" : " · add at least 2") + "</span>" +
+      "</div>" +
       '<div class="dmls-nav">' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-back">Back</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-next">Next</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-next"' + (enough ? "" : " disabled") + ">Next</button>" +
       "</div></div>";
 
     var input = document.getElementById("dmls-name");
@@ -162,10 +177,14 @@
       if (!v) { toast("Type a name first"); return; }
       if (state.players.length >= 8) { toast("Max 8 players at a time"); return; }
       state.players.push({ name: v.slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: false });
-      input.value = "";
-      input.focus();
+      justAddedIndex = state.players.length - 1;
       save();
       renderPlayers();
+      // renderPlayers() just replaced the whole card, so `input` above is a
+      // detached node — grab the freshly-mounted one and refocus it, or the
+      // on-screen keyboard drops after every single name on mobile.
+      var freshInput = document.getElementById("dmls-name");
+      if (freshInput) freshInput.focus();
     }
     document.getElementById("dmls-add").addEventListener("click", add);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); add(); } });
