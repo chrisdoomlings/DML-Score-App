@@ -85,6 +85,14 @@
     });
   }
   function total(p) { return (p.we | 0) + (p.fv | 0) + (p.bp | 0) + (p.mp | 0); }
+  // The display font renders lowercase letters as caps-shaped glyphs, so a
+  // name typed lowercase looks fine in the big winner headline but reads
+  // inconsistently wherever we show it in the regular UI font — capitalize
+  // it there so "azam" doesn't sit next to "AZAM" on the same screen.
+  function cap(s) {
+    s = String(s || "");
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  }
 
   /* toast */
   var toastEl = document.createElement("div");
@@ -188,7 +196,7 @@
   var justAddedIndex = -1; // marks the newest chip so only it plays the pop-in animation
   function renderPlayers(quiet) {
     if (CUSTOMER && !state.players.some(function (p) { return p.isCustomer; })) {
-      state.players.unshift({ name: (CUSTOMER.firstName || "Me").slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: true });
+      state.players.unshift({ name: cap(CUSTOMER.firstName || "Me").slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: true });
     }
 
     var chips = state.players.map(function (p, i) {
@@ -206,7 +214,7 @@
       dots(0) +
       '<h2 class="dmls-title">Enter everyone’s names!</h2>' +
       (CUSTOMER
-        ? '<p class="dmls-sub">Playing as <strong style="color:var(--dmls-green)">' + esc(CUSTOMER.firstName || "you") + "</strong> — this game will save to your account.</p>"
+        ? '<p class="dmls-sub">Playing as <strong style="color:var(--dmls-green)">' + esc(cap(CUSTOMER.firstName) || "you") + "</strong> — this game will save to your account.</p>"
         : '<p class="dmls-sub">Add 2–8 players. Sign in to keep your game history and earn points.</p>') +
       '<div class="dmls-addrow"><input id="dmls-name" maxlength="30" placeholder="Enter name here…" autocomplete="off"><button type="button" id="dmls-add">ADD</button></div>' +
       '<ul class="dmls-chips" id="dmls-chips">' + chips + "</ul>" +
@@ -483,7 +491,7 @@
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var top = ranked.length ? total(ranked[0]) : 0;
     var winners = ranked.filter(function (p) { return total(p) === top; });
-    var winNames = winners.map(function (p) { return esc(p.name); }).join(" & ");
+    var winNames = winners.map(function (p) { return esc(p.name); }).join(' <span class="dmls-amp">&amp;</span> ');
     var meWon = winners.some(function (p) { return p.isCustomer; });
 
     var board = ranked.map(function (p, i) {
@@ -542,7 +550,7 @@
       '<div class="dmls-win-main">' +
       '<p class="dmls-win-eyebrow">The winner is…</p>' +
       '<div class="dmls-win-name">' + winNames + "!</div>" +
-      '<p class="dmls-win-pts">' + (winners.length > 1 ? "each " : "") + "with <b>" + top + " points</b>!" + (meWon ? " Hi " + esc(CUSTOMER.firstName || "there") + ", you won!" : "") + "</p>" +
+      '<p class="dmls-win-pts">' + (winners.length > 1 ? "each " : "") + "with <b>" + top + " points</b>!" + (meWon ? " Hi " + esc(cap(CUSTOMER.firstName) || "there") + ", you won!" : "") + "</p>" +
       (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" width="220" loading="lazy">' : "") +
       '<ul class="dmls-board">' + board + "</ul>" +
       '<div class="dmls-nav dmls-nav-winner">' +
