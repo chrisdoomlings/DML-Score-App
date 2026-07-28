@@ -84,7 +84,7 @@
 
   function render() {
     var run = function () {
-      root.classList.toggle("dmls-wide", state.screen === 6);
+      root.classList.toggle("dmls-wide", state.screen === 6 || state.screen === 7);
       if (productsEl && state.screen !== 6) productsEl.hidden = true;
       if (state.screen === 0) renderWelcome();
       else if (state.screen === 1) renderPlayers();

@@ -392,3 +392,19 @@
   background: rgba(128, 210, 53, 0.14); border-radius: 999px; padding: 3px 8px;
 }
 .dmls-history li.dmls-won { border-color: var(--dmls-green); }
+
+/* my stats desktop layout — tiles left, recent games right */
+@media (min-width: 920px) {
+  #dmls-root.dmls-wide .dmls-card.dmls-stats {
+    display: grid; grid-template-columns: 1fr 1.3fr;
+    grid-template-areas: "head head" "tiles hist" "nav nav";
+    gap: 4px 34px; align-items: start; padding: 34px 34px 38px;
+  }
+  #dmls-root.dmls-wide .dmls-stats .dmls-eyebrow,
+  #dmls-root.dmls-wide .dmls-stats .dmls-title { grid-area: head; }
+  #dmls-root.dmls-wide .dmls-stats .dmls-stat-grid { grid-area: tiles; }
+  #dmls-root.dmls-wide .dmls-stats .dmls-hist-title,
+  #dmls-root.dmls-wide .dmls-stats .dmls-history,
+  #dmls-root.dmls-wide .dmls-stats .dmls-sub { grid-area: hist; }
+  #dmls-root.dmls-wide .dmls-stats .dmls-nav { grid-area: nav; margin-top: 26px; }
+}
