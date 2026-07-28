@@ -77,7 +77,7 @@
 }
 .dmls-sub {
   color: var(--dmls-ink-dim); font-size: 15px; line-height: 1.5;
-  max-width: 40ch; margin: 0 auto 6px;
+  max-width: 40ch; margin: 0 auto 10px;
 }
 .dmls-sub .dmls-sym { width: 20px; height: 20px; vertical-align: -4px; margin: 0 2px; }
 
@@ -97,25 +97,28 @@
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
-.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; }
+.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 30px; }
 .dmls-nav .dmls-spacer { flex: 1; }
 
 /* players */
-.dmls-addrow { display: flex; max-width: 360px; margin: 16px auto 4px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); border-radius: 12px; transition: box-shadow 0.15s ease; }
-.dmls-addrow:focus-within { box-shadow: 0 0 0 3px rgba(128, 210, 53, 0.35), 0 6px 18px rgba(0, 0, 0, 0.18); }
+.dmls-addrow { display: flex; gap: 10px; max-width: 380px; margin: 24px auto 8px; }
 .dmls-addrow input {
   flex: 1; min-width: 0; padding: 13px 16px; font-size: 16px; border: 0;
-  border-radius: 12px 0 0 12px; background: #fff; color: #1a1a2e;
+  border-radius: 12px; background: #fff; color: #1a1a2e;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.15s ease;
 }
+.dmls-addrow input:focus { box-shadow: 0 0 0 3px rgba(128, 210, 53, 0.45), 0 4px 14px rgba(0, 0, 0, 0.2); }
 .dmls-addrow input::placeholder { color: #8a8aa0; }
 .dmls-addrow button {
-  background: var(--dmls-green); color: #0d1200; font-weight: 700;
-  padding: 0 20px; border-radius: 0 12px 12px 0; transition: background 0.15s ease;
+  background: #4f9317; color: #fff; font-weight: 800; letter-spacing: 0.03em;
+  padding: 0 22px; border-radius: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: background 0.15s ease;
 }
-.dmls-addrow button:hover { background: #93e04c; }
-.dmls-addrow button:active { background: #6fbb2c; }
+.dmls-addrow button:hover { background: #5cab1d; }
+.dmls-addrow button:active { background: #427e12; }
 .dmls-hint { font-size: 12.5px; color: var(--dmls-ink-faint); margin-top: 0; }
-.dmls-player-progress { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 14px; }
+.dmls-player-progress { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 20px; }
 .dmls-player-progress-track {
   display: block; width: 100%; max-width: 220px; height: 5px; border-radius: 999px;
   background: rgba(255, 255, 255, 0.14); overflow: hidden;
@@ -124,7 +127,7 @@
   display: block; height: 100%; background: var(--dmls-green); border-radius: 999px;
   transition: width 0.25s ease;
 }
-.dmls-chips { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin: 18px auto 2px; max-width: 400px; }
+.dmls-chips { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin: 20px auto 2px; max-width: 400px; }
 .dmls-chips li {
   display: inline-flex; align-items: center; gap: 8px;
   background: rgba(255, 255, 255, 0.1); border: 1px solid var(--dmls-line);
@@ -284,7 +287,10 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .dmls-card { animation: dmls-pop 0.35s ease; }
+  /* Only screens that actually just mounted get the pop-in — renderPlayers()
+     re-renders itself in place on every add/remove (see dmls-score.js), and
+     replaying this on the whole card each time was the "flickering". */
+  .dmls-card.dmls-anim-in { animation: dmls-pop 0.35s ease; }
   @keyframes dmls-pop {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }

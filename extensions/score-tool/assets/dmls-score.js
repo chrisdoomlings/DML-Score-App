@@ -103,7 +103,7 @@
   /* --- welcome --- */
   function renderWelcome() {
     app.innerHTML =
-      '<div class="dmls-card">' +
+      '<div class="dmls-card dmls-anim-in">' +
       (ICONS.characters ? '<img class="dmls-hero" src="' + ICONS.characters + '" alt="" width="360" loading="lazy">' : "") +
       '<h2 class="dmls-title">' + esc(heading) + "</h2>" +
       '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
@@ -138,7 +138,7 @@
 
   /* --- players --- */
   var justAddedIndex = -1; // marks the newest chip so only it plays the pop-in animation
-  function renderPlayers() {
+  function renderPlayers(quiet) {
     if (CUSTOMER && !state.players.some(function (p) { return p.isCustomer; })) {
       state.players.unshift({ name: (CUSTOMER.firstName || "Me").slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: true });
     }
@@ -154,7 +154,7 @@
     var pct = Math.min(100, Math.round((state.players.length / 8) * 100));
 
     app.innerHTML =
-      '<div class="dmls-card">' +
+      '<div class="dmls-card' + (quiet ? "" : " dmls-anim-in") + '">' +
       dots(0) +
       '<h2 class="dmls-title">Enter everyone’s names!</h2>' +
       (CUSTOMER
@@ -179,7 +179,7 @@
       state.players.push({ name: v.slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: false });
       justAddedIndex = state.players.length - 1;
       save();
-      renderPlayers();
+      renderPlayers(true);
       // renderPlayers() just replaced the whole card, so `input` above is a
       // detached node — grab the freshly-mounted one and refocus it, or the
       // on-screen keyboard drops after every single name on mobile.
@@ -193,7 +193,7 @@
       if (!b) return;
       state.players.splice(+b.getAttribute("data-rm"), 1);
       save();
-      renderPlayers();
+      renderPlayers(true);
     });
     document.getElementById("dmls-back").addEventListener("click", function () { state.screen = 0; save(); render(); });
     document.getElementById("dmls-next").addEventListener("click", function () {
@@ -220,7 +220,7 @@
     }).join("");
 
     app.innerHTML =
-      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : "") + '">' +
+      '<div class="dmls-card dmls-anim-in' + (st.exp ? " dmls-card-exp" : "") + '">' +
       dots(stepNo) +
       '<p class="dmls-eyebrow">Step ' + stepNo + " of 4" + (n === 5 ? " · optional" : "") + "</p>" +
       '<h2 class="dmls-title">' + st.title + "</h2>" +
@@ -279,7 +279,7 @@
     // slow (>3s) falls back to the local reveal exactly as before.
     var revealed = false;
     app.innerHTML =
-      '<div class="dmls-card dmls-counting">' +
+      '<div class="dmls-card dmls-anim-in dmls-counting">' +
       '<h2 class="dmls-title">Adding up the doom…</h2>' +
       '<div class="dmls-count-dots" aria-hidden="true"><i></i><i></i><i></i></div>' +
       "</div>";
@@ -326,7 +326,7 @@
     }).join("");
 
     app.innerHTML =
-      '<div class="dmls-card dmls-guess">' +
+      '<div class="dmls-card dmls-anim-in dmls-guess">' +
       '<p class="dmls-eyebrow">Mini-game · too close to call!</p>' +
       '<h2 class="dmls-title">GUESS WHO WON?</h2>' +
       '<p class="dmls-sub">Get it right and score <b>+' + pts + " points</b>.</p>" +
@@ -362,7 +362,7 @@
 
   function renderStats() {
     app.innerHTML =
-      '<div class="dmls-card dmls-stats">' +
+      '<div class="dmls-card dmls-anim-in dmls-stats">' +
       '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">My Stats</h2>' +
       '<p class="dmls-sub">Loading your history…</p>' +
@@ -384,7 +384,7 @@
 
   function renderStatsError() {
     app.innerHTML =
-      '<div class="dmls-card dmls-stats">' +
+      '<div class="dmls-card dmls-anim-in dmls-stats">' +
       '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">My Stats</h2>' +
       '<p class="dmls-sub">Couldn’t load your stats right now — check your connection and try again.</p>' +
@@ -419,7 +419,7 @@
       : '<p class="dmls-sub" style="margin-top:16px">No games logged yet — play one to get started!</p>';
 
     app.innerHTML =
-      '<div class="dmls-card dmls-stats">' +
+      '<div class="dmls-card dmls-anim-in dmls-stats">' +
       '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">My Stats</h2>' +
       tiles +
@@ -492,11 +492,11 @@
     }
 
     app.innerHTML =
-      '<div class="dmls-card dmls-winner">' +
+      '<div class="dmls-card dmls-anim-in dmls-winner">' +
       '<div class="dmls-win-main">' +
       '<p class="dmls-win-eyebrow">The winner is…</p>' +
       '<div class="dmls-win-name">' + winNames + "!</div>" +
-      '<p class="dmls-win-pts">' + (winners.length > 1 ? "each " : "") + "with <b>" + top + " points</b>!" + (meWon ? " That’s you!" : "") + "</p>" +
+      '<p class="dmls-win-pts">' + (winners.length > 1 ? "each " : "") + "with <b>" + top + " points</b>!" + (meWon ? " Hi " + esc(CUSTOMER.firstName || "there") + ", you won!" : "") + "</p>" +
       (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" width="220" loading="lazy">' : "") +
       '<ul class="dmls-board">' + board + "</ul>" +
       '<div class="dmls-nav dmls-nav-winner">' +
