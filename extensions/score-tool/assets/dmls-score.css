@@ -26,7 +26,7 @@
 }
 #dmls-root.dmls-wide { max-width: 1040px; }
 #dmls-root *, #dmls-root *::before, #dmls-root *::after { box-sizing: border-box; }
-#dmls-root button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+ { font: inherit; cursor: pointer; border: 0;  color: inherit; }
 #dmls-root button:focus-visible,
 #dmls-root input:focus-visible,
 #dmls-root a:focus-visible { outline: 3px solid var(--dmls-gold); outline-offset: 2px; }
@@ -72,7 +72,7 @@
   font-size: clamp(28px, 6vw, 40px);
   line-height: 1.12;
   font-weight: 400;
-  margin: 8px auto 6px;
+  margin: 8px auto 6px; padding-top:15px;
   max-width: 100%;
 }
 .dmls-sub {
@@ -145,7 +145,7 @@
 .dmls-chips .dmls-tag { font-size: 10.5px; color: var(--dmls-green); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
 .dmls-chips button {
   width: 22px; height: 22px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15); font-size: 13px; line-height: 1; color: var(--dmls-ink-dim);
+  background: rgba(255, 255, 255, 0.15); font-size: 13px !important; line-height: 1; color: var(--dmls-ink-dim);
 }
 .dmls-chips button:hover { background: var(--dmls-coral); color: #fff; }
 
@@ -196,7 +196,7 @@
 .dmls-nav-winner { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 26px; }
 .dmls-nav-winner .dmls-btn { flex: 0 1 160px; padding: 15px 20px; font-size: 16px; letter-spacing: 0.02em; }
 .dmls-nav-winner .dmls-btn-go { box-shadow: 0 8px 20px rgba(128, 210, 53, 0.3); }
-.dmls-nav-winner .dmls-btn-ghost { border-width: 2px; }
+.dmls-nav-winner .dmls-btn-ghost { border-width: 2px; background: rgba(255, 255, 255, 0.06); color: var(--dmls-ink-dim); }
 .dmls-board { margin: 28px auto 0; max-width: 330px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
 .dmls-board li {
   display: flex; align-items: center; justify-content: center; gap: 12px;
