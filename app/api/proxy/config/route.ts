@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
         guessPoints: settings.guessEnabled ? settings.guessPoints : 0,
         loggedIn: Boolean(params.logged_in_customer_id),
         images,
+        tipText: settings.tipText,
       },
       { headers: HEADERS }
     );

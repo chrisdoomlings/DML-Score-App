@@ -18,13 +18,16 @@ interface Settings {
   guessGapMax: number;
   guessEveryN: number;
   images: Record<string, string>;
+  tipText: string;
 }
 
 const IMAGE_FIELDS: { key: string; label: string }[] = [
+  { key: "logo", label: "Home screen logo" },
   { key: "characters", label: "Welcome screen character art" },
   { key: "winner", label: "Winner reveal art" },
   { key: "bg", label: "Background (main screens)" },
   { key: "bgExp", label: "Background (expansion-points screen)" },
+  { key: "bgWinner", label: "Background (winner reveal screen)" },
   { key: "worldsend", label: "World's End symbol icon" },
   { key: "compass", label: "Compass Star icon" },
   { key: "drop", label: "Drop of Life icon" },
@@ -215,6 +218,17 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
+          </section>
+
+          <section className="dml-card dml-card-wide">
+            <h2 className="dml-card-title">Home screen tip</h2>
+            <p className="dml-card-hint">
+              Shown in a small banner under the welcome card. Leave blank to hide it.
+            </p>
+            <input
+              className="dml-input" type="text" maxLength={280} value={settings.tipText}
+              onChange={(e) => setSettings({ ...settings, tipText: e.target.value })}
+            />
           </section>
 
           <section className="dml-card dml-card-wide">

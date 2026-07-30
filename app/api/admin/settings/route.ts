@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       guessGapMax: body.guessGapMax,
       guessEveryN: body.guessEveryN,
       images: body.images,
+      tipText: body.tipText,
     });
     return NextResponse.json({ settings });
   } catch (err) {

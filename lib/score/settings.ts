@@ -10,6 +10,8 @@ export const IMAGE_KEYS = [
   "winner",
   "bg",
   "bgExp",
+  "logo",
+  "bgWinner",
 ] as const;
 
 export type ImageKey = (typeof IMAGE_KEYS)[number];
@@ -22,7 +24,8 @@ export interface ScoreSettings {
   guessPoints: number;
   guessGapMax: number; // max point gap between 1st and 2nd for a game to count as "close"
   guessEveryN: number; // offer the mini-game every Nth logged game per customer
-  images: ImageUrls; // empty string per key = use the bundled default asset
+  images: ImageUrls; // empty string per key = use the bundled default asset ("logo" has no default — empty hides it)
+  tipText: string; // shown in the home-screen tip bar; empty = hidden
 }
 
 const DEFAULTS = {
@@ -31,10 +34,11 @@ const DEFAULTS = {
   guessPoints: 10,
   guessGapMax: 10,
   guessEveryN: 3,
+  tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
 };
 
 const EMPTY_IMAGES: ImageUrls = {
-  worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", bg: "", bgExp: "",
+  worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", bg: "", bgExp: "", logo: "", bgWinner: "",
 };
 
 export async function getSettings(shop: string): Promise<ScoreSettings> {
@@ -55,6 +59,9 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageWinner: string;
       imageBg: string;
       imageBgExp: string;
+      imageLogo: string;
+      imageBgWinner: string;
+      tipText: string;
     }[]
   >`
     SELECT points_per_game AS "pointsPerGame",
@@ -70,7 +77,10 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_characters AS "imageCharacters",
            image_winner     AS "imageWinner",
            image_bg         AS "imageBg",
-           image_bg_exp     AS "imageBgExp"
+           image_bg_exp     AS "imageBgExp",
+           image_logo       AS "imageLogo",
+           image_bg_winner  AS "imageBgWinner",
+           tip_text         AS "tipText"
     FROM score_settings WHERE shop = ${shop}
   `;
   const r = rows[0];
@@ -81,6 +91,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     guessPoints: r?.guessPoints ?? DEFAULTS.guessPoints,
     guessGapMax: r?.guessGapMax ?? DEFAULTS.guessGapMax,
     guessEveryN: r?.guessEveryN ?? DEFAULTS.guessEveryN,
+    tipText: r?.tipText ?? DEFAULTS.tipText,
     images: r
       ? {
           worldsend: r.imageWorldsend ?? "",
@@ -91,6 +102,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
           winner: r.imageWinner ?? "",
           bg: r.imageBg ?? "",
           bgExp: r.imageBgExp ?? "",
+          logo: r.imageLogo ?? "",
+          bgWinner: r.imageBgWinner ?? "",
         }
       : EMPTY_IMAGES,
   };
@@ -112,17 +125,20 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     guessGapMax: clampInt(s.guessGapMax ?? current.guessGapMax, 0, 9_999),
     guessEveryN: clampInt(s.guessEveryN ?? current.guessEveryN, 1, 100),
     images: nextImages,
+    tipText: typeof s.tipText === "string" ? s.tipText.trim().slice(0, 280) : current.tipText,
   };
   const db = getDb();
   await db`
     INSERT INTO score_settings (
       shop, points_per_game, milestones, guess_enabled, guess_points, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
+      image_logo, image_bg_winner, tip_text,
       updated_at
     )
     VALUES (
       ${shop}, ${next.pointsPerGame}, ${jsonb(next.milestones)}, ${next.guessEnabled}, ${next.guessPoints}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
+      ${next.images.logo}, ${next.images.bgWinner}, ${next.tipText},
       NOW()
     )
     ON CONFLICT (shop) DO UPDATE SET
@@ -140,6 +156,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_winner     = EXCLUDED.image_winner,
       image_bg         = EXCLUDED.image_bg,
       image_bg_exp     = EXCLUDED.image_bg_exp,
+      image_logo       = EXCLUDED.image_logo,
+      image_bg_winner  = EXCLUDED.image_bg_winner,
+      tip_text         = EXCLUDED.tip_text,
       updated_at       = NOW()
   `;
   return next;

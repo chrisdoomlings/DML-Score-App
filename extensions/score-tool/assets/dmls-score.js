@@ -25,6 +25,7 @@
   var productsEl = document.getElementById("dmls-products");
   var heading = root.getAttribute("data-heading") || "Ready to see who won the game?";
   var signupUrl = root.getAttribute("data-signup-url") || "/account/register";
+  var homeTip = ""; // populated from /config; empty = tip bar hidden
 
   var state = {
     screen: 0,
@@ -159,13 +160,15 @@
   function renderWelcome() {
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in">' +
+      (ICONS.logo ? '<img class="dmls-logo" src="' + ICONS.logo + '" alt="" loading="lazy">' : "") +
       (ICONS.characters ? '<img class="dmls-hero" src="' + ICONS.characters + '" alt="" width="360" loading="lazy">' : "") +
       '<h2 class="dmls-title">' + esc(heading) + "</h2>" +
       '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
       (hasResume ? '<div class="dmls-resume">You have a game in progress. <button type="button" id="dmls-resume">Resume it</button></div>' : "") +
       '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-start">Start scoring</button><span class="dmls-spacer"></span></div>' +
       (CUSTOMER ? '<div class="dmls-welcome-links"><button type="button" class="dmls-btn-link" id="dmls-mystats">My Stats</button></div>' : "") +
-      "</div>";
+      "</div>" +
+      (homeTip ? '<div class="dmls-tip"><span class="dmls-tip-icon" aria-hidden="true">i</span><p>' + esc(homeTip) + "</p></div>" : "");
     document.getElementById("dmls-start").addEventListener("click", function () {
       state.players = [];
       lastResult = null;
@@ -525,13 +528,6 @@
     var winNames = winners.map(function (p) { return esc(p.name); }).join(' <span class="dmls-amp">&amp;</span> ');
     var meWon = winners.some(function (p) { return p.isCustomer; });
 
-    var board = ranked.map(function (p, i) {
-      return '<li class="' + (total(p) === top ? "dmls-first" : "") + '">' +
-        '<span class="dmls-rank">' + (i + 1) + "</span>" +
-        '<span class="dmls-bn">' + esc(p.name) + (p.isCustomer ? ' <span style="color:var(--dmls-green);font-size:11px;font-weight:700"> YOU</span>' : "") + "</span>" +
-        '<span class="dmls-bp">' + total(p) + " pts</span></li>";
-    }).join("");
-
     var loyaltyHTML;
     if (CUSTOMER) {
       var basePts = lastResult && lastResult.pointsAwarded ? lastResult.pointsAwarded : 0;
@@ -579,14 +575,17 @@
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-winner">' +
       '<div class="dmls-win-main">' +
-      '<p class="dmls-win-eyebrow">The winner is…</p>' +
-      '<div class="dmls-win-name">' + winNames + "!</div>" +
-      '<p class="dmls-win-pts">' + (winners.length > 1 ? "each " : "") + "with <b>" + top + " points</b>!" + (meWon ? " Hi " + esc(cap(CUSTOMER.firstName) || "there") + ", you won!" : "") + "</p>" +
-      (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" width="220" loading="lazy">' : "") +
-      '<ul class="dmls-board">' + board + "</ul>" +
-      '<div class="dmls-nav dmls-nav-winner">' +
-      '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-rematch">Rematch!</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-new">New players</button>' +
+      (ICONS.logo ? '<img class="dmls-win-logo" src="' + ICONS.logo + '" alt="" loading="lazy">' : "") +
+      '<div class="dmls-win-badges">' +
+      '<span class="dmls-win-badge dmls-win-badge-name">' + winNames + "</span>" +
+      '<span class="dmls-win-badge dmls-win-badge-msg">WON THE END OF THE WORLD!!!!!!</span>' +
+      "</div>" +
+      (meWon ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
+      (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" loading="lazy">' : "") +
+      '<button type="button" class="dmls-btn dmls-btn-go dmls-win-cta" id="dmls-cta"></button>' +
+      '<div class="dmls-win-arrows">' +
+      '<button type="button" class="dmls-arrow" id="dmls-arrow-prev" aria-label="Previous option">&lsaquo;</button>' +
+      '<button type="button" class="dmls-arrow dmls-arrow-next" id="dmls-arrow-next" aria-label="Next option">&rsaquo;</button>' +
       "</div></div>" +
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
       "</div>";
@@ -600,21 +599,44 @@
     }
 
     app.addEventListener("click", winnerClicks);
-    document.getElementById("dmls-rematch").addEventListener("click", function () {
+
+    // Rematch / New players share one CTA button; the arrows cycle between
+    // the two so the screen reads as a single clean action instead of a
+    // crowded two-button row.
+    function doRematch() {
       state.players.forEach(function (p) { p.we = 0; p.fv = 0; p.bp = 0; p.mp = 0; });
       lastResult = null;
       guessResult = null;
       state.screen = 2;
       save();
       render();
-    });
-    document.getElementById("dmls-new").addEventListener("click", function () {
+    }
+    function doNewPlayers() {
       state.players = [];
       lastResult = null;
       guessResult = null;
       state.screen = 1;
       save();
       render();
+    }
+    var ctaActions = [
+      { label: "Rematch!", run: doRematch },
+      { label: "New players", run: doNewPlayers },
+    ];
+    var ctaIndex = 0;
+    var ctaBtn = document.getElementById("dmls-cta");
+    function bindCta() {
+      ctaBtn.textContent = ctaActions[ctaIndex].label;
+      ctaBtn.onclick = ctaActions[ctaIndex].run;
+    }
+    bindCta();
+    document.getElementById("dmls-arrow-prev").addEventListener("click", function () {
+      ctaIndex = (ctaIndex + ctaActions.length - 1) % ctaActions.length;
+      bindCta();
+    });
+    document.getElementById("dmls-arrow-next").addEventListener("click", function () {
+      ctaIndex = (ctaIndex + 1) % ctaActions.length;
+      bindCta();
     });
 
     confettiBurst();
@@ -694,18 +716,23 @@
       // no re-render needed, the browser repaints whatever's on screen.
       if (images.bg) root.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")');
       if (images.bgExp) root.style.setProperty("--dmls-bg-exp-url", 'url("' + images.bgExp + '")');
+      if (images.bgWinner) root.style.setProperty("--dmls-bg-winner-url", 'url("' + images.bgWinner + '")');
       // Everything else is baked into already-rendered HTML strings — merge
       // into ICONS so any future render() picks up the override, and only
       // force an immediate re-render if we're still on the one screen
       // (welcome) that already painted with the old default.
-      var iconChanged = false;
+      var needsRerender = false;
       for (var key in images) {
-        if (key !== "bg" && key !== "bgExp" && images[key] && ICONS[key] !== images[key]) {
+        if (key !== "bg" && key !== "bgExp" && key !== "bgWinner" && images[key] && ICONS[key] !== images[key]) {
           ICONS[key] = images[key];
-          iconChanged = true;
+          needsRerender = true;
         }
       }
-      if (iconChanged && state.screen === 0) render();
+      if (typeof c.tipText === "string" && c.tipText !== homeTip) {
+        homeTip = c.tipText;
+        needsRerender = true;
+      }
+      if (needsRerender && state.screen === 0) render();
     })
     .catch(function () { /* tool works without config */ });
 
