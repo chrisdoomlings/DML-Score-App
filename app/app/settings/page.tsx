@@ -54,11 +54,11 @@ export default function SettingsPage() {
   const [uploadErr, setUploadErr] = useState("");
 
   useEffect(() => {
-    authedFetch("/api/admin/settings").then((r) => {
+    authedFetch("/api/admin/settings").then(async (r) => {
       if (r.status === 401) { setAuthError(true); return; }
-      return r.json();
-    }).then((d) => {
-      if (d?.settings) { setSettings(d.settings); setSaved(d.settings); }
+      const d = await r.json().catch(() => null);
+      if (d?.settings) { setSettings(d.settings); setSaved(d.settings); return; }
+      throw new Error(d?.error ?? `Server returned ${r.status}`);
     }).catch((e) => setLoadError(String(e?.message ?? e)));
   }, []);
 

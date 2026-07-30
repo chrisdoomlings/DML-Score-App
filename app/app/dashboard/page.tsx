@@ -62,11 +62,12 @@ export default function DashboardPage() {
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    authedFetch("/api/admin/summary").then((r) => {
+    authedFetch("/api/admin/summary").then(async (r) => {
       if (r.status === 401) { setAuthError(true); return; }
-      return r.json();
-    }).then((d) => d && setSummary(d.shop ? d : null))
-      .catch((e) => setLoadError(String(e?.message ?? e)));
+      const d = await r.json().catch(() => null);
+      if (d?.shop) { setSummary(d); return; }
+      throw new Error(d?.error ?? `Server returned ${r.status}`);
+    }).catch((e) => setLoadError(String(e?.message ?? e)));
   }, []);
 
   if (authError) return <CenteredMessage>This app must be opened from your Shopify admin.</CenteredMessage>;
