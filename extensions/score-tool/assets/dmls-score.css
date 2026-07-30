@@ -51,12 +51,21 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  /* Keeps the card (and the back/next bar) a steady height across 2–8
-     players instead of jumping around — see .dmls-scores below, which is
-     the piece that actually grows/shrinks with player count. */
-  min-height: 480px;
+  /* Every screen (welcome, players, the four score steps, guess, winner,
+     stats) shares this one height, so the card never jumps size when you
+     move between them or when player count changes. clamp() keeps it from
+     exceeding the viewport on short phones. .dmls-card-body (below) is the
+     part that actually scrolls when a screen's content is taller than this;
+     .dmls-nav/.dmls-win-arrows sit outside it and stay pinned at the bottom. */
+  height: clamp(460px, 72vh, 640px);
   display: flex;
   flex-direction: column;
+}
+.dmls-card-body {
+  flex: 1 1 auto;
+  min-height: 0; /* lets this shrink below its content size so overflow-y can kick in */
+  overflow-y: auto;
+  padding-right: 2px; /* keeps the scrollbar (where visible) off the text */
 }
 /* expansion-points step gets its own art (client spec, May 2026) */
 .dmls-card-exp {
@@ -123,10 +132,10 @@
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
-/* margin-top: auto pins the nav to the card's bottom edge (.dmls-card is a
-   flex column with a min-height) so the back/next bar sits in the same
-   place whether a step has 2 players or 8. */
-.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; padding-top: 30px; }
+/* flex: none keeps this pinned at its natural size at the bottom of the
+   fixed-height card — .dmls-card-body's flex: 1 1 auto is what pushes it
+   there by consuming all the leftover space above it. */
+.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: none; margin-top: 16px; }
 .dmls-nav .dmls-spacer { flex: 1; }
 
 /* players */
@@ -178,12 +187,10 @@
 }
 .dmls-chips button:hover { background: var(--dmls-coral); color: #fff; }
 
-/* score rows — capped so a big-player-count game (up to 8) scrolls inside
-   the card instead of stretching it past the fixed-feeling min-height. */
-.dmls-scores {
-  margin: 16px 0 2px; display: flex; flex-direction: column; gap: 9px;
-  max-height: 46vh; overflow-y: auto; padding-right: 2px;
-}
+/* score rows — .dmls-card-body (the shared scroll container) is what
+   handles overflow now, so a big-player-count game just scrolls the whole
+   body rather than this list scrolling on its own inside it. */
+.dmls-scores { margin: 16px 0 2px; display: flex; flex-direction: column; gap: 9px; }
 .dmls-scores li {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
@@ -315,11 +322,13 @@
 /* confetti */
 #dmls-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 9998; }
 
-/* winner desktop layout */
+/* winner desktop layout — the grid lives on .dmls-card-body (the scrollable
+   region) now, not on .dmls-card itself, since .dmls-card is just the
+   fixed-height flex column wrapper. */
 @media (min-width: 920px) {
-  #dmls-root.dmls-wide .dmls-card.dmls-winner {
+  #dmls-root.dmls-wide .dmls-card.dmls-winner { padding: 34px 34px 38px; }
+  #dmls-root.dmls-wide .dmls-card.dmls-winner .dmls-card-body {
     display: grid; grid-template-columns: 1.4fr 1fr; gap: 34px; align-items: start;
-    padding: 34px 34px 38px;
   }
   #dmls-root.dmls-wide .dmls-widgets { margin-top: 0; }
   /* The bleed-to-card-edge trick only reads right in a single full-width
@@ -348,7 +357,7 @@
 }
 
 /* pre-JS skeleton, replaced the instant dmls-score.js runs its first render() */
-.dmls-skeleton { padding: 26px 22px 30px; }
+.dmls-skeleton { justify-content: center; padding: 26px 22px 30px; }
 .dmls-skel-bar {
   height: 14px; border-radius: 7px; margin: 0 auto;
   background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.18), rgba(255,255,255,0.08));
@@ -367,7 +376,10 @@
 }
 
 /* --- counting interstitial + Guess Who Won? mini-game (phase 2) --- */
-.dmls-counting { padding-top: 46px; padding-bottom: 52px; }
+/* No .dmls-card-body/.dmls-nav split here (transient, <3s, no footer) — just
+   center its short content in the fixed-height card instead of leaving it
+   stuck to the top with blank space below. */
+.dmls-counting { justify-content: center; padding-top: 46px; padding-bottom: 52px; }
 .dmls-count-dots { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
 .dmls-count-dots i {
   width: 12px; height: 12px; border-radius: 50%;
@@ -444,19 +456,21 @@
 .dmls-hist-pbtn:hover:not(:disabled) { color: var(--dmls-ink); }
 .dmls-hist-pbtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-/* my stats desktop layout — tiles left, recent games right */
+/* my stats desktop layout — tiles left, recent games right. The grid lives
+   on .dmls-card-body; .dmls-nav stays outside it, pinned at the card's
+   bottom edge same as every other screen. */
 @media (min-width: 920px) {
-  #dmls-root.dmls-wide .dmls-card.dmls-stats {
+  #dmls-root.dmls-wide .dmls-card.dmls-stats { padding: 34px 34px 38px; }
+  #dmls-root.dmls-wide .dmls-card.dmls-stats .dmls-card-body {
     display: grid; grid-template-columns: 1fr 1.3fr;
-    grid-template-areas: "head head" "tiles hist" "nav nav";
-    gap: 4px 34px; align-items: start; padding: 34px 34px 38px;
+    grid-template-areas: "head head" "tiles hist";
+    gap: 4px 34px; align-items: start;
   }
   #dmls-root.dmls-wide .dmls-stats .dmls-eyebrow,
   #dmls-root.dmls-wide .dmls-stats .dmls-title { grid-area: head; }
   #dmls-root.dmls-wide .dmls-stats .dmls-stat-grid { grid-area: tiles; }
   #dmls-root.dmls-wide .dmls-stats .dmls-hist-wrap,
   #dmls-root.dmls-wide .dmls-stats .dmls-sub { grid-area: hist; }
-  #dmls-root.dmls-wide .dmls-stats .dmls-nav { grid-area: nav; margin-top: 26px; }
 }
 
 

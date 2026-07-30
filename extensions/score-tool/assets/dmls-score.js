@@ -166,13 +166,15 @@
   function renderWelcome() {
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in">' +
+      '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
       (ICONS.characters ? '<img class="dmls-hero" src="' + ICONS.characters + '" alt="" width="360" loading="lazy">' : "") +
       '<h2 class="dmls-title">' + esc(heading) + "</h2>" +
       '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
       (hasResume ? '<div class="dmls-resume">You have a game in progress. <button type="button" id="dmls-resume">Resume it</button></div>' : "") +
-      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-start">Start scoring</button><span class="dmls-spacer"></span></div>' +
       (CUSTOMER ? '<div class="dmls-welcome-links"><button type="button" class="dmls-btn-link" id="dmls-mystats">My Stats</button></div>' : "") +
+      "</div>" +
+      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-start">Start scoring</button><span class="dmls-spacer"></span></div>' +
       "</div>" +
       (homeTip ? '<div class="dmls-tip"><span class="dmls-tip-icon" aria-hidden="true">i</span><p>' + esc(homeTip) + "</p></div>" : "");
     document.getElementById("dmls-start").addEventListener("click", function () {
@@ -220,6 +222,7 @@
 
     app.innerHTML =
       '<div class="dmls-card' + (quiet ? "" : " dmls-anim-in") + '">' +
+      '<div class="dmls-card-body">' +
       dots(0) +
       '<h2 class="dmls-title">Enter everyone’s names!</h2>' +
       (CUSTOMER
@@ -230,6 +233,7 @@
       '<div class="dmls-player-progress">' +
       '<span class="dmls-player-progress-track"><span class="dmls-player-progress-fill" style="width:' + pct + '%"></span></span>' +
       '<span class="dmls-hint">' + state.players.length + " of 8 players" + (enough ? "" : " · add at least 2") + "</span>" +
+      "</div>" +
       "</div>" +
       '<div class="dmls-nav">' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-back">Back</button>' +
@@ -286,11 +290,13 @@
 
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in' + (st.exp ? " dmls-card-exp" : "") + '">' +
+      '<div class="dmls-card-body">' +
       dots(stepNo) +
       '<p class="dmls-eyebrow">Step ' + stepNo + " of 4" + (n === 5 ? " · optional" : "") + "</p>" +
       '<h2 class="dmls-title">' + st.title + "</h2>" +
       '<p class="dmls-sub">' + st.sub + "</p>" +
       '<ul class="dmls-scores" id="dmls-rows">' + rows + "</ul>" +
+      "</div>" +
       '<div class="dmls-nav">' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-back">Back</button>' +
       (n === 5 ? '<button type="button" class="dmls-btn-link" id="dmls-skip">Skip</button>' : '<span class="dmls-spacer"></span>') +
@@ -390,10 +396,12 @@
 
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-guess">' +
+      '<div class="dmls-card-body">' +
       '<p class="dmls-eyebrow">Mini-game · too close to call!</p>' +
       '<h2 class="dmls-title">GUESS WHO WON?</h2>' +
       '<p class="dmls-sub">Get it right and score <b>+' + pts + " points</b>.</p>" +
       '<div class="dmls-guess-grid" id="dmls-guess-grid">' + buttons + "</div>" +
+      "</div>" +
       '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn-link" id="dmls-guess-skip">Skip — just show the winner</button><span class="dmls-spacer"></span></div>' +
       "</div>";
 
@@ -426,9 +434,11 @@
   function renderStats() {
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-stats">' +
+      '<div class="dmls-card-body">' +
       '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">My Stats</h2>' +
       '<p class="dmls-sub">Loading your history…</p>' +
+      "</div>" +
       '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
       "</div>";
     document.getElementById("dmls-stats-back").addEventListener("click", goHome);
@@ -448,9 +458,11 @@
   function renderStatsError() {
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-stats">' +
+      '<div class="dmls-card-body">' +
       '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">My Stats</h2>' +
       '<p class="dmls-sub">Couldn’t load your stats right now — check your connection and try again.</p>' +
+      "</div>" +
       '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
       "</div>";
     document.getElementById("dmls-stats-back").addEventListener("click", goHome);
@@ -506,10 +518,12 @@
 
       app.innerHTML =
         '<div class="dmls-card dmls-anim-in dmls-stats">' +
+        '<div class="dmls-card-body">' +
         '<p class="dmls-eyebrow">Your Doomlings career</p>' +
         '<h2 class="dmls-title">My Stats</h2>' +
         tiles +
         history +
+        "</div>" +
         '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
         "</div>";
       document.getElementById("dmls-stats-back").addEventListener("click", goHome);
@@ -580,6 +594,7 @@
 
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-winner">' +
+      '<div class="dmls-card-body">' +
       '<div class="dmls-win-main">' +
       logoHTML("dmls-win-logo") +
       '<div class="dmls-win-badges">' +
@@ -594,7 +609,7 @@
       '<button type="button" class="dmls-arrow dmls-arrow-next" id="dmls-arrow-next" aria-label="Next option">&rsaquo;</button>' +
       "</div></div>" +
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
-      "</div>";
+      "</div></div>";
 
     // Move Liquid-rendered products into the widgets column and show them
     var widgets = document.getElementById("dmls-widgets");
