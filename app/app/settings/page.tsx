@@ -20,6 +20,7 @@ interface Settings {
   images: Record<string, string>;
   tipText: string;
   logoWidth: number;
+  cardMinHeight: number;
 }
 
 const IMAGE_FIELDS: { key: string; label: string }[] = [
@@ -231,7 +232,18 @@ export default function SettingsPage() {
                   onChange={(e) => setSettings({ ...settings, logoWidth: Number(e.target.value) })}
                 />
               </div>
+              <div>
+                <label className="dml-label">Card minimum height (px)</label>
+                <input
+                  className="dml-input dml-input-sm" type="number" min={300} max={1200} value={settings.cardMinHeight}
+                  onChange={(e) => setSettings({ ...settings, cardMinHeight: Number(e.target.value) })}
+                />
+              </div>
             </div>
+            <p className="dml-card-hint" style={{ marginTop: -4 }}>
+              How tall every screen of the tool is at minimum — a game with more players just grows past
+              this instead of scrolling, so raise it if your players usually have big groups.
+            </p>
             <label className="dml-label" style={{ marginTop: 14 }}>
               Tip banner text (shown under the welcome card — leave blank to hide it)
             </label>

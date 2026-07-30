@@ -52,18 +52,20 @@
   position: relative;
   overflow: hidden;
   /* Every screen (welcome, players, the four score steps, guess, winner,
-     stats) shares this one height, so the card never jumps size when you
-     move between them or when player count changes. clamp() keeps it from
-     exceeding the viewport on short phones. .dmls-card-body (below) is the
-     part that actually scrolls when a screen's content is taller than this;
-     .dmls-nav/.dmls-win-arrows sit outside it and stay pinned at the bottom. */
-  height: clamp(460px, 72vh, 640px);
+     stats) shares this one floor height — admin-configurable via the
+     "Card minimum height" setting, --dmls-card-min-height (falls back to
+     the DB default of 560px if the /config fetch hasn't landed yet) — so
+     the card doesn't look collapsed on short-content screens. It's a floor,
+     not a ceiling: a screen whose content needs more room (e.g. an 8-player
+     game) just grows the card past it rather than scrolling internally. */
+  min-height: var(--dmls-card-min-height, 560px);
   display: flex;
   flex-direction: column;
 }
 .dmls-card-body {
   flex: 1 1 auto;
-  min-height: 0; /* lets this shrink below its content size so overflow-y can kick in */
+  /* Safety net only — in normal use the card has no max-height, so it grows
+     with content and this never has anything to scroll. */
   overflow-y: auto;
   padding-right: 2px; /* keeps the scrollbar (where visible) off the text */
 }
@@ -192,7 +194,7 @@
    body rather than this list scrolling on its own inside it. */
 .dmls-scores { margin: 16px 0 2px; display: flex; flex-direction: column; gap: 9px; }
 .dmls-scores li {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
   background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
   border-radius: 14px; padding: 9px 10px 9px 16px;
 }
