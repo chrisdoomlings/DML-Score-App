@@ -8,8 +8,13 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const shop = await getAdminShop(req);
   if (!shop) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const settings = await getSettings(shop);
-  return NextResponse.json({ settings });
+  try {
+    const settings = await getSettings(shop);
+    return NextResponse.json({ settings });
+  } catch (err) {
+    console.error("[admin/settings GET]", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
