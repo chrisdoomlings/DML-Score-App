@@ -60,22 +60,27 @@
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
 }
 
-.dmls-logo { display: block; max-width: min(220px, 60%); margin: 0 auto 14px; }
+/* width is set inline per the admin's "Logo width" setting — margin:auto keeps
+   it centered regardless of that value; max-width is just an overflow guard. */
+.dmls-logo { display: block; height: auto; max-width: 90%; margin: 0 auto 14px; }
 .dmls-hero { display: block; max-width: min(340px, 78%); margin: 0 auto 4px; }
 
+/* Sits below .dmls-card, on the theme's own page background (not the card's
+   dark gradient) — needs its own fully opaque dark surface, not a translucent
+   overlay, or it washes out to near-invisible on a light page. */
 .dmls-tip {
   display: flex; align-items: center; gap: 12px;
   margin-top: 14px; padding: 14px 16px;
-  background: rgba(0, 0, 0, 0.28); border: 1px solid var(--dmls-line);
-  border-radius: 14px;
+  background: var(--dmls-night); border: 1px solid var(--dmls-line);
+  border-radius: 14px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 .dmls-tip-icon {
   flex: none; width: 24px; height: 24px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.14); color: var(--dmls-gold);
+  background: var(--dmls-gold); color: #3a2c00;
   font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 13px;
   display: flex; align-items: center; justify-content: center;
 }
-.dmls-tip p { margin: 0; font-size: 13px; color: var(--dmls-ink-dim); line-height: 1.4; }
+.dmls-tip p { margin: 0; font-size: 13px; color: var(--dmls-ink); line-height: 1.4; }
 .dmls-title-note { display: block; font-family: "Segoe UI", system-ui, sans-serif; font-size: 15px; color: var(--dmls-ink-dim); letter-spacing: 0; margin-top: 4px; }
 
 .dmls-eyebrow {
@@ -197,7 +202,7 @@
     var(--dmls-bg-winner-url, var(--dmls-bg-url, none)),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
 }
-.dmls-win-logo { display: block; max-width: min(180px, 55%); margin: 0 auto 12px; }
+.dmls-win-logo { display: block; height: auto; max-width: 80%; margin: 0 auto 12px; }
 .dmls-win-badges { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .dmls-win-badge {
   display: inline-block; max-width: 90%;

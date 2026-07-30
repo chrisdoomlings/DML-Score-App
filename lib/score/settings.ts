@@ -26,6 +26,7 @@ export interface ScoreSettings {
   guessEveryN: number; // offer the mini-game every Nth logged game per customer
   images: ImageUrls; // empty string per key = use the bundled default asset ("logo" has no default — empty hides it)
   tipText: string; // shown in the home-screen tip bar; empty = hidden
+  logoWidth: number; // px; applies to the logo on both the home and winner screens
 }
 
 const DEFAULTS = {
@@ -35,6 +36,7 @@ const DEFAULTS = {
   guessGapMax: 10,
   guessEveryN: 3,
   tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
+  logoWidth: 220,
 };
 
 const EMPTY_IMAGES: ImageUrls = {
@@ -62,6 +64,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageLogo: string;
       imageBgWinner: string;
       tipText: string;
+      logoWidth: number;
     }[]
   >`
     SELECT points_per_game AS "pointsPerGame",
@@ -80,7 +83,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_bg_exp     AS "imageBgExp",
            image_logo       AS "imageLogo",
            image_bg_winner  AS "imageBgWinner",
-           tip_text         AS "tipText"
+           tip_text         AS "tipText",
+           logo_width       AS "logoWidth"
     FROM score_settings WHERE shop = ${shop}
   `;
   const r = rows[0];
@@ -92,6 +96,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     guessGapMax: r?.guessGapMax ?? DEFAULTS.guessGapMax,
     guessEveryN: r?.guessEveryN ?? DEFAULTS.guessEveryN,
     tipText: r?.tipText ?? DEFAULTS.tipText,
+    logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     images: r
       ? {
           worldsend: r.imageWorldsend ?? "",
@@ -126,19 +131,20 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     guessEveryN: clampInt(s.guessEveryN ?? current.guessEveryN, 1, 100),
     images: nextImages,
     tipText: typeof s.tipText === "string" ? s.tipText.trim().slice(0, 280) : current.tipText,
+    logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
   };
   const db = getDb();
   await db`
     INSERT INTO score_settings (
       shop, points_per_game, milestones, guess_enabled, guess_points, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
-      image_logo, image_bg_winner, tip_text,
+      image_logo, image_bg_winner, tip_text, logo_width,
       updated_at
     )
     VALUES (
       ${shop}, ${next.pointsPerGame}, ${jsonb(next.milestones)}, ${next.guessEnabled}, ${next.guessPoints}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
-      ${next.images.logo}, ${next.images.bgWinner}, ${next.tipText},
+      ${next.images.logo}, ${next.images.bgWinner}, ${next.tipText}, ${next.logoWidth},
       NOW()
     )
     ON CONFLICT (shop) DO UPDATE SET
@@ -159,6 +165,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_logo       = EXCLUDED.image_logo,
       image_bg_winner  = EXCLUDED.image_bg_winner,
       tip_text         = EXCLUDED.tip_text,
+      logo_width       = EXCLUDED.logo_width,
       updated_at       = NOW()
   `;
   return next;

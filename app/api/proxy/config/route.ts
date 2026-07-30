@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
         loggedIn: Boolean(params.logged_in_customer_id),
         images,
         tipText: settings.tipText,
+        logoWidth: settings.logoWidth,
       },
       { headers: HEADERS }
     );

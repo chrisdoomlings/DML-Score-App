@@ -26,6 +26,12 @@
   var heading = root.getAttribute("data-heading") || "Ready to see who won the game?";
   var signupUrl = root.getAttribute("data-signup-url") || "/account/register";
   var homeTip = ""; // populated from /config; empty = tip bar hidden
+  var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
+  function logoHTML(cls) {
+    // Width is merchant-set but centering is structural (margin:auto in CSS),
+    // so any width the admin picks stays centered — never make this fill-width.
+    return ICONS.logo ? '<img class="' + cls + '" src="' + ICONS.logo + '" alt="" style="width:' + logoWidth + 'px" loading="lazy">' : "";
+  }
 
   var state = {
     screen: 0,
@@ -160,7 +166,7 @@
   function renderWelcome() {
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in">' +
-      (ICONS.logo ? '<img class="dmls-logo" src="' + ICONS.logo + '" alt="" loading="lazy">' : "") +
+      logoHTML("dmls-logo") +
       (ICONS.characters ? '<img class="dmls-hero" src="' + ICONS.characters + '" alt="" width="360" loading="lazy">' : "") +
       '<h2 class="dmls-title">' + esc(heading) + "</h2>" +
       '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
@@ -575,7 +581,7 @@
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-winner">' +
       '<div class="dmls-win-main">' +
-      (ICONS.logo ? '<img class="dmls-win-logo" src="' + ICONS.logo + '" alt="" loading="lazy">' : "") +
+      logoHTML("dmls-win-logo") +
       '<div class="dmls-win-badges">' +
       '<span class="dmls-win-badge dmls-win-badge-name">' + winNames + "</span>" +
       '<span class="dmls-win-badge dmls-win-badge-msg">WON THE END OF THE WORLD!!!!!!</span>' +
@@ -730,6 +736,10 @@
       }
       if (typeof c.tipText === "string" && c.tipText !== homeTip) {
         homeTip = c.tipText;
+        needsRerender = true;
+      }
+      if (typeof c.logoWidth === "number" && c.logoWidth !== logoWidth) {
+        logoWidth = c.logoWidth;
         needsRerender = true;
       }
       if (needsRerender && state.screen === 0) render();

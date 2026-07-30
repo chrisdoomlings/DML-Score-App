@@ -19,6 +19,7 @@ interface Settings {
   guessEveryN: number;
   images: Record<string, string>;
   tipText: string;
+  logoWidth: number;
 }
 
 const IMAGE_FIELDS: { key: string; label: string }[] = [
@@ -221,10 +222,19 @@ export default function SettingsPage() {
           </section>
 
           <section className="dml-card dml-card-wide">
-            <h2 className="dml-card-title">Home screen tip</h2>
-            <p className="dml-card-hint">
-              Shown in a small banner under the welcome card. Leave blank to hide it.
-            </p>
+            <h2 className="dml-card-title">Home screen</h2>
+            <div className="dml-field-row">
+              <div>
+                <label className="dml-label">Logo width (px)</label>
+                <input
+                  className="dml-input dml-input-sm" type="number" min={40} max={600} value={settings.logoWidth}
+                  onChange={(e) => setSettings({ ...settings, logoWidth: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+            <label className="dml-label" style={{ marginTop: 14 }}>
+              Tip banner text (shown under the welcome card — leave blank to hide it)
+            </label>
             <input
               className="dml-input" type="text" maxLength={280} value={settings.tipText}
               onChange={(e) => setSettings({ ...settings, tipText: e.target.value })}
