@@ -183,7 +183,7 @@ export async function getCustomerStats(shop: string, customerId: string): Promis
              customer_won AS "customerWon", players
       FROM score_games
       WHERE shop = ${shop} AND customer_id = ${customerId}
-      ORDER BY played_at DESC LIMIT 10
+      ORDER BY played_at DESC LIMIT 25
     `,
   ]);
 

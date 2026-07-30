@@ -125,7 +125,7 @@
   }
   var STEPS = [
     null, null,
-    { key: "we", title: "Enter your World's End points. <span class=\"dmls-title-note\">(symbol, etc.)</span>", sub: "Negative score? No minus key needed — just tap <b>−</b>. " + sym("worldsend", "World's End"), min: -99 },
+    { key: "we", title: "Enter your World's End points. <span class=\"dmls-title-note\">(symbol, etc.)</span>", sub: "Negative score? No minus key needed — just tap <b>−</b>.", min: -99 },
     { key: "fv", title: "Enter your Face Value totals.", sub: "Ignore " + sym("compass", "compass star") + " symbols for now.", min: 0 },
     { key: "bp", title: "Enter your Bonus points.", sub: "Drops of life " + sym("drop", "drop of life") + " and suppressed traits " + sym("suppress", "suppress") + ".", min: 0 },
     { key: "mp", title: "Enter Meaning of Life, Magical Merchants, and/or Class Bonus Points!", sub: "Or skip if you played the base game.", min: 0, exp: true },
@@ -449,6 +449,10 @@
 
   function renderStatsData(s) {
     var games = s.recentGames || [];
+    var pageSize = 5;
+    var totalPages = Math.max(1, Math.ceil(games.length / pageSize));
+    var page = 0;
+
     var tiles =
       '<div class="dmls-stat-grid">' +
       '<div class="dmls-stat-tile"><span class="dmls-stat-n">' + (s.gamesLogged || 0) + '</span><span class="dmls-stat-l">Games</span></div>' +
@@ -457,30 +461,57 @@
       '<div class="dmls-stat-tile"><span class="dmls-stat-n">' + (s.points || 0) + '</span><span class="dmls-stat-l">Points</span></div>' +
       "</div>";
 
-    var history = games.length
-      ? '<p class="dmls-hist-title">Recent games</p><ul class="dmls-history">' +
-        games.map(function (g) {
-          var d = new Date(g.playedAt);
-          var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-          return '<li class="' + (g.customerWon ? "dmls-won" : "") + '">' +
-            '<div class="dmls-hist-top">' +
-            '<span class="dmls-hist-date">' + when + "</span>" +
-            (g.customerWon ? '<span class="dmls-hist-badge">WIN</span>' : "") +
-            "</div>" +
-            '<span class="dmls-hist-info">' + esc((g.winnerNames || []).join(" & ")) + " won · " + g.topScore + " pts · " + g.playerCount + " players</span>" +
-            "</li>";
-        }).join("") + "</ul>"
-      : '<p class="dmls-sub" style="margin-top:16px">No games logged yet — play one to get started!</p>';
+    function historyBody() {
+      if (!games.length) {
+        return '<p class="dmls-sub" style="margin-top:16px">No games logged yet — play one to get started!</p>';
+      }
+      var start = page * pageSize;
+      var pageGames = games.slice(start, start + pageSize);
+      var list = '<ul class="dmls-history">' + pageGames.map(function (g) {
+        var d = new Date(g.playedAt);
+        var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        return '<li class="' + (g.customerWon ? "dmls-won" : "") + '">' +
+          '<div class="dmls-hist-top">' +
+          '<span class="dmls-hist-date">' + when + "</span>" +
+          (g.customerWon ? '<span class="dmls-hist-badge">WIN</span>' : "") +
+          "</div>" +
+          '<span class="dmls-hist-info">' + esc((g.winnerNames || []).join(" & ")) + " won · " + g.topScore + " pts · " + g.playerCount + " players</span>" +
+          "</li>";
+      }).join("") + "</ul>";
+      var pager = totalPages > 1
+        ? '<div class="dmls-hist-pager">' +
+          '<button type="button" class="dmls-hist-pbtn" id="dmls-hist-prev"' + (page === 0 ? " disabled" : "") + '>&larr; Prev</button>' +
+          '<span class="dmls-hist-pageinfo">' + (page + 1) + " / " + totalPages + "</span>" +
+          '<button type="button" class="dmls-hist-pbtn" id="dmls-hist-next"' + (page >= totalPages - 1 ? " disabled" : "") + '>Next &rarr;</button>' +
+          "</div>"
+        : "";
+      return list + pager;
+    }
 
-    app.innerHTML =
-      '<div class="dmls-card dmls-anim-in dmls-stats">' +
-      '<p class="dmls-eyebrow">Your Doomlings career</p>' +
-      '<h2 class="dmls-title">My Stats</h2>' +
-      tiles +
-      history +
-      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
-      "</div>";
-    document.getElementById("dmls-stats-back").addEventListener("click", goHome);
+    function draw() {
+      var history =
+        '<div class="dmls-hist-wrap">' +
+        (games.length ? '<p class="dmls-hist-title">Recent games</p>' : "") +
+        historyBody() +
+        "</div>";
+
+      app.innerHTML =
+        '<div class="dmls-card dmls-anim-in dmls-stats">' +
+        '<p class="dmls-eyebrow">Your Doomlings career</p>' +
+        '<h2 class="dmls-title">My Stats</h2>' +
+        tiles +
+        history +
+        '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-stats-back">Back</button><span class="dmls-spacer"></span></div>' +
+        "</div>";
+      document.getElementById("dmls-stats-back").addEventListener("click", goHome);
+
+      var prevBtn = document.getElementById("dmls-hist-prev");
+      var nextBtn = document.getElementById("dmls-hist-next");
+      if (prevBtn) prevBtn.addEventListener("click", function () { if (page > 0) { page--; draw(); } });
+      if (nextBtn) nextBtn.addEventListener("click", function () { if (page < totalPages - 1) { page++; draw(); } });
+    }
+
+    draw();
   }
 
   /* --- winner --- */
