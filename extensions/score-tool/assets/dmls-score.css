@@ -51,6 +51,12 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  /* Keeps the card (and the back/next bar) a steady height across 2–8
+     players instead of jumping around — see .dmls-scores below, which is
+     the piece that actually grows/shrinks with player count. */
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
 }
 /* expansion-points step gets its own art (client spec, May 2026) */
 .dmls-card-exp {
@@ -117,7 +123,10 @@
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; box-shadow: none; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
-.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 30px; }
+/* margin-top: auto pins the nav to the card's bottom edge (.dmls-card is a
+   flex column with a min-height) so the back/next bar sits in the same
+   place whether a step has 2 players or 8. */
+.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; padding-top: 30px; }
 .dmls-nav .dmls-spacer { flex: 1; }
 
 /* players */
@@ -169,8 +178,12 @@
 }
 .dmls-chips button:hover { background: var(--dmls-coral); color: #fff; }
 
-/* score rows */
-.dmls-scores { margin: 16px 0 2px; display: flex; flex-direction: column; gap: 9px; }
+/* score rows — capped so a big-player-count game (up to 8) scrolls inside
+   the card instead of stretching it past the fixed-feeling min-height. */
+.dmls-scores {
+  margin: 16px 0 2px; display: flex; flex-direction: column; gap: 9px;
+  max-height: 46vh; overflow-y: auto; padding-right: 2px;
+}
 .dmls-scores li {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
