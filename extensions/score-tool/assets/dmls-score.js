@@ -606,6 +606,7 @@
       '<button type="button" class="dmls-btn dmls-btn-go dmls-win-cta" id="dmls-cta"></button>' +
       '<div class="dmls-win-arrows">' +
       '<button type="button" class="dmls-arrow" id="dmls-arrow-prev" aria-label="Previous option">&lsaquo;</button>' +
+      '<span class="dmls-arrow-label" id="dmls-arrow-label"></span>' +
       '<button type="button" class="dmls-arrow dmls-arrow-next" id="dmls-arrow-next" aria-label="Next option">&rsaquo;</button>' +
       "</div></div>" +
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
@@ -646,9 +647,12 @@
     ];
     var ctaIndex = 0;
     var ctaBtn = document.getElementById("dmls-cta");
+    var ctaLabel = document.getElementById("dmls-arrow-label");
     function bindCta() {
       ctaBtn.textContent = ctaActions[ctaIndex].label;
       ctaBtn.onclick = ctaActions[ctaIndex].run;
+      var other = ctaActions[(ctaIndex + 1) % ctaActions.length];
+      ctaLabel.textContent = "or " + other.label.replace(/!$/, "");
     }
     bindCta();
     document.getElementById("dmls-arrow-prev").addEventListener("click", function () {

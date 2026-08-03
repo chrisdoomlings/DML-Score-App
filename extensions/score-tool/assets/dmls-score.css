@@ -237,7 +237,7 @@
 .dmls-win-badge-msg { font-size: clamp(19px, 5.5vw, 25px); line-height: 1.25; }
 .dmls-win-badge .dmls-amp { text-transform: none; }
 .dmls-win-art {
-  display: block; width: 100%; max-width: 260px; height: auto;
+  display: block; width: 100%; max-width: var(--dmls-win-art-size, 260px); height: auto;
   margin: 18px auto 4px;
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.4));
 }
@@ -256,6 +256,10 @@
 .dmls-arrow:hover { background: rgba(255, 255, 255, 0.26); }
 .dmls-arrow-next { background: var(--dmls-green); color: #0d1200; }
 .dmls-arrow-next:hover { filter: brightness(1.08); }
+.dmls-arrow-label {
+  color: rgba(255, 255, 255, 0.6); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
 
 /* widgets */
 .dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; }

@@ -9,7 +9,8 @@
 <div id="dmls-root"
   data-heading="{{ block.settings.heading | escape }}"
   data-signup-url="{{ routes.account_register_url }}"
-  data-login-url="{{ routes.account_login_url }}">
+  data-login-url="{{ routes.account_login_url }}"
+  style="--dmls-win-art-size: {{ block.settings.winner_image_size | default: 260 }}px;">
 
   <div id="dmls-app" aria-live="polite">
     <div class="dmls-card dmls-skeleton" aria-hidden="true">
@@ -84,6 +85,16 @@
       "id": "show_products",
       "label": "Show recommended products on the winner screen",
       "default": true
+    },
+    {
+      "type": "range",
+      "id": "winner_image_size",
+      "label": "Winner image size",
+      "min": 120,
+      "max": 420,
+      "step": 10,
+      "unit": "px",
+      "default": 260
     },
     {
       "type": "collection",
