@@ -28,6 +28,7 @@ export interface ScoreSettings {
   tipText: string; // shown in the home-screen tip bar; empty = hidden
   logoWidth: number; // px; applies to the logo on both the home and winner screens
   cardMinHeight: number; // px; floor height for the score card — grows past this if content needs more room
+  winnerImageSize: number; // px; max-width of the winner reveal art
 }
 
 const DEFAULTS = {
@@ -39,6 +40,7 @@ const DEFAULTS = {
   tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
   logoWidth: 220,
   cardMinHeight: 560,
+  winnerImageSize: 260,
 };
 
 const EMPTY_IMAGES: ImageUrls = {
@@ -68,6 +70,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       tipText: string;
       logoWidth: number;
       cardMinHeight: number;
+      winnerImageSize: number;
     }[]
   >`
     SELECT points_per_game AS "pointsPerGame",
@@ -88,7 +91,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_bg_winner  AS "imageBgWinner",
            tip_text         AS "tipText",
            logo_width       AS "logoWidth",
-           card_min_height  AS "cardMinHeight"
+           card_min_height  AS "cardMinHeight",
+           winner_image_size AS "winnerImageSize"
     FROM score_settings WHERE shop = ${shop}
   `;
   const r = rows[0];
@@ -102,6 +106,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     tipText: r?.tipText ?? DEFAULTS.tipText,
     logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
+    winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
     images: r
       ? {
           worldsend: r.imageWorldsend ?? "",
@@ -138,19 +143,20 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     tipText: typeof s.tipText === "string" ? s.tipText.trim().slice(0, 280) : current.tipText,
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
+    winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
   };
   const db = getDb();
   await db`
     INSERT INTO score_settings (
       shop, points_per_game, milestones, guess_enabled, guess_points, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
-      image_logo, image_bg_winner, tip_text, logo_width, card_min_height,
+      image_logo, image_bg_winner, tip_text, logo_width, card_min_height, winner_image_size,
       updated_at
     )
     VALUES (
       ${shop}, ${next.pointsPerGame}, ${jsonb(next.milestones)}, ${next.guessEnabled}, ${next.guessPoints}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
-      ${next.images.logo}, ${next.images.bgWinner}, ${next.tipText}, ${next.logoWidth}, ${next.cardMinHeight},
+      ${next.images.logo}, ${next.images.bgWinner}, ${next.tipText}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
       NOW()
     )
     ON CONFLICT (shop) DO UPDATE SET
@@ -173,6 +179,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       tip_text         = EXCLUDED.tip_text,
       logo_width       = EXCLUDED.logo_width,
       card_min_height  = EXCLUDED.card_min_height,
+      winner_image_size = EXCLUDED.winner_image_size,
       updated_at       = NOW()
   `;
   return next;

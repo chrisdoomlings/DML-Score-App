@@ -21,6 +21,7 @@ interface Settings {
   tipText: string;
   logoWidth: number;
   cardMinHeight: number;
+  winnerImageSize: number;
 }
 
 const IMAGE_FIELDS: { key: string; label: string }[] = [
@@ -237,6 +238,13 @@ export default function SettingsPage() {
                 <input
                   className="dml-input dml-input-sm" type="number" min={300} max={1200} value={settings.cardMinHeight}
                   onChange={(e) => setSettings({ ...settings, cardMinHeight: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="dml-label">Winner image size (px)</label>
+                <input
+                  className="dml-input dml-input-sm" type="number" min={100} max={500} value={settings.winnerImageSize}
+                  onChange={(e) => setSettings({ ...settings, winnerImageSize: Number(e.target.value) })}
                 />
               </div>
             </div>

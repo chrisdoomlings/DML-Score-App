@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
       tipText: body.tipText,
       logoWidth: body.logoWidth,
       cardMinHeight: body.cardMinHeight,
+      winnerImageSize: body.winnerImageSize,
     });
     return NextResponse.json({ settings });
   } catch (err) {

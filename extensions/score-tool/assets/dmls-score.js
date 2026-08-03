@@ -743,6 +743,7 @@
       if (images.bgExp) root.style.setProperty("--dmls-bg-exp-url", 'url("' + images.bgExp + '")');
       if (images.bgWinner) root.style.setProperty("--dmls-bg-winner-url", 'url("' + images.bgWinner + '")');
       if (typeof c.cardMinHeight === "number") root.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
+      if (typeof c.winnerImageSize === "number") root.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge
       // into ICONS so any future render() picks up the override, and only
       // force an immediate re-render if we're still on the one screen
