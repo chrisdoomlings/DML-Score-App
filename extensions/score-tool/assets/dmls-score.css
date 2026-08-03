@@ -30,7 +30,7 @@
 #dmls-root button:focus-visible,
 #dmls-root input:focus-visible,
 #dmls-root a:focus-visible { outline: 3px solid var(--dmls-gold); outline-offset: 2px; }
-#dmls-root img { max-width: 100%; }
+/* #dmls-root img { max-width: 100%; } */
 #dmls-root ul { list-style: none; margin: 0; padding: 0; }
 
 .dmls-card {
