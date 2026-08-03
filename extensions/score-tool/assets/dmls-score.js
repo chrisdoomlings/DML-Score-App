@@ -153,7 +153,6 @@
       else if (state.screen >= 2 && state.screen <= 5) renderStep(state.screen);
       else if (state.screen === 7) renderStats();
       else renderWinner();
-      root.scrollIntoView({ block: "start", behavior: "auto" });
     };
     // Screen-to-screen navigation only (in-place updates like adding a player
     // or nudging a score call renderX() directly and skip this) — gives a
