@@ -4,7 +4,6 @@ import { Session } from "@shopify/shopify-api";
 import { saveShop } from "@/lib/supabase/shopStore";
 import { sessionStorage } from "@/lib/supabase/sessionStore";
 import { safeEqualHex } from "@/lib/utils/timingSafeEqual";
-import { signShop, COOKIE_NAME, STANDALONE_SESSION_MAX_AGE_SECONDS } from "@/lib/utils/standaloneSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -65,22 +64,10 @@ export async function GET(req: NextRequest) {
     await sessionStorage.storeSession(session);
     await saveShop(shop, { installedAt: new Date().toISOString(), uninstalledAt: null });
 
-    const cookieValue = await signShop(shop);
     const redirectUrl = new URL("/app/dashboard", req.nextUrl.origin);
     redirectUrl.searchParams.set("shop", shop);
 
-    const res = NextResponse.redirect(redirectUrl);
-    res.cookies.set(COOKIE_NAME, cookieValue, {
-      httpOnly: true,
-      secure: true,
-      // Lax, not None: this app is not embedded (no iframe), so the cookie
-      // never needs to travel cross-site — Lax also blocks it on cross-site
-      // POSTs, closing the CSRF gap on /api/admin/* for free.
-      sameSite: "lax",
-      maxAge: STANDALONE_SESSION_MAX_AGE_SECONDS,
-      path: "/",
-    });
-    return res;
+    return NextResponse.redirect(redirectUrl);
   } catch (err) {
     console.error("[auth/callback]", err);
     const shop = req.nextUrl.searchParams.get("shop") ?? "";

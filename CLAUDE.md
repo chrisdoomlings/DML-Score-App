@@ -9,14 +9,14 @@ Reviews & Rewards** — never touch that repo from here; it is the client's crit
 - **Next.js App Router**
 - **`@shopify/shopify-api` v11** — OAuth + session management
 - **`postgres` npm package** — direct PostgreSQL to a DEDICATED Supabase project
-- **HMAC cookie session** — `lib/utils/standaloneSession.ts`, `COOKIE_NAME = "dmlscore_shop"`
+- **Admin auth via Shopify App Bridge session tokens (JWT)** — `lib/utils/adminAuth.ts` + `lib/utils/sessionToken.ts`, verified with `SHOPIFY_API_SECRET` (constant-time HMAC, `exp`/`nbf`/`aud`/`iss`/`dest` all checked)
 - **Shopify App Proxy** — `apps/score` (storefront) → `/api/proxy/*` (server)
 - Admin UI is plain React (no Polaris) — one dashboard page.
 
 ## Layout
 - OAuth: `app/auth/` + `app/auth/callback/` (scope: `read_customers`)
 - Proxy API: `app/api/proxy/` — `config` (GET), `game` (POST), `stats` (GET)
-- Admin API: `app/api/admin/` — `settings`, `summary` (cookie-authed via `lib/utils/adminAuth.ts`)
+- Admin API: `app/api/admin/` — `settings`, `summary`, `analytics`, `upload` (App Bridge JWT-authed via `lib/utils/adminAuth.ts`)
 - Webhooks: `app/api/webhooks/` — `app/uninstalled`
 - Business logic: `lib/score/` — `games.ts` (save/stats), `settings.ts`
 - DB: `lib/supabase/client.ts` + `supabase/migrations/001_initial.sql` (5 tables, all `score_`-prefixed except sessions/shops)
