@@ -61,6 +61,11 @@ export function GlobalStyle() {
       .dml-input:focus { outline: none; border-color: #008060; box-shadow: 0 0 0 3px rgba(0,128,96,0.12); }
       .dml-input-sm { width: 100%; }
       .dml-field-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 18px; }
+      .dml-textarea {
+        width: 100%; padding: 9px 11px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 44px;
+        border: 1px solid #c9cccf; border-radius: 8px; transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .dml-textarea:focus { outline: none; border-color: #008060; box-shadow: 0 0 0 3px rgba(0,128,96,0.12); }
 
       .dml-checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #202223; margin-top: 4px; }
 
@@ -75,6 +80,23 @@ export function GlobalStyle() {
       .dml-milestone-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #8a8d91; padding: 0 0 8px; }
       .dml-milestone-row { padding: 12px 0; border-top: 1px solid #f1f2f3; }
       .dml-milestone-name { font-size: 13px; color: #202223; }
+
+      .dml-achv-list { display: flex; flex-direction: column; }
+      .dml-achv-row {
+        display: grid; grid-template-columns: 24px 72px 1fr; gap: 14px; align-items: start;
+        padding: 16px 0; border-top: 1px solid #f1f2f3;
+      }
+      .dml-achv-row:first-child { border-top: 0; }
+      .dml-achv-row > input[type="checkbox"] { margin-top: 11px; }
+      .dml-achv-icon { width: 72px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+      .dml-achv-icon-thumb {
+        width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
+        background: #f6f6f7; border: 1px solid #e1e3e5; display: flex; align-items: center; justify-content: center;
+      }
+      .dml-achv-icon-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .dml-achv-icon-actions { display: flex; gap: 4px; }
+      .dml-achv-fields { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+      .dml-achv-key { font-size: 11px; color: #8a8d91; font-family: monospace; }
 
       .dml-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
       .dml-image-tile { display: flex; flex-direction: column; gap: 8px; }
@@ -129,6 +151,10 @@ export function GlobalStyle() {
         .dml-milestone-head { display: none; }
         .dml-milestone-row { grid-template-columns: 24px 1fr; row-gap: 8px; }
         .dml-milestone-row input[type="number"] { grid-column: 2; width: 90px; }
+        .dml-achv-row { grid-template-columns: 24px 1fr; row-gap: 10px; }
+        .dml-achv-row > input[type="checkbox"] { grid-row: 1; }
+        .dml-achv-icon { grid-column: 2; flex-direction: row; align-items: center; width: auto; }
+        .dml-achv-fields { grid-column: 1 / -1; }
         .dml-bar-label { width: 90px; }
       }
     `}</style>

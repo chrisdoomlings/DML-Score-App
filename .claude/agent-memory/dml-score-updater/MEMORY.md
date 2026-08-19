@@ -1,0 +1,3 @@
+- [Achievements rebuild status](project_achievements_rebuild.md) — points/milestones replaced by 20-item achievements; Phases 1-4 done, Phases 5-6 (extension modal, admin UI) still pending
+- [Circular import avoidance](pattern_circular_import_avoidance.md) — sanitizeImageUrl lives in lib/score/imageUrl.ts, shared leaf module, don't import it from settings.ts into achievements.ts
+- [Achievement idempotency design](pattern_achievement_idempotency.md) — evaluator is stateless; DB unique constraint + ON CONFLICT DO NOTHING enforces "once ever"; no configurable thresholds

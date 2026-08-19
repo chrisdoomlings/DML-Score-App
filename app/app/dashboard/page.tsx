@@ -9,7 +9,7 @@ interface Summary {
   totalGames: number;
   gamesLast30Days: number;
   gamesWithCustomer: number;
-  totalPoints: number;
+  totalAchievementsUnlocked: number;
   last7Days: { date: string; games: number }[];
   recentGames: { playedAt: string; winnerNames: string[]; topScore: number; playerCount: number }[];
 }
@@ -87,7 +87,7 @@ export default function DashboardPage() {
             <Stat label="Last 30 days" value={summary.gamesLast30Days} />
             <Stat label="By logged-in customers" value={summary.gamesWithCustomer} />
             <Stat label="Signed-in rate" value={`${pct}%`} />
-            <Stat label="Points awarded" value={summary.totalPoints} />
+            <Stat label="Achievements unlocked" value={summary.totalAchievementsUnlocked} />
           </div>
         </section>
 
@@ -104,9 +104,9 @@ export default function DashboardPage() {
         </section>
 
         <section className="dml-card">
-          <h2 className="dml-card-title">Milestones &amp; points</h2>
+          <h2 className="dml-card-title">Achievements</h2>
           <p className="dml-card-hint">
-            Configure how many points a game is worth, which milestone bonuses are active, and
+            Configure which of the 20 achievements are active, their names/descriptions/icons, and
             the &ldquo;Guess Who Won?&rdquo; mini-game.
           </p>
           <a className="dml-btn-secondary dml-btn-sm" href="/app/settings" style={{ display: "inline-block", textDecoration: "none" }}>
@@ -117,7 +117,7 @@ export default function DashboardPage() {
         <section className="dml-card">
           <h2 className="dml-card-title">Deeper insights</h2>
           <p className="dml-card-hint">
-            See which milestones are actually being earned, how the guess mini-game is performing,
+            See which achievements are actually being earned, how the guess mini-game is performing,
             and how many players use expansion content.
           </p>
           <a className="dml-btn-secondary dml-btn-sm" href="/app/analytics" style={{ display: "inline-block", textDecoration: "none" }}>

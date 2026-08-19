@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedProxyParams } from "@/lib/utils/appProxy";
 import { rateLimit } from "@/lib/utils/rateLimit";
-import { sanitizePlayers, saveGame, getCustomerStats } from "@/lib/score/games";
+import { sanitizePlayers, saveGame } from "@/lib/score/games";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const HEADERS = { "Cache-Control": "no-cache, no-store" };
+const LOCAL_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** POST /apps/score/game — save a completed game. Guests allowed (no points). */
+function sanitizeDeviceType(v: unknown): "mobile" | "desktop" | null {
+  return v === "mobile" || v === "desktop" ? v : null;
+}
+
+function sanitizeLocalDate(v: unknown): string | null {
+  return typeof v === "string" && LOCAL_DATE_RE.test(v) ? v : null;
+}
+
+/** POST /apps/score/game — save a completed game. Guests allowed (no achievements). */
 export async function POST(req: NextRequest) {
   const params = getVerifiedProxyParams(req.nextUrl.searchParams, process.env.SHOPIFY_API_SECRET!);
   if (!params) return NextResponse.json({ error: "Invalid signature" }, { status: 403, headers: HEADERS });
@@ -30,8 +39,16 @@ export async function POST(req: NextRequest) {
     // Guests can't claim a seat as "the customer"
     if (!customerId) players.forEach((p) => { p.isCustomer = false; });
 
-    const { game, pointsAwarded, milestones, guessOffered } = await saveGame(shop, customerId, players);
-    const stats = customerId ? await getCustomerStats(shop, customerId) : null;
+    const deviceType = sanitizeDeviceType(body.deviceType);
+    const playedAtLocalDate = sanitizeLocalDate(body.playedAtLocalDate);
+
+    const { game, achievementsUnlocked, guessOffered } = await saveGame(
+      shop,
+      customerId,
+      players,
+      deviceType,
+      playedAtLocalDate
+    );
 
     return NextResponse.json(
       {
@@ -39,12 +56,8 @@ export async function POST(req: NextRequest) {
         gameId: game.id,
         // When the mini-game is offered the reveal is deferred to POST /guess.
         ...(guessOffered ? {} : { winnerNames: game.winnerNames, topScore: game.topScore }),
-        pointsAwarded,
-        milestones,
+        achievementsUnlocked,
         guessOffered,
-        stats: stats
-          ? { gamesLogged: stats.gamesLogged, wins: stats.wins, bestScore: stats.bestScore, points: stats.points }
-          : null,
       },
       { headers: HEADERS }
     );

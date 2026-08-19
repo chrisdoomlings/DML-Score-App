@@ -1,9 +1,7 @@
-import { NextRequest, NextResponse, after } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedProxyParams } from "@/lib/utils/appProxy";
 import { rateLimit } from "@/lib/utils/rateLimit";
 import { getDb, jsonb } from "@/lib/supabase/client";
-import { getSettings } from "@/lib/score/settings";
-import { pushToLoyaltyBridge } from "@/lib/score/loyaltyBridge";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +11,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 /** POST /apps/score/guess — one shot at "Guess Who Won?" for an offered game.
  *  The UPDATE's guess_name IS NULL guard makes the claim atomic: retries,
- *  refreshes, and parallel requests all see zero updated rows. */
+ *  refreshes, and parallel requests all see zero updated rows. No points
+ *  payout — the mechanic is a reveal-timing novelty only. */
 export async function POST(req: NextRequest) {
   const params = getVerifiedProxyParams(req.nextUrl.searchParams, process.env.SHOPIFY_API_SECRET!);
   if (!params) return NextResponse.json({ error: "Invalid signature" }, { status: 403, headers: HEADERS });
@@ -54,26 +53,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { winnerNames, topScore, guessCorrect } = rows[0];
-    let pointsAwarded = 0;
-    if (guessCorrect) {
-      const settings = await getSettings(shop);
-      if (settings.guessPoints > 0) {
-        const inserted = await db<{ id: string }[]>`
-          INSERT INTO score_points_ledger (shop, customer_id, points, reason, game_id)
-          VALUES (${shop}, ${customerId}, ${settings.guessPoints}, 'guess_correct', ${gameId})
-          ON CONFLICT DO NOTHING
-          RETURNING id
-        `;
-        if (inserted.length) {
-          pointsAwarded = settings.guessPoints;
-          const ledgerId = inserted[0].id;
-          after(() => pushToLoyaltyBridge({ shop, customerId, ledgerId, points: settings.guessPoints, reason: "guess_correct" }));
-        }
-      }
-    }
-
     return NextResponse.json(
-      { correct: guessCorrect, winnerNames, topScore, pointsAwarded },
+      { correct: guessCorrect, winnerNames, topScore },
       { headers: HEADERS }
     );
   } catch (err) {

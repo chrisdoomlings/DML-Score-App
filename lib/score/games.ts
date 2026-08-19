@@ -1,8 +1,11 @@
-import { after } from "next/server";
 import { getDb, jsonb } from "@/lib/supabase/client";
 import { getSettings } from "@/lib/score/settings";
-import { evaluateMilestones, milestoneReason, type MilestoneAward } from "@/lib/score/milestones";
-import { pushToLoyaltyBridge } from "@/lib/score/loyaltyBridge";
+import {
+  evaluateAchievements,
+  ACHIEVEMENT_KEYS,
+  type AchievementKey,
+  type AchievementConfig,
+} from "@/lib/score/achievements";
 
 export interface GamePlayer {
   name: string;
@@ -24,15 +27,20 @@ export interface SavedGame {
   players: GamePlayer[];
 }
 
-export interface CustomerStats {
-  gamesLogged: number;
-  wins: number;
-  bestScore: number;
-  points: number;
-  recentGames: SavedGame[];
+export interface AchievementUnlock {
+  key: AchievementKey;
+  name: string;
+  description: string;
+  iconUrl: string | null;
 }
 
-const MAX_PLAYERS = 8;
+export interface AchievementStatus extends AchievementUnlock {
+  unlocked: boolean;
+  unlockedAt: string | null;
+  gameId: string | null;
+}
+
+const MAX_PLAYERS = 12;
 const POINT_MIN = -999;
 const POINT_MAX = 9999;
 
@@ -73,16 +81,18 @@ function clamp(v: unknown): number {
 export async function saveGame(
   shop: string,
   customerId: string | null,
-  players: GamePlayer[]
-): Promise<{ game: SavedGame; pointsAwarded: number; milestones: MilestoneAward[]; guessOffered: boolean }> {
+  players: GamePlayer[],
+  deviceType: "mobile" | "desktop" | null,
+  playedAtLocalDate: string | null
+): Promise<{ game: SavedGame; achievementsUnlocked: AchievementUnlock[]; guessOffered: boolean }> {
   const db = getDb();
   const topScore = Math.max(...players.map((p) => p.total));
   const winnerNames = players.filter((p) => p.total === topScore).map((p) => p.name);
   const customerWon = players.some((p) => p.isCustomer && p.total === topScore);
 
-  let milestones: MilestoneAward[] = [];
   let guessOffered = false;
-  let basePoints = 0;
+  let gamesLoggedBefore = 0;
+  let achievementsConfig: AchievementConfig | null = null;
 
   if (customerId) {
     const [settings, prior] = await Promise.all([
@@ -92,9 +102,8 @@ export async function saveGame(
         WHERE shop = ${shop} AND customer_id = ${customerId}
       `,
     ]);
-    const gamesLoggedBefore = prior[0]?.n ?? 0;
-    basePoints = settings.pointsPerGame;
-    milestones = evaluateMilestones(players, gamesLoggedBefore, settings.milestones);
+    gamesLoggedBefore = prior[0]?.n ?? 0;
+    achievementsConfig = settings.achievements;
 
     // "Close game" = gap between 1st and runner-up within the configured max —
     // but not an all-way tie (guessing would be trivially correct).
@@ -104,15 +113,18 @@ export async function saveGame(
       .reduce((a, b) => Math.max(a, b), -Infinity);
     const closeGame = winnerNames.length < players.length && topScore - runnerUp <= settings.guessGapMax;
     guessOffered =
-      settings.guessEnabled &&
-      settings.guessPoints > 0 &&
-      closeGame &&
-      (gamesLoggedBefore + 1) % settings.guessEveryN === 0;
+      settings.guessEnabled && closeGame && (gamesLoggedBefore + 1) % settings.guessEveryN === 0;
   }
 
   const rows = await db<{ id: string; playedAt: string }[]>`
-    INSERT INTO score_games (shop, customer_id, player_count, winner_names, top_score, customer_won, players, guess_offered)
-    VALUES (${shop}, ${customerId}, ${players.length}, ${jsonb(winnerNames)}, ${topScore}, ${customerWon}, ${jsonb(players)}, ${guessOffered})
+    INSERT INTO score_games (
+      shop, customer_id, player_count, winner_names, top_score, customer_won, players,
+      guess_offered, device_type, played_at_local_date
+    )
+    VALUES (
+      ${shop}, ${customerId}, ${players.length}, ${jsonb(winnerNames)}, ${topScore}, ${customerWon}, ${jsonb(players)},
+      ${guessOffered}, ${deviceType}, ${playedAtLocalDate}
+    )
     RETURNING id, played_at AS "playedAt"
   `;
   const game: SavedGame = {
@@ -125,80 +137,88 @@ export async function saveGame(
     players,
   };
 
-  let pointsAwarded = 0;
-  if (customerId) {
-    if (basePoints > 0) {
+  const achievementsUnlocked: AchievementUnlock[] = [];
+  if (customerId && achievementsConfig) {
+    const candidateKeys = await evaluateAchievements(
+      db,
+      { shop, customerId, players, gamesLoggedBefore, deviceType, playedLocalDate: playedAtLocalDate },
+      achievementsConfig
+    );
+
+    for (const key of candidateKeys) {
+      // Unique constraint makes replays and double-submits no-ops; this is
+      // also what actually enforces "first time only" semantics.
       const inserted = await db<{ id: string }[]>`
-        INSERT INTO score_points_ledger (shop, customer_id, points, reason, game_id)
-        VALUES (${shop}, ${customerId}, ${basePoints}, 'game_logged', ${game.id})
-        ON CONFLICT DO NOTHING
+        INSERT INTO score_achievements_unlocked (shop, customer_id, achievement_key, game_id)
+        VALUES (${shop}, ${customerId}, ${key}, ${game.id})
+        ON CONFLICT (shop, customer_id, achievement_key) DO NOTHING
         RETURNING id
       `;
       if (inserted.length) {
-        pointsAwarded += basePoints;
-        const ledgerId = inserted[0].id;
-        after(() => pushToLoyaltyBridge({ shop, customerId, ledgerId, points: basePoints, reason: "game_logged" }));
+        const def = achievementsConfig[key];
+        achievementsUnlocked.push({ key, name: def.name, description: def.description, iconUrl: def.iconUrl });
       }
     }
-    const kept: MilestoneAward[] = [];
-    for (const m of milestones) {
-      // Unique partial indexes make replays and double-submits no-ops.
-      const inserted = await db<{ id: string }[]>`
-        INSERT INTO score_points_ledger (shop, customer_id, points, reason, game_id)
-        VALUES (${shop}, ${customerId}, ${m.points}, ${milestoneReason(m.key)}, ${game.id})
-        ON CONFLICT DO NOTHING
-        RETURNING id
-      `;
-      if (inserted.length) {
-        kept.push(m);
-        pointsAwarded += m.points;
-        const ledgerId = inserted[0].id;
-        const reason = milestoneReason(m.key);
-        after(() => pushToLoyaltyBridge({ shop, customerId, ledgerId, points: m.points, reason }));
-      }
-    }
-    milestones = kept;
   }
 
-  return { game, pointsAwarded, milestones, guessOffered };
+  return { game, achievementsUnlocked, guessOffered };
 }
 
-export async function getCustomerStats(shop: string, customerId: string): Promise<CustomerStats> {
+/** Merges settings config with this customer's unlock rows — enabled achievements only. */
+export async function getCustomerAchievements(shop: string, customerId: string): Promise<AchievementStatus[]> {
   const db = getDb();
-  const [agg, points, recent] = await Promise.all([
-    db<{ gamesLogged: number; wins: number; bestScore: number | null }[]>`
-      SELECT
-        COUNT(*)::int                              AS "gamesLogged",
-        COUNT(*) FILTER (WHERE customer_won)::int  AS "wins",
-        MAX(top_score)                             AS "bestScore"
-      FROM score_games WHERE shop = ${shop} AND customer_id = ${customerId}
-    `,
-    db<{ total: number | null }[]>`
-      SELECT SUM(points)::int AS total FROM score_points_ledger
+  const [settings, rows] = await Promise.all([
+    getSettings(shop),
+    db<{ achievementKey: string; unlockedAt: string; gameId: string | null }[]>`
+      SELECT achievement_key AS "achievementKey", unlocked_at AS "unlockedAt", game_id AS "gameId"
+      FROM score_achievements_unlocked
       WHERE shop = ${shop} AND customer_id = ${customerId}
-    `,
-    db<{ id: string; playedAt: string; playerCount: number; winnerNames: string[]; topScore: number; customerWon: boolean; players: GamePlayer[] }[]>`
-      SELECT id, played_at AS "playedAt", player_count AS "playerCount",
-             winner_names AS "winnerNames", top_score AS "topScore",
-             customer_won AS "customerWon", players
-      FROM score_games
-      WHERE shop = ${shop} AND customer_id = ${customerId}
-      ORDER BY played_at DESC LIMIT 25
     `,
   ]);
+  const unlockedMap = new Map(rows.map((r) => [r.achievementKey, r]));
 
-  return {
-    gamesLogged: agg[0]?.gamesLogged ?? 0,
-    wins: agg[0]?.wins ?? 0,
-    bestScore: agg[0]?.bestScore ?? 0,
-    points: points[0]?.total ?? 0,
-    recentGames: recent.map((g) => ({ ...g })),
-  };
+  return ACHIEVEMENT_KEYS.filter((key) => settings.achievements[key].enabled).map((key) => {
+    const def = settings.achievements[key];
+    const u = unlockedMap.get(key);
+    return {
+      key,
+      name: def.name,
+      description: def.description,
+      iconUrl: def.iconUrl,
+      unlocked: Boolean(u),
+      unlockedAt: u?.unlockedAt ?? null,
+      gameId: u?.gameId ?? null,
+    };
+  });
+}
+
+/** Recent games for a customer, newest first — full embedded players[] per row. */
+export async function getCustomerHistory(shop: string, customerId: string, limit = 50): Promise<SavedGame[]> {
+  const db = getDb();
+  const rows = await db<
+    {
+      id: string;
+      playedAt: string;
+      playerCount: number;
+      winnerNames: string[];
+      topScore: number;
+      customerWon: boolean;
+      players: GamePlayer[];
+    }[]
+  >`
+    SELECT id, played_at AS "playedAt", player_count AS "playerCount",
+           winner_names AS "winnerNames", top_score AS "topScore",
+           customer_won AS "customerWon", players
+    FROM score_games
+    WHERE shop = ${shop} AND customer_id = ${customerId}
+    ORDER BY played_at DESC LIMIT ${limit}
+  `;
+  return rows.map((g) => ({ ...g }));
 }
 
 export async function getShopSummary(shop: string) {
   const db = getDb();
-  const [games, pointsRow, dailyRows, recentGames] = await Promise.all([
+  const [games, achievementsRow, dailyRows, recentGames] = await Promise.all([
     db<{ total: number; last30: number; identified: number }[]>`
       SELECT
         COUNT(*)::int AS total,
@@ -206,8 +226,8 @@ export async function getShopSummary(shop: string) {
         COUNT(*) FILTER (WHERE customer_id IS NOT NULL)::int AS identified
       FROM score_games WHERE shop = ${shop}
     `,
-    db<{ total: number | null }[]>`
-      SELECT SUM(points)::int AS total FROM score_points_ledger WHERE shop = ${shop}
+    db<{ total: number }[]>`
+      SELECT COUNT(*)::int AS total FROM score_achievements_unlocked WHERE shop = ${shop}
     `,
     db<{ day: unknown; count: number }[]>`
       SELECT played_at::date AS day, COUNT(*)::int AS count
@@ -235,14 +255,14 @@ export async function getShopSummary(shop: string) {
     totalGames: games[0]?.total ?? 0,
     gamesLast30Days: games[0]?.last30 ?? 0,
     gamesWithCustomer: games[0]?.identified ?? 0,
-    totalPoints: pointsRow[0]?.total ?? 0,
+    totalAchievementsUnlocked: achievementsRow[0]?.total ?? 0,
     last7Days,
     recentGames,
   };
 }
 
 export interface ShopAnalytics {
-  milestones: { reason: string; count: number; totalPoints: number }[];
+  achievements: { achievementKey: string; count: number }[];
   guess: { offered: number; played: number; correct: number };
   playerCounts: { playerCount: number; games: number }[];
   expansion: { withExpansion: number; total: number };
@@ -250,12 +270,12 @@ export interface ShopAnalytics {
 
 export async function getShopAnalytics(shop: string): Promise<ShopAnalytics> {
   const db = getDb();
-  const [milestones, guess, playerCounts, expansion] = await Promise.all([
-    db<{ reason: string; count: number; totalPoints: number }[]>`
-      SELECT reason, COUNT(*)::int AS count, SUM(points)::int AS "totalPoints"
-      FROM score_points_ledger
-      WHERE shop = ${shop} AND reason LIKE 'milestone_%'
-      GROUP BY reason ORDER BY count DESC
+  const [achievements, guess, playerCounts, expansion] = await Promise.all([
+    db<{ achievementKey: string; count: number }[]>`
+      SELECT achievement_key AS "achievementKey", COUNT(*)::int AS count
+      FROM score_achievements_unlocked
+      WHERE shop = ${shop}
+      GROUP BY achievement_key ORDER BY count DESC
     `,
     db<{ offered: number; played: number; correct: number }[]>`
       SELECT
@@ -280,7 +300,7 @@ export async function getShopAnalytics(shop: string): Promise<ShopAnalytics> {
   ]);
 
   return {
-    milestones,
+    achievements,
     guess: guess[0] ?? { offered: 0, played: 0, correct: 0 },
     playerCounts,
     expansion: expansion[0] ?? { withExpansion: 0, total: 0 },

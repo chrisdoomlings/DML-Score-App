@@ -3,18 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { authedFetch } from "@/lib/hooks/useAuthedFetch";
 import { CenteredMessage } from "@/components/admin/AdminUI";
+import { DEFAULT_ACHIEVEMENTS, type AchievementKey } from "@/lib/score/achievements";
 
-interface MilestoneRule {
+interface AchievementDef {
   enabled: boolean;
-  points: number;
-  threshold?: number;
+  name: string;
+  description: string;
+  iconUrl: string | null;
 }
 
+type AchievementConfig = Record<string, AchievementDef>;
+
 interface Settings {
-  pointsPerGame: number;
-  milestones: Record<string, MilestoneRule>;
+  achievements: AchievementConfig;
   guessEnabled: boolean;
-  guessPoints: number;
   guessGapMax: number;
   guessEveryN: number;
   images: Record<string, string>;
@@ -37,13 +39,18 @@ const IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "suppress", label: "Suppress icon" },
 ];
 
-const MILESTONE_NAMES: Record<string, string> = {
-  first_game: "First game logged",
-  score_60_plus: "A player scores 60+",
-  players_5_6: "Game played with 5–6 players",
-  meaning_10_plus: "10+ Meaning of Life bonus",
-  drop_of_life_50_plus: "50+ Drop of Life points (off until client confirms rule)",
-};
+// Bee/fish welcome-screen Doomlings, split into normal + hover states so a
+// later frontend pass can animate each independently (continuous bob at
+// different speeds, staggered pop-in). This settings page only stores the
+// art; the animation itself is a separate pass over extensions/score-tool/.
+const CHARACTER_IMAGE_FIELDS: { key: string; label: string }[] = [
+  { key: "beeNormal", label: "Bee Doomling — normal" },
+  { key: "beeHover", label: "Bee Doomling — hover (bob peak)" },
+  { key: "fishNormal", label: "Fish Doomling — normal" },
+  { key: "fishHover", label: "Fish Doomling — hover (bob peak)" },
+];
+
+const ACHIEVEMENT_KEYS_ORDERED = Object.keys(DEFAULT_ACHIEVEMENTS) as AchievementKey[];
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -111,6 +118,37 @@ export default function SettingsPage() {
     setSettings({ ...settings, images: { ...settings.images, [key]: "" } });
   }
 
+  function patchAchievement(key: string, patch: Partial<AchievementDef>) {
+    if (!settings) return;
+    const current = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key as AchievementKey];
+    setSettings({
+      ...settings,
+      achievements: { ...settings.achievements, [key]: { ...current, ...patch } },
+    });
+  }
+
+  async function uploadAchievementIcon(key: string, file: File) {
+    if (!settings) return;
+    const uploadId = `achv:${key}`;
+    setUploading(uploadId);
+    setUploadErr("");
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("imageKey", `achievement:${key}`);
+    const res = await authedFetch("/api/admin/upload", { method: "POST", body: fd });
+    const d = await res.json();
+    setUploading(null);
+    if (d.url) {
+      patchAchievement(key, { iconUrl: d.url });
+    } else {
+      setUploadErr(d.error ?? "Upload failed.");
+    }
+  }
+
+  function clearAchievementIcon(key: string) {
+    patchAchievement(key, { iconUrl: null });
+  }
+
   if (authError) return <CenteredMessage>This app must be opened from your Shopify admin.</CenteredMessage>;
   if (loadError) return <CenteredMessage>Couldn&rsquo;t load: {loadError}</CenteredMessage>;
   if (!settings) return <CenteredMessage>Loading…</CenteredMessage>;
@@ -135,18 +173,10 @@ export default function SettingsPage() {
       <main className="dml-main">
         <div className="dml-grid">
           <section className="dml-card">
-            <h2 className="dml-card-title">Points</h2>
-            <label className="dml-label">Points per game logged (customers only)</label>
-            <input
-              className="dml-input" type="number" min={0} value={settings.pointsPerGame}
-              onChange={(e) => setSettings({ ...settings, pointsPerGame: Number(e.target.value) })}
-            />
-          </section>
-
-          <section className="dml-card">
             <h2 className="dml-card-title">&ldquo;Guess Who Won?&rdquo; mini-game</h2>
             <p className="dml-card-hint">
               Offered before the reveal on close games only, to logged-in customers, every Nth game.
+              No points payout &mdash; just the guess/reveal moment.
             </p>
             <label className="dml-checkbox-row">
               <input
@@ -155,14 +185,7 @@ export default function SettingsPage() {
               />
               Enabled
             </label>
-            <div className="dml-field-row">
-              <div>
-                <label className="dml-label">Points for a correct guess</label>
-                <input
-                  className="dml-input" type="number" min={0} value={settings.guessPoints}
-                  onChange={(e) => setSettings({ ...settings, guessPoints: Number(e.target.value) })}
-                />
-              </div>
+            <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
               <div>
                 <label className="dml-label">Max gap for a &ldquo;close game&rdquo;</label>
                 <input
@@ -181,45 +204,69 @@ export default function SettingsPage() {
           </section>
 
           <section className="dml-card dml-card-wide">
-            <h2 className="dml-card-title">Milestone bonuses</h2>
+            <h2 className="dml-card-title">Achievements</h2>
             <p className="dml-card-hint">
-              Awarded automatically when a logged game qualifies (server-checked, once per game).
+              20 fixed achievement triggers. Toggle which are active and customize the name, icon, and
+              description &mdash; description is an admin-only reminder of the trigger condition, players
+              never see it (names/icons stay hidden until unlocked).
             </p>
-            <div className="dml-milestone-table">
-              <div className="dml-milestone-head">
-                <span></span>
-                <span>Milestone</span>
-                <span>Threshold</span>
-                <span>Points</span>
-              </div>
-              {Object.entries(settings.milestones).map(([key, rule]) => (
-                <div className="dml-milestone-row" key={key}>
-                  <input
-                    type="checkbox" checked={rule.enabled}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      milestones: { ...settings.milestones, [key]: { ...rule, enabled: e.target.checked } },
-                    })}
-                  />
-                  <span className="dml-milestone-name">{MILESTONE_NAMES[key] ?? key}</span>
-                  {rule.threshold !== undefined ? (
+            {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+            <div className="dml-achv-list">
+              {ACHIEVEMENT_KEYS_ORDERED.map((key) => {
+                const achv = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
+                const uploadId = `achv:${key}`;
+                return (
+                  <div className="dml-achv-row" key={key}>
                     <input
-                      className="dml-input dml-input-sm" type="number" min={1} value={rule.threshold}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        milestones: { ...settings.milestones, [key]: { ...rule, threshold: Number(e.target.value) } },
-                      })}
+                      type="checkbox" checked={achv.enabled}
+                      onChange={(e) => patchAchievement(key, { enabled: e.target.checked })}
                     />
-                  ) : <span />}
-                  <input
-                    className="dml-input dml-input-sm" type="number" min={0} value={rule.points}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      milestones: { ...settings.milestones, [key]: { ...rule, points: Number(e.target.value) } },
-                    })}
-                  />
-                </div>
-              ))}
+                    <div className="dml-achv-icon">
+                      <div className="dml-achv-icon-thumb">
+                        {achv.iconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={achv.iconUrl} alt="" />
+                        ) : (
+                          <span className="dml-image-placeholder">?</span>
+                        )}
+                      </div>
+                      <div className="dml-achv-icon-actions">
+                        <label className="dml-btn-secondary dml-btn-sm">
+                          {uploading === uploadId ? "…" : "Upload"}
+                          <input
+                            type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                            disabled={uploading !== null}
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) uploadAchievementIcon(key, f);
+                              e.target.value = "";
+                            }}
+                          />
+                        </label>
+                        {achv.iconUrl && (
+                          <button
+                            type="button" className="dml-btn-ghost dml-btn-sm"
+                            onClick={() => clearAchievementIcon(key)}
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="dml-achv-fields">
+                      <span className="dml-achv-key">{key}</span>
+                      <input
+                        className="dml-input" type="text" maxLength={60} value={achv.name}
+                        onChange={(e) => patchAchievement(key, { name: e.target.value })}
+                      />
+                      <textarea
+                        className="dml-textarea" maxLength={200} rows={2} value={achv.description}
+                        onChange={(e) => patchAchievement(key, { description: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -259,6 +306,46 @@ export default function SettingsPage() {
               className="dml-input" type="text" maxLength={280} value={settings.tipText}
               onChange={(e) => setSettings({ ...settings, tipText: e.target.value })}
             />
+          </section>
+
+          <section className="dml-card dml-card-wide">
+            <h2 className="dml-card-title">Welcome screen characters</h2>
+            <p className="dml-card-hint">
+              Bee and fish Doomlings on the welcome screen bob up and down continuously and pop in one at a
+              time on page load. Each needs its own normal and hover-peak art since they animate independently
+              &mdash; leave blank to use the built-in default.
+            </p>
+            {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+            <div className="dml-image-grid">
+              {CHARACTER_IMAGE_FIELDS.map(({ key, label: fieldLabel }) => (
+                <div className="dml-image-tile" key={key}>
+                  <div className="dml-image-thumb">
+                    {settings.images[key] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={settings.images[key]} alt="" />
+                    ) : (
+                      <span className="dml-image-placeholder">Default</span>
+                    )}
+                  </div>
+                  <div className="dml-image-name">{fieldLabel}</div>
+                  <div className="dml-image-actions">
+                    <label className="dml-btn-secondary dml-btn-sm">
+                      {uploading === key ? "Uploading…" : "Upload"}
+                      <input
+                        type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                        disabled={uploading !== null}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(key, f); e.target.value = ""; }}
+                      />
+                    </label>
+                    {settings.images[key] && (
+                      <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => clearImage(key)}>
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
 
           <section className="dml-card dml-card-wide">

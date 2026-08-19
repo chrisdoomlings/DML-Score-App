@@ -21,7 +21,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="dml-topbar-inner">
           <div>
             <h1 className="dml-title">DML Score</h1>
-            <p className="dml-subtitle">Points, milestones, art, and activity for the score tool.</p>
+            <p className="dml-subtitle">Achievements, art, and activity for the score tool.</p>
           </div>
         </div>
         <nav className="dml-nav">

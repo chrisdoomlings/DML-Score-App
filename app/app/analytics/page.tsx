@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { authedFetch } from "@/lib/hooks/useAuthedFetch";
 import { CenteredMessage } from "@/components/admin/AdminUI";
-import { MILESTONE_LABELS, type MilestoneKey } from "@/lib/score/milestones";
+import { DEFAULT_ACHIEVEMENTS, type AchievementKey } from "@/lib/score/achievements";
 
 interface Analytics {
-  milestones: { reason: string; count: number; totalPoints: number }[];
+  achievements: { achievementKey: string; count: number }[];
   guess: { offered: number; played: number; correct: number };
   playerCounts: { playerCount: number; games: number }[];
   expansion: { withExpansion: number; total: number };
@@ -41,7 +41,7 @@ export default function AnalyticsPage() {
   if (loadError) return <CenteredMessage>Couldn&rsquo;t load: {loadError}</CenteredMessage>;
   if (!data) return <CenteredMessage>Loading…</CenteredMessage>;
 
-  const maxMilestone = Math.max(1, ...data.milestones.map((m) => m.count));
+  const maxAchievement = Math.max(1, ...data.achievements.map((m) => m.count));
   const maxPlayers = Math.max(1, ...data.playerCounts.map((p) => p.games));
   const guessPlayRate = data.guess.offered ? Math.round((data.guess.played / data.guess.offered) * 100) : 0;
   const guessCorrectRate = data.guess.played ? Math.round((data.guess.correct / data.guess.played) * 100) : 0;
@@ -53,18 +53,22 @@ export default function AnalyticsPage() {
     <main className="dml-main">
       <div className="dml-grid">
         <section className="dml-card dml-card-wide">
-          <h2 className="dml-card-title">Milestones earned</h2>
+          <h2 className="dml-card-title">Achievements earned</h2>
           <p className="dml-card-hint">
-            How often each milestone has actually been awarded — useful for deciding the
-            client&rsquo;s formal milestone list and point values.
+            How often each achievement has actually been unlocked.
           </p>
-          {data.milestones.length === 0 ? (
-            <p className="dml-empty">No milestones earned yet.</p>
+          {data.achievements.length === 0 ? (
+            <p className="dml-empty">No achievements earned yet.</p>
           ) : (
-            data.milestones.map((m) => {
-              const key = m.reason.replace(/^milestone_/, "") as MilestoneKey;
+            data.achievements.map((m) => {
+              const key = m.achievementKey as AchievementKey;
               return (
-                <Bar key={m.reason} label={MILESTONE_LABELS[key] ?? m.reason} value={m.count} max={maxMilestone} />
+                <Bar
+                  key={m.achievementKey}
+                  label={DEFAULT_ACHIEVEMENTS[key]?.name ?? m.achievementKey}
+                  value={m.count}
+                  max={maxAchievement}
+                />
               );
             })
           )}

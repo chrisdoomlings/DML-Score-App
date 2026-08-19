@@ -23,10 +23,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const settings = await saveSettings(shop, {
-      pointsPerGame: body.pointsPerGame,
-      milestones: body.milestones,
+      achievements: body.achievements,
       guessEnabled: body.guessEnabled,
-      guessPoints: body.guessPoints,
       guessGapMax: body.guessGapMax,
       guessEveryN: body.guessEveryN,
       images: body.images,
