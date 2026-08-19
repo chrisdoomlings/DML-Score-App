@@ -8,6 +8,10 @@
 export function sanitizeImageUrl(v: string): string {
   const trimmed = v.trim();
   if (!trimmed) return "";
+  // Reject anything that could break out of an HTML attribute (style="url('...')",
+  // src="...") once interpolated on the storefront — a plain R2 object URL never
+  // needs these characters, so any hit here is a hand-crafted injection attempt.
+  if (/["'<>\\\s]/.test(trimmed)) return "";
   const publicBase = process.env.CLOUDFLARE_R2_PUBLIC_URL?.replace(/\/$/, "");
   if (publicBase && trimmed.startsWith(publicBase + "/")) return trimmed;
   return "";

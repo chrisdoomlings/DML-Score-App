@@ -8,9 +8,11 @@ import { sanitizeImageUrl } from "@/lib/score/imageUrl";
  * now deleted): 20 fixed, stable keys. Unlike milestones, thresholds/point
  * values here are NOT admin-configurable — only enabled/name/description/
  * iconUrl are (score_settings.achievements JSONB merged over
- * DEFAULT_ACHIEVEMENTS). Names/icons are placeholders revealed only once
- * unlocked; `description` here is the internal trigger-condition text shown
- * in the admin UI, not player-facing copy.
+ * DEFAULT_ACHIEVEMENTS). `name` is always visible on a tile; `description`
+ * is shown to players once the achievement is unlocked (before that, the
+ * storefront shows "??????" instead), so admins should write it as
+ * player-facing flavor text — the defaults below are placeholder
+ * trigger-condition text only, meant to be replaced.
  *
  * Idempotency ("only once ever") is NOT this module's job — it just reports
  * which keys are eligible for *this* game. The caller (saveGame) attempts an
@@ -222,9 +224,15 @@ function sanitizeText(v: unknown, max: number): string | undefined {
   return trimmed || undefined;
 }
 
-/** MM-DD, independent of year — used for the seasonal + birthday checks. */
-function monthDay(dateStr: string): string {
-  return dateStr.slice(5, 10);
+/**
+ * MM-DD, independent of year — used for the seasonal + birthday checks.
+ * Accepts a plain "YYYY-MM-DD" string OR a JS Date, since the `postgres`
+ * driver parses `DATE` columns into `Date` objects (see dayKey() below for
+ * the same pattern applied to played_at_local_date).
+ */
+function monthDay(date: string | Date): string {
+  const s = date instanceof Date ? date.toISOString() : date;
+  return s.slice(5, 10);
 }
 
 /**
@@ -316,8 +324,9 @@ export async function evaluateStreak(
   return true;
 }
 
-async function fetchBirthday(sql: Db, shop: string, customerId: string): Promise<string | null> {
-  const rows = await sql<{ birthday: string | null }[]>`
+/** The `postgres` driver parses `DATE` columns into `Date` objects, not strings. */
+async function fetchBirthday(sql: Db, shop: string, customerId: string): Promise<Date | string | null> {
+  const rows = await sql<{ birthday: Date | string | null }[]>`
     SELECT birthday FROM score_customer_profile WHERE shop = ${shop} AND customer_id = ${customerId}
   `;
   return rows[0]?.birthday ?? null;
@@ -325,7 +334,9 @@ async function fetchBirthday(sql: Db, shop: string, customerId: string): Promise
 
 /** Exported for reuse by the achievements proxy route (`profile.hasBirthday`). */
 export async function getCustomerBirthday(sql: Db, shop: string, customerId: string): Promise<string | null> {
-  return fetchBirthday(sql, shop, customerId);
+  const birthday = await fetchBirthday(sql, shop, customerId);
+  if (!birthday) return null;
+  return birthday instanceof Date ? birthday.toISOString().slice(0, 10) : birthday;
 }
 
 /** Async: MM-DD match against the customer's self-reported birthday. */
@@ -367,12 +378,12 @@ export async function evaluateAchievements(
   );
 
   if (playedLocalDate) {
-    if (config.streak_7_day?.enabled && (await evaluateStreak(sql, shop, customerId, playedLocalDate))) {
-      hits.add("streak_7_day");
-    }
-    if (config.birthday?.enabled && (await evaluateBirthday(sql, shop, customerId, playedLocalDate))) {
-      hits.add("birthday");
-    }
+    const [streakOk, birthdayOk] = await Promise.all([
+      config.streak_7_day?.enabled ? evaluateStreak(sql, shop, customerId, playedLocalDate) : false,
+      config.birthday?.enabled ? evaluateBirthday(sql, shop, customerId, playedLocalDate) : false,
+    ]);
+    if (streakOk) hits.add("streak_7_day");
+    if (birthdayOk) hits.add("birthday");
   }
 
   return [...hits];

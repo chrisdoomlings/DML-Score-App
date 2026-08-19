@@ -177,7 +177,10 @@ export async function getCustomerAchievements(shop: string, customerId: string):
   ]);
   const unlockedMap = new Map(rows.map((r) => [r.achievementKey, r]));
 
-  return ACHIEVEMENT_KEYS.filter((key) => settings.achievements[key].enabled).map((key) => {
+  // Disabled achievements are hidden from the "still to earn" list, but one this
+  // customer already unlocked must keep showing — disabling it later shouldn't
+  // look like their earned badge got revoked.
+  return ACHIEVEMENT_KEYS.filter((key) => settings.achievements[key].enabled || unlockedMap.has(key)).map((key) => {
     const def = settings.achievements[key];
     const u = unlockedMap.get(key);
     return {
@@ -262,7 +265,7 @@ export async function getShopSummary(shop: string) {
 }
 
 export interface ShopAnalytics {
-  achievements: { achievementKey: string; count: number }[];
+  achievements: { achievementKey: string; name: string; count: number }[];
   guess: { offered: number; played: number; correct: number };
   playerCounts: { playerCount: number; games: number }[];
   expansion: { withExpansion: number; total: number };
@@ -270,7 +273,8 @@ export interface ShopAnalytics {
 
 export async function getShopAnalytics(shop: string): Promise<ShopAnalytics> {
   const db = getDb();
-  const [achievements, guess, playerCounts, expansion] = await Promise.all([
+  const [settings, achievementCounts, guess, playerCounts, expansion] = await Promise.all([
+    getSettings(shop),
     db<{ achievementKey: string; count: number }[]>`
       SELECT achievement_key AS "achievementKey", COUNT(*)::int AS count
       FROM score_achievements_unlocked
@@ -300,7 +304,10 @@ export async function getShopAnalytics(shop: string): Promise<ShopAnalytics> {
   ]);
 
   return {
-    achievements,
+    achievements: achievementCounts.map((a) => ({
+      ...a,
+      name: settings.achievements[a.achievementKey as AchievementKey]?.name ?? a.achievementKey,
+    })),
     guess: guess[0] ?? { offered: 0, played: 0, correct: 0 },
     playerCounts,
     expansion: expansion[0] ?? { withExpansion: 0, total: 0 },
