@@ -11,13 +11,20 @@
   data-signup-url="{{ routes.account_register_url }}"
   data-login-url="{{ routes.account_login_url }}">
 
-  <div id="dmls-app" aria-live="polite">
-    <div class="dmls-card dmls-skeleton" aria-hidden="true">
-      <div class="dmls-skel-bar dmls-skel-title"></div>
-      <div class="dmls-skel-bar dmls-skel-sub"></div>
-      <div class="dmls-skel-bar dmls-skel-sub"></div>
-      <div class="dmls-skel-bar dmls-skel-btn"></div>
-    </div>
+  {% comment %}
+    The tool itself (welcome screen through winner reveal, plus the
+    Achievements/History view) now renders inside a #dmls-modal overlay that
+    dmls-score.js appends to document.body at boot — this on-page element is
+    just the launcher trigger. See extensions/score-tool/assets/dmls-score.js.
+  {% endcomment %}
+  <div class="dmls-launcher">
+    <button type="button" class="dmls-launcher-btn" id="dmls-launch" aria-haspopup="dialog">
+      <span class="dmls-launcher-icon" aria-hidden="true">🎲</span>
+      <span class="dmls-launcher-text">
+        <span class="dmls-launcher-title">{{ block.settings.heading | escape }}</span>
+        <span class="dmls-launcher-sub">Tap to score your game</span>
+      </span>
+    </button>
   </div>
 
   {% if block.settings.show_products and block.settings.recs_collection != blank %}
@@ -57,11 +64,6 @@
     proxyBase: "/apps/score",
     customer: {% if customer %}{ id: {{ customer.id | json }}, firstName: {{ customer.first_name | default: "" | json | replace: '/', '\/' }} }{% else %}null{% endif %},
     assets: {
-      worldsend: "{{ 'dmls-worldsend.png' | asset_url }}",
-      compass: "{{ 'dmls-compassstar.png' | asset_url }}",
-      drop: "{{ 'dmls-drop.png' | asset_url }}",
-      suppress: "{{ 'dmls-suppress.png' | asset_url }}",
-      characters: "{{ 'dmls-characters.png' | asset_url }}",
       winner: "{{ 'dmls-winner.png' | asset_url }}"
     }
   };

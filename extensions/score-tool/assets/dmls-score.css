@@ -131,7 +131,6 @@
   display: flex; align-items: center; justify-content: center;
 }
 .dmls-tip p { margin: 0; font-size: 13px; color: var(--dmls-ink); line-height: 1.4; }
-.dmls-title-note { display: block; font-family: "Segoe UI", system-ui, sans-serif; font-size: 15px; color: var(--dmls-ink-dim); letter-spacing: 0; margin-top: 4px; }
 
 .dmls-eyebrow {
   font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
@@ -149,7 +148,7 @@
   color: var(--dmls-ink-dim); font-size: 15px; line-height: 1.5;
   max-width: 40ch; margin: 0 auto 10px;
 }
-.dmls-sub .dmls-sym { display: inline-block; width: 20px; height: 20px; vertical-align: -4px; margin: 0 2px; }
+.dmls-sub i { color: var(--dmls-ink); font-style: italic; }
 .dmls-inline-link { color: var(--dmls-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
 
 .dmls-dots { display: flex; gap: 7px; justify-content: center; margin: 16px 0 4px; }
@@ -422,6 +421,10 @@
    (.dmls-card, .dmls-btn, .dmls-title, etc.) are reused unprefixed exactly
    as they were when they lived inside #dmls-root, since they were already
    bare/unprefixed class selectors. */
+/* Applied to <body> while the modal is open, to stop the storefront page
+   behind it from scrolling. */
+body.dmls-modal-lock { overflow: hidden; }
+
 #dmls-modal {
   position: fixed; inset: 0; z-index: 10000; display: none;
 }
@@ -431,21 +434,25 @@
 }
 #dmls-modal .dmls-modal-card {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(94vw, 520px); max-height: 90vh;
+  width: min(92vw, 520px); max-height: 90vh;
   display: flex; flex-direction: column;
 }
-#dmls-modal .dmls-modal-card.dmls-modal-wide { width: min(96vw, 1040px); }
+#dmls-modal .dmls-modal-card.dmls-modal-wide { width: min(94vw, 1040px); }
+/* Kept fully inside the card (not poking past its edge) so it can never be
+   clipped by the viewport on narrow phones — the primary target device. */
 #dmls-modal .dmls-modal-close {
-  position: absolute; top: -14px; right: -14px; z-index: 1;
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--dmls-night); border: 1px solid var(--dmls-line);
-  color: #fff; font-size: 20px; line-height: 1;
+  position: absolute; top: 10px; right: 10px; z-index: 1;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(8, 8, 26, 0.55); border: 1px solid var(--dmls-line);
+  color: #fff; font-size: 19px; line-height: 1;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 #dmls-modal .dmls-modal-close:hover { background: var(--dmls-coral); }
 #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px; }
-#dmls-modal .dmls-modal-body > .dmls-card { margin: 0; }
+/* Descendant, not direct-child — .dmls-card sits inside #dmls-app or #dmls-achv,
+   both children of .dmls-modal-body. */
+#dmls-modal .dmls-modal-body .dmls-card { margin: 0; }
 @media (prefers-reduced-motion: no-preference) {
   #dmls-modal.dmls-modal-open .dmls-modal-card { animation: dmls-modal-pop 0.22s ease; }
   @keyframes dmls-modal-pop {
@@ -557,8 +564,7 @@
 .dmls-hist-detail-row b { color: var(--dmls-ink); font-weight: 700; }
 .dmls-hist-empty { font-size: 14px; color: var(--dmls-ink-dim); text-align: center; margin-top: 18px; }
 
-.dmls-achv-cta { flex: none; margin-top: 16px; }
-.dmls-achv-cta .dmls-btn { width: 100%; }
+.dmls-btn-full { width: 100%; }
 
 @media (min-width: 640px) {
   .dmls-achv-grid { grid-template-columns: repeat(3, 1fr); }
