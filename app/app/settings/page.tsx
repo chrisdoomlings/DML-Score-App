@@ -3,16 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { authedFetch } from "@/lib/hooks/useAuthedFetch";
 import { CenteredMessage } from "@/components/admin/AdminUI";
-import { DEFAULT_ACHIEVEMENTS, type AchievementKey } from "@/lib/score/achievements";
-
-interface AchievementDef {
-  enabled: boolean;
-  name: string;
-  description: string;
-  iconUrl: string | null;
-}
-
-type AchievementConfig = Record<string, AchievementDef>;
+import {
+  ACHIEVEMENT_KEYS,
+  DEFAULT_ACHIEVEMENTS,
+  type AchievementConfig,
+  type AchievementDef,
+  type AchievementKey,
+} from "@/lib/score/achievements";
 
 interface Settings {
   achievements: AchievementConfig;
@@ -28,15 +25,10 @@ interface Settings {
 
 const IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "logo", label: "Home screen logo" },
-  { key: "characters", label: "Welcome screen character art" },
   { key: "winner", label: "Winner reveal art" },
   { key: "bg", label: "Background (main screens)" },
   { key: "bgExp", label: "Background (expansion-points screen)" },
   { key: "bgWinner", label: "Background (winner reveal screen)" },
-  { key: "worldsend", label: "World's End symbol icon" },
-  { key: "compass", label: "Compass Star icon" },
-  { key: "drop", label: "Drop of Life icon" },
-  { key: "suppress", label: "Suppress icon" },
 ];
 
 // Bee/fish welcome-screen Doomlings, split into normal + hover states so a
@@ -49,8 +41,6 @@ const CHARACTER_IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "fishNormal", label: "Fish Doomling — normal" },
   { key: "fishHover", label: "Fish Doomling — hover (bob peak)" },
 ];
-
-const ACHIEVEMENT_KEYS_ORDERED = Object.keys(DEFAULT_ACHIEVEMENTS) as AchievementKey[];
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -118,16 +108,16 @@ export default function SettingsPage() {
     setSettings({ ...settings, images: { ...settings.images, [key]: "" } });
   }
 
-  function patchAchievement(key: string, patch: Partial<AchievementDef>) {
+  function patchAchievement(key: AchievementKey, patch: Partial<AchievementDef>) {
     if (!settings) return;
-    const current = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key as AchievementKey];
+    const current = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
     setSettings({
       ...settings,
       achievements: { ...settings.achievements, [key]: { ...current, ...patch } },
     });
   }
 
-  async function uploadAchievementIcon(key: string, file: File) {
+  async function uploadAchievementIcon(key: AchievementKey, file: File) {
     if (!settings) return;
     const uploadId = `achv:${key}`;
     setUploading(uploadId);
@@ -145,7 +135,7 @@ export default function SettingsPage() {
     }
   }
 
-  function clearAchievementIcon(key: string) {
+  function clearAchievementIcon(key: AchievementKey) {
     patchAchievement(key, { iconUrl: null });
   }
 
@@ -212,7 +202,7 @@ export default function SettingsPage() {
             </p>
             {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
             <div className="dml-achv-list">
-              {ACHIEVEMENT_KEYS_ORDERED.map((key) => {
+              {ACHIEVEMENT_KEYS.map((key) => {
                 const achv = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
                 const uploadId = `achv:${key}`;
                 return (

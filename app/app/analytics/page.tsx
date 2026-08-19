@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import { authedFetch } from "@/lib/hooks/useAuthedFetch";
 import { CenteredMessage } from "@/components/admin/AdminUI";
-import { DEFAULT_ACHIEVEMENTS, type AchievementKey } from "@/lib/score/achievements";
-
 interface Analytics {
-  achievements: { achievementKey: string; count: number }[];
+  achievements: { achievementKey: string; name: string; count: number }[];
   guess: { offered: number; played: number; correct: number };
   playerCounts: { playerCount: number; games: number }[];
   expansion: { withExpansion: number; total: number };
@@ -60,17 +58,9 @@ export default function AnalyticsPage() {
           {data.achievements.length === 0 ? (
             <p className="dml-empty">No achievements earned yet.</p>
           ) : (
-            data.achievements.map((m) => {
-              const key = m.achievementKey as AchievementKey;
-              return (
-                <Bar
-                  key={m.achievementKey}
-                  label={DEFAULT_ACHIEVEMENTS[key]?.name ?? m.achievementKey}
-                  value={m.count}
-                  max={maxAchievement}
-                />
-              );
-            })
+            data.achievements.map((m) => (
+              <Bar key={m.achievementKey} label={m.name} value={m.count} max={maxAchievement} />
+            ))
           )}
         </section>
 

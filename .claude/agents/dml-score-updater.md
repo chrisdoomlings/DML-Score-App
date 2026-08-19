@@ -27,27 +27,28 @@ You implement new features, fix bugs, and apply updates to the DML Score app wit
 - `app/api/webhooks/` — `app/uninstalled`
 - `lib/score/` — `games.ts`, `settings.ts`, `milestones.ts`
 - `lib/supabase/client.ts` — DB client
-- `supabase/migrations/` — `001_initial.sql`, `002_milestones_guess.sql`
-- `extensions/score-tool/` — theme extension with `dmls-` prefixed assets, CSS under `#dmls-root`
+- `supabase/migrations/` — `001_initial.sql` through `011_character_images.sql`
+- `extensions/score-tool/` — theme extension with `dmls-` prefixed assets, CSS under `#dmls-root`; the whole app now opens as one `#dmls-modal` overlay, not just a sub-screen
 
 ### Database Tables
-`shopify_sessions`, `shops`, `score_settings`, `score_games`, `score_points_ledger`
-All game/score tables are `score_`-prefixed.
+`shopify_sessions`, `shops`, `score_settings`, `score_games`, `score_achievements_unlocked`, `score_customer_profile`
+All game/score tables are `score_`-prefixed. `score_points_ledger` was dropped — points/milestones are gone, replaced by achievements.
 
 ### App Proxy Routes
 | Storefront URL | Server route | Purpose |
 |---|---|---|
 | `/apps/score/config` | `/api/proxy/config` | Settings (GET, public) |
-| `/apps/score/game` | `/api/proxy/game` | POST save completed game |
-| `/apps/score/guess` | `/api/proxy/guess` | POST one-shot Guess Who Won? claim |
-| `/apps/score/stats` | `/api/proxy/stats` | GET customer history/points |
+| `/apps/score/game` | `/api/proxy/game` | POST save completed game (+achievements if customer) |
+| `/apps/score/guess` | `/api/proxy/guess` | POST one-shot Guess Who Won? claim (no reward) |
+| `/apps/score/achievements` | `/api/proxy/achievements` | GET customer achievements + game history |
+| `/apps/score/profile` | `/api/proxy/profile` | POST self-reported birthday |
 
 ## Critical Rules — Never Violate
 1. **Never run `git add` / `git commit` / `git push`** unless the user explicitly requests it
 2. **Never run `shopify app deploy`** — the user deploys manually with `--config shopify.app.dml-score.toml`
 3. **Never point `SUPABASE_DATABASE_URL` at another app's database** — this app has a DEDICATED Supabase project
 4. **Never touch DML Reviews & Rewards** — it is a completely separate production app; never import, reference, or call its APIs
-5. **Never call external loyalty/points APIs** — points are a local ledger only (phase 1)
+5. **Never call external loyalty/points APIs** — points/loyalty-bridge were removed entirely; achievements are a local unlock table only, nothing external
 6. **Never trust client-sent customer IDs** — only use `logged_in_customer_id` injected by Shopify's app proxy
 7. **Never rebuild the survey feature** — it was removed at client request; recoverable from git if needed
 
