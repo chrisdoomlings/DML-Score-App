@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       guessEveryN: body.guessEveryN,
       images: body.images,
       tipText: body.tipText,
+      homeHeading: body.homeHeading,
       logoWidth: body.logoWidth,
       cardMinHeight: body.cardMinHeight,
       winnerImageSize: body.winnerImageSize,

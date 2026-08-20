@@ -378,6 +378,11 @@
    and swap to a distinct hover-state image. Sourced from admin-uploaded
    images.beeNormal/beeHover/fishNormal/fishHover (via CSS custom properties
    set from JS once /config resolves); an empty slot just stays hidden. */
+/* Admin-uploaded hero illustration (images.characters) shown above the welcome
+   heading — a single static image, distinct from the animated bee/fish pair
+   above. Hidden entirely when unset. */
+.dmls-welcome-characters { display: block; max-width: 100%; height: auto; margin: 0 auto 12px; }
+
 .dmls-welcome-chars { display: flex; justify-content: center; align-items: flex-end; gap: 28px; margin: 4px 0 10px; min-height: 64px; }
 .dmls-char {
   width: 76px; height: 76px; background-repeat: no-repeat; background-position: center; background-size: contain;

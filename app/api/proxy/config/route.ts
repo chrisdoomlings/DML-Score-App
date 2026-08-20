@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
         loggedIn: Boolean(params.logged_in_customer_id),
         images,
         tipText: settings.tipText,
+        homeHeading: settings.homeHeading,
         logoWidth: settings.logoWidth,
         cardMinHeight: settings.cardMinHeight,
         winnerImageSize: settings.winnerImageSize,

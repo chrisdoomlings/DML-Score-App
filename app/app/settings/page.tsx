@@ -18,13 +18,21 @@ interface Settings {
   guessEveryN: number;
   images: Record<string, string>;
   tipText: string;
+  homeHeading: string;
   logoWidth: number;
   cardMinHeight: number;
   winnerImageSize: number;
 }
 
+interface LibraryImage {
+  key: string;
+  url: string;
+  uploadedAt: string;
+}
+
 const IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "logo", label: "Home screen logo" },
+  { key: "characters", label: "Home screen character illustration" },
   { key: "winner", label: "Winner reveal art" },
   { key: "bg", label: "Background (main screens)" },
   { key: "bgExp", label: "Background (expansion-points screen)" },
@@ -51,6 +59,10 @@ export default function SettingsPage() {
   const [loadError, setLoadError] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [uploadErr, setUploadErr] = useState("");
+  const [pickerFor, setPickerFor] = useState<string | null>(null); // image key (or "achv:<key>") currently browsing for
+  const [library, setLibrary] = useState<LibraryImage[] | null>(null);
+  const [libraryLoading, setLibraryLoading] = useState(false);
+  const [libraryErr, setLibraryErr] = useState("");
 
   useEffect(() => {
     authedFetch("/api/admin/settings").then(async (r) => {
@@ -137,6 +149,29 @@ export default function SettingsPage() {
 
   function clearAchievementIcon(key: AchievementKey) {
     patchAchievement(key, { iconUrl: null });
+  }
+
+  function openPicker(key: string) {
+    setPickerFor(key);
+    if (library === null && !libraryLoading) {
+      setLibraryLoading(true);
+      setLibraryErr("");
+      authedFetch("/api/admin/images").then(async (r) => {
+        const d = await r.json().catch(() => null);
+        setLibraryLoading(false);
+        if (d?.images) setLibrary(d.images);
+        else setLibraryErr(d?.error ?? "Couldn’t load your uploaded images.");
+      }).catch((e) => { setLibraryLoading(false); setLibraryErr(String(e?.message ?? e)); });
+    }
+  }
+
+  function selectFromLibrary(url: string) {
+    if (pickerFor?.startsWith("achv:")) {
+      patchAchievement(pickerFor.slice(5) as AchievementKey, { iconUrl: url });
+    } else if (pickerFor && settings) {
+      setSettings({ ...settings, images: { ...settings.images, [pickerFor]: url } });
+    }
+    setPickerFor(null);
   }
 
   if (authError) return <CenteredMessage>This app must be opened from your Shopify admin.</CenteredMessage>;
@@ -233,6 +268,9 @@ export default function SettingsPage() {
                             }}
                           />
                         </label>
+                        <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(`achv:${key}`)}>
+                          Browse
+                        </button>
                         {achv.iconUrl && (
                           <button
                             type="button" className="dml-btn-ghost dml-btn-sm"
@@ -290,6 +328,13 @@ export default function SettingsPage() {
               this instead of scrolling, so raise it if your players usually have big groups.
             </p>
             <label className="dml-label" style={{ marginTop: 14 }}>
+              Welcome screen heading (leave blank to use the theme block&rsquo;s default)
+            </label>
+            <input
+              className="dml-input" type="text" maxLength={120} value={settings.homeHeading}
+              onChange={(e) => setSettings({ ...settings, homeHeading: e.target.value })}
+            />
+            <label className="dml-label" style={{ marginTop: 14 }}>
               Tip banner text (shown under the welcome card — leave blank to hide it)
             </label>
             <input
@@ -327,6 +372,9 @@ export default function SettingsPage() {
                         onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(key, f); e.target.value = ""; }}
                       />
                     </label>
+                    <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(key)}>
+                      Browse
+                    </button>
                     {settings.images[key] && (
                       <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => clearImage(key)}>
                         Reset
@@ -365,6 +413,9 @@ export default function SettingsPage() {
                         onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(key, f); e.target.value = ""; }}
                       />
                     </label>
+                    <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(key)}>
+                      Browse
+                    </button>
                     {settings.images[key] && (
                       <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => clearImage(key)}>
                         Reset
@@ -377,6 +428,35 @@ export default function SettingsPage() {
           </section>
         </div>
       </main>
+
+      {pickerFor && (
+        <div className="dml-picker-backdrop" onClick={() => setPickerFor(null)}>
+          <div className="dml-picker-card" onClick={(e) => e.stopPropagation()}>
+            <div className="dml-picker-head">
+              <span>Choose an existing image</span>
+              <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => setPickerFor(null)}>Close</button>
+            </div>
+            {libraryLoading && <p className="dml-empty">Loading your uploads…</p>}
+            {libraryErr && <p className="dml-msg-err">{libraryErr}</p>}
+            {!libraryLoading && !libraryErr && library && library.length === 0 && (
+              <p className="dml-empty">No images uploaded yet — use Upload instead.</p>
+            )}
+            {!libraryLoading && library && library.length > 0 && (
+              <div className="dml-picker-grid">
+                {library.map((img) => (
+                  <button
+                    type="button" key={img.key} className="dml-picker-thumb"
+                    onClick={() => selectFromLibrary(img.url)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt="" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

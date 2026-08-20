@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
 function getClient(): S3Client {
   const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID;
@@ -41,4 +41,30 @@ export async function uploadToR2(
   );
 
   return `${publicUrl}/${key}`;
+}
+
+/** Every image ever uploaded for this shop, newest first — powers the "pick an existing image" browser. */
+export async function listShopImages(shop: string): Promise<{ key: string; url: string; uploadedAt: string }[]> {
+  const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME || "dml-score";
+  const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL?.replace(/\/$/, "");
+  if (!publicUrl) {
+    throw new Error("CLOUDFLARE_R2_PUBLIC_URL is not set. Enable the Public Development URL or add a custom domain in R2 bucket settings.");
+  }
+
+  const client = getClient();
+  const out: { key: string; url: string; uploadedAt: string }[] = [];
+  let continuationToken: string | undefined;
+  do {
+    const res = await client.send(
+      new ListObjectsV2Command({ Bucket: bucket, Prefix: `${shop}/`, ContinuationToken: continuationToken })
+    );
+    for (const obj of res.Contents ?? []) {
+      if (!obj.Key) continue;
+      out.push({ key: obj.Key, url: `${publicUrl}/${obj.Key}`, uploadedAt: (obj.LastModified ?? new Date(0)).toISOString() });
+    }
+    continuationToken = res.IsTruncated ? res.NextContinuationToken : undefined;
+  } while (continuationToken);
+
+  out.sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt));
+  return out;
 }

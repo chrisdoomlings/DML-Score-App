@@ -29,6 +29,7 @@ export interface ScoreSettings {
   guessEveryN: number; // offer the mini-game every Nth logged game per customer
   images: ImageUrls; // empty string per key = use the bundled default asset ("logo" has no default — empty hides it)
   tipText: string; // shown in the home-screen tip bar; empty = hidden
+  homeHeading: string; // welcome screen heading; empty = fall back to the theme block's data-heading
   logoWidth: number; // px; applies to the logo on both the home and winner screens
   cardMinHeight: number; // px; floor height for the score card — grows past this if content needs more room
   winnerImageSize: number; // px; max-width of the winner reveal art
@@ -39,6 +40,7 @@ const DEFAULTS = {
   guessGapMax: 10,
   guessEveryN: 3,
   tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
+  homeHeading: "",
   logoWidth: 220,
   cardMinHeight: 560,
   winnerImageSize: 260,
@@ -72,6 +74,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageFishNormal: string;
       imageFishHover: string;
       tipText: string;
+      homeHeading: string;
       logoWidth: number;
       cardMinHeight: number;
       winnerImageSize: number;
@@ -96,6 +99,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_fish_normal AS "imageFishNormal",
            image_fish_hover  AS "imageFishHover",
            tip_text         AS "tipText",
+           home_heading     AS "homeHeading",
            logo_width       AS "logoWidth",
            card_min_height  AS "cardMinHeight",
            winner_image_size AS "winnerImageSize"
@@ -108,6 +112,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     guessGapMax: r?.guessGapMax ?? DEFAULTS.guessGapMax,
     guessEveryN: r?.guessEveryN ?? DEFAULTS.guessEveryN,
     tipText: r?.tipText ?? DEFAULTS.tipText,
+    homeHeading: r?.homeHeading ?? DEFAULTS.homeHeading,
     logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
@@ -147,6 +152,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     guessEveryN: clampInt(s.guessEveryN ?? current.guessEveryN, 1, 100),
     images: nextImages,
     tipText: typeof s.tipText === "string" ? s.tipText.trim().slice(0, 280) : current.tipText,
+    homeHeading: typeof s.homeHeading === "string" ? s.homeHeading.trim().slice(0, 120) : current.homeHeading,
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
@@ -157,14 +163,14 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       shop, achievements, guess_enabled, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
-      tip_text, logo_width, card_min_height, winner_image_size,
+      tip_text, home_heading, logo_width, card_min_height, winner_image_size,
       updated_at
     )
     VALUES (
       ${shop}, ${jsonb(next.achievements)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
-      ${next.tipText}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
       NOW()
     )
     ON CONFLICT (shop) DO UPDATE SET
@@ -187,6 +193,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_fish_normal = EXCLUDED.image_fish_normal,
       image_fish_hover  = EXCLUDED.image_fish_hover,
       tip_text         = EXCLUDED.tip_text,
+      home_heading     = EXCLUDED.home_heading,
       logo_width       = EXCLUDED.logo_width,
       card_min_height  = EXCLUDED.card_min_height,
       winner_image_size = EXCLUDED.winner_image_size,

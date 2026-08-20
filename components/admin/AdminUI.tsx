@@ -130,6 +130,26 @@ export function GlobalStyle() {
 
       .dml-empty { font-size: 13px; color: #8a8d91; padding: 8px 0; }
 
+      .dml-picker-backdrop {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100;
+        display: flex; align-items: center; justify-content: center; padding: 24px;
+      }
+      .dml-picker-card {
+        background: #fff; border-radius: 12px; padding: 20px; width: min(640px, 100%);
+        max-height: 80vh; overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+      }
+      .dml-picker-head {
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 14px; font-weight: 700; color: #202223; margin-bottom: 14px;
+      }
+      .dml-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+      .dml-picker-thumb {
+        aspect-ratio: 1; border-radius: 8px; overflow: hidden; padding: 0; cursor: pointer;
+        background: #f6f6f7; border: 1px solid #e1e3e5; transition: border-color 0.15s;
+      }
+      .dml-picker-thumb:hover { border-color: #008060; }
+      .dml-picker-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
       .dml-trend { display: flex; align-items: stretch; gap: 10px; }
       .dml-trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
       .dml-trend-count { font-size: 11px; font-weight: 700; color: #6d7175; height: 14px; }

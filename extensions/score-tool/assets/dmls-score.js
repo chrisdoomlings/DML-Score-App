@@ -282,6 +282,7 @@
       '<div class="dmls-card dmls-anim-in">' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
+      (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" loading="lazy">' : "") +
       ((hasBee || hasFish)
         ? '<div class="dmls-welcome-chars" aria-hidden="true">' +
           (hasBee ? '<div class="dmls-char dmls-char-bee" id="dmls-char-bee"' + charStyle(images.beeNormal, images.beeHover) + '></div>' : "") +
@@ -1027,6 +1028,10 @@
       // diff loop above can't detect a bee/fish change. Force one re-render
       // pass on config load if either slot is configured at all.
       if (images.beeNormal || images.fishNormal) needsRerender = true;
+      if (typeof c.homeHeading === "string" && c.homeHeading && c.homeHeading !== heading) {
+        heading = c.homeHeading;
+        needsRerender = true;
+      }
       if (needsRerender && view === "game" && state.screen === 0) render();
     })
     .catch(function () { /* tool works without config */ });
