@@ -162,11 +162,10 @@
   transition: transform 0.12s ease;
 }
 .dmls-btn:active:not(:disabled) { transform: scale(0.97); }
-/* Decorative resting-state glow removed per client request — the green CTA
-   now reads as a flat, high-contrast button with no drop-shadow. Focus-visible
-   ring above and the ghost border below are untouched (accessibility/state,
-   not decoration). */
-.dmls-btn-go { background: var(--dmls-green); color: #0d1200; }
+/* Dark pill CTA (client-supplied reference design) — flat var(--dmls-night)
+   fill, no drop-shadow/glow. Focus-visible ring above and the ghost border
+   below are untouched (accessibility/state, not decoration). */
+.dmls-btn-go { background: var(--dmls-night); color: #ffffff; border: 1px solid var(--dmls-line); }
 .dmls-btn-ghost { border: 2px solid var(--dmls-line); color: var(--dmls-ink-dim); }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -380,8 +379,13 @@
    set from JS once /config resolves); an empty slot just stays hidden. */
 /* Admin-uploaded hero illustration (images.characters) shown above the welcome
    heading — a single static image, distinct from the animated bee/fish pair
-   above. Hidden entirely when unset. */
-.dmls-welcome-characters { display: block; max-width: 100%; height: auto; margin: 0 auto 12px; }
+   above. Hidden entirely when unset. Width is set inline per the admin's
+   "Character illustration width" setting and is deliberately allowed to
+   exceed the card's own width — .dmls-card clips via overflow:hidden (see
+   above), so a wider illustration bleeds off both edges symmetrically
+   instead of being squeezed to fit. 320px here is just the pre-JS fallback,
+   used only until /config resolves and sets the real inline width. */
+.dmls-welcome-characters { display: block; width: 320px; max-width: none; height: auto; margin: 0 auto 12px; }
 
 .dmls-welcome-chars { display: flex; justify-content: center; align-items: flex-end; gap: 28px; margin: 4px 0 10px; min-height: 64px; }
 .dmls-char {

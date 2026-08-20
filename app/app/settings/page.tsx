@@ -22,6 +22,9 @@ interface Settings {
   logoWidth: number;
   cardMinHeight: number;
   winnerImageSize: number;
+  charactersWidth: number;
+  headingWidth: number;
+  headingFontSize: number;
 }
 
 interface LibraryImage {
@@ -341,6 +344,67 @@ export default function SettingsPage() {
               className="dml-input" type="text" maxLength={280} value={settings.tipText}
               onChange={(e) => setSettings({ ...settings, tipText: e.target.value })}
             />
+          </section>
+
+          <section className="dml-card dml-card-wide">
+            <h2 className="dml-card-title">Welcome screen layout</h2>
+            <p className="dml-card-hint">
+              Size and position the character illustration and heading. The illustration can be made wider
+              than the card itself &mdash; it bleeds off both edges symmetrically and gets cropped there, it
+              never stretches the card.
+            </p>
+            <div className="dml-preview-frame">
+              <div
+                className="dml-preview-card"
+                style={settings.images.bg ? {
+                  backgroundImage: `linear-gradient(180deg, rgba(16,21,63,0.45), rgba(16,21,63,0.72)), url(${settings.images.bg})`,
+                } : undefined}
+              >
+                {settings.images.logo && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img className="dml-preview-logo" src={settings.images.logo} alt="" style={{ width: settings.logoWidth }} />
+                )}
+                {settings.images.characters && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className="dml-preview-characters" src={settings.images.characters} alt=""
+                    style={{ width: settings.charactersWidth }}
+                  />
+                )}
+                <h3
+                  className="dml-preview-title"
+                  style={{ maxWidth: settings.headingWidth, fontSize: settings.headingFontSize }}
+                >
+                  {settings.homeHeading || "Ready to see who won the game?"}
+                </h3>
+                <p className="dml-preview-sub">Tally World&rsquo;s End, face value, and bonus points — we&rsquo;ll crown the winner.</p>
+                <span className="dml-preview-btn">Start scoring</span>
+              </div>
+              <p className="dml-preview-caption">Live preview &mdash; approximates the real welcome screen.</p>
+            </div>
+            <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+              <div>
+                <label className="dml-label">Character illustration width (px)</label>
+                <input
+                  className="dml-input dml-input-sm" type="number" min={60} max={900} value={settings.charactersWidth}
+                  onChange={(e) => setSettings({ ...settings, charactersWidth: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="dml-label">Heading width (px)</label>
+                <input
+                  className="dml-input dml-input-sm" type="number" min={100} max={600} value={settings.headingWidth}
+                  onChange={(e) => setSettings({ ...settings, headingWidth: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="dml-label">Heading font size (px)</label>
+                <input
+                  className="dml-input dml-input-sm" type="number" min={14} max={60} value={settings.headingFontSize}
+                  onChange={(e) => setSettings({ ...settings, headingFontSize: Number(e.target.value) })}
+                />
+              </div>
+            </div>
           </section>
 
           <section className="dml-card dml-card-wide">

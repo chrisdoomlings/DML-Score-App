@@ -28,6 +28,9 @@ export async function GET(req: NextRequest) {
         logoWidth: settings.logoWidth,
         cardMinHeight: settings.cardMinHeight,
         winnerImageSize: settings.winnerImageSize,
+        charactersWidth: settings.charactersWidth,
+        headingWidth: settings.headingWidth,
+        headingFontSize: settings.headingFontSize,
       },
       { headers: HEADERS }
     );

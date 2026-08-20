@@ -33,6 +33,9 @@ export async function POST(req: NextRequest) {
       logoWidth: body.logoWidth,
       cardMinHeight: body.cardMinHeight,
       winnerImageSize: body.winnerImageSize,
+      charactersWidth: body.charactersWidth,
+      headingWidth: body.headingWidth,
+      headingFontSize: body.headingFontSize,
     });
     return NextResponse.json({ settings });
   } catch (err) {

@@ -33,6 +33,14 @@
   var loginUrl = root.getAttribute("data-login-url") || "/account/login";
   var homeTip = ""; // populated from /config; empty = tip bar hidden
   var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
+  // Welcome screen character illustration + heading layout — all populated
+  // from /config, matching the score_settings DB defaults until it loads.
+  // charactersWidth can exceed the card's own width: .dmls-card clips via
+  // overflow:hidden, so a wider illustration bleeds off both edges instead
+  // of being squeezed to fit.
+  var charactersWidth = 320; // px
+  var headingWidth = 320; // px; max-width, controls line wrapping
+  var headingFontSize = 32; // px
   function logoHTML(cls) {
     // Width is merchant-set but centering is structural (margin:auto in CSS),
     // so any width the admin picks stays centered — never make this fill-width.
@@ -282,14 +290,14 @@
       '<div class="dmls-card dmls-anim-in">' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
-      (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" loading="lazy">' : "") +
+      (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" style="width:' + charactersWidth + 'px" loading="lazy">' : "") +
       ((hasBee || hasFish)
         ? '<div class="dmls-welcome-chars" aria-hidden="true">' +
           (hasBee ? '<div class="dmls-char dmls-char-bee" id="dmls-char-bee"' + charStyle(images.beeNormal, images.beeHover) + '></div>' : "") +
           (hasFish ? '<div class="dmls-char dmls-char-fish" id="dmls-char-fish"' + charStyle(images.fishNormal, images.fishHover) + '></div>' : "") +
           "</div>"
         : "") +
-      '<h2 class="dmls-title">' + esc(heading) + "</h2>" +
+      '<h2 class="dmls-title" style="max-width:' + headingWidth + 'px;font-size:' + headingFontSize + 'px">' + esc(heading) + "</h2>" +
       '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
       (hasResume ? '<div class="dmls-resume">You have a game in progress. <button type="button" id="dmls-resume">Resume it</button></div>' : "") +
       (CUSTOMER ? '<div class="dmls-welcome-links"><button type="button" class="dmls-btn-link" id="dmls-achv-link">Achievements</button></div>' : "") +
@@ -1020,6 +1028,18 @@
       }
       if (typeof c.logoWidth === "number" && c.logoWidth !== logoWidth) {
         logoWidth = c.logoWidth;
+        needsRerender = true;
+      }
+      if (typeof c.charactersWidth === "number" && c.charactersWidth !== charactersWidth) {
+        charactersWidth = c.charactersWidth;
+        needsRerender = true;
+      }
+      if (typeof c.headingWidth === "number" && c.headingWidth !== headingWidth) {
+        headingWidth = c.headingWidth;
+        needsRerender = true;
+      }
+      if (typeof c.headingFontSize === "number" && c.headingFontSize !== headingFontSize) {
+        headingFontSize = c.headingFontSize;
         needsRerender = true;
       }
       // Welcome screen (bee/fish images) reads serverConfig.images directly at

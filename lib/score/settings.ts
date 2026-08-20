@@ -33,6 +33,9 @@ export interface ScoreSettings {
   logoWidth: number; // px; applies to the logo on both the home and winner screens
   cardMinHeight: number; // px; floor height for the score card — grows past this if content needs more room
   winnerImageSize: number; // px; max-width of the winner reveal art
+  charactersWidth: number; // px; welcome-screen character illustration — can exceed the card width to bleed off the edges (card clips via overflow:hidden)
+  headingWidth: number; // px; max-width of the welcome heading, controls line wrapping
+  headingFontSize: number; // px
 }
 
 const DEFAULTS = {
@@ -44,6 +47,9 @@ const DEFAULTS = {
   logoWidth: 220,
   cardMinHeight: 560,
   winnerImageSize: 260,
+  charactersWidth: 320,
+  headingWidth: 320,
+  headingFontSize: 32,
 };
 
 const EMPTY_IMAGES: ImageUrls = {
@@ -78,6 +84,9 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       logoWidth: number;
       cardMinHeight: number;
       winnerImageSize: number;
+      charactersWidth: number;
+      headingWidth: number;
+      headingFontSize: number;
     }[]
   >`
     SELECT achievements,
@@ -102,7 +111,10 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            home_heading     AS "homeHeading",
            logo_width       AS "logoWidth",
            card_min_height  AS "cardMinHeight",
-           winner_image_size AS "winnerImageSize"
+           winner_image_size AS "winnerImageSize",
+           characters_width  AS "charactersWidth",
+           heading_width     AS "headingWidth",
+           heading_font_size AS "headingFontSize"
     FROM score_settings WHERE shop = ${shop}
   `;
   const r = rows[0];
@@ -116,6 +128,9 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
+    charactersWidth: r?.charactersWidth ?? DEFAULTS.charactersWidth,
+    headingWidth: r?.headingWidth ?? DEFAULTS.headingWidth,
+    headingFontSize: r?.headingFontSize ?? DEFAULTS.headingFontSize,
     images: r
       ? {
           worldsend: r.imageWorldsend ?? "",
@@ -156,6 +171,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
+    charactersWidth: clampInt(s.charactersWidth ?? current.charactersWidth, 60, 900),
+    headingWidth: clampInt(s.headingWidth ?? current.headingWidth, 100, 600),
+    headingFontSize: clampInt(s.headingFontSize ?? current.headingFontSize, 14, 60),
   };
   const db = getDb();
   await db`
@@ -164,6 +182,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       tip_text, home_heading, logo_width, card_min_height, winner_image_size,
+      characters_width, heading_width, heading_font_size,
       updated_at
     )
     VALUES (
@@ -171,6 +190,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.tipText}, ${next.homeHeading}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
+      ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
     )
     ON CONFLICT (shop) DO UPDATE SET
@@ -197,6 +217,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       logo_width       = EXCLUDED.logo_width,
       card_min_height  = EXCLUDED.card_min_height,
       winner_image_size = EXCLUDED.winner_image_size,
+      characters_width  = EXCLUDED.characters_width,
+      heading_width     = EXCLUDED.heading_width,
+      heading_font_size = EXCLUDED.heading_font_size,
       updated_at       = NOW()
   `;
   return next;

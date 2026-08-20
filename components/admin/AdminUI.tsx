@@ -150,6 +150,30 @@ export function GlobalStyle() {
       .dml-picker-thumb:hover { border-color: #008060; }
       .dml-picker-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+      /* Rough visual approximation of the storefront's .dmls-card (dark
+         gradient panel, rounded, clips overflow) — not pixel-identical to
+         the theme extension's real CSS/webfont, but enough to preview how
+         width/font-size settings will look before saving. */
+      .dml-preview-frame { margin-bottom: 20px; }
+      .dml-preview-card {
+        position: relative; overflow: hidden; border-radius: 22px;
+        background-image: linear-gradient(180deg, #2a3182, #232b7a);
+        background-size: cover; background-position: center;
+        padding: 26px 20px 28px; text-align: center;
+        max-width: 340px; margin: 0 auto;
+        color: #fff; font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
+      .dml-preview-logo { display: block; height: auto; max-width: 90%; margin: 0 auto 14px; }
+      .dml-preview-characters { display: block; height: auto; max-width: none; margin: 0 auto 10px; }
+      .dml-preview-title { font-size: 32px; line-height: 1.15; font-weight: 700; margin: 6px auto; max-width: 100%; }
+      .dml-preview-sub { font-size: 13px; line-height: 1.5; color: #b8bde4; max-width: 32ch; margin: 0 auto 14px; }
+      .dml-preview-btn {
+        display: inline-block; padding: 11px 24px; border-radius: 12px;
+        background: #10153f; border: 1px solid rgba(255,255,255,0.14);
+        color: #fff; font-weight: 700; font-size: 14px;
+      }
+      .dml-preview-caption { font-size: 11px; color: #8a8d91; text-align: center; margin: 8px 0 0; }
+
       .dml-trend { display: flex; align-items: stretch; gap: 10px; }
       .dml-trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
       .dml-trend-count { font-size: 11px; font-weight: 700; color: #6d7175; height: 14px; }
