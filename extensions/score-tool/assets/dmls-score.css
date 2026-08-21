@@ -89,8 +89,14 @@
 .dmls-card-body {
   flex: 1 1 auto;
   /* Safety net only — in normal use the card has no max-height, so it grows
-     with content and this never has anything to scroll. */
+     with content and this never has anything to scroll. overflow-x must stay
+     explicit: setting only overflow-y makes overflow-x compute to auto too,
+     which turns this into its own horizontal scroll container and breaks the
+     welcome-screen character illustration's bleed (it relies on .dmls-card's
+     overflow:hidden being the only horizontal clip — see
+     .dmls-welcome-characters below). */
   overflow-y: auto;
+  overflow-x: visible;
   padding-right: 2px; /* keeps the scrollbar (where visible) off the text */
 }
 /* Opt-in "fixed header + fixed footer, only the middle list scrolls" layout
