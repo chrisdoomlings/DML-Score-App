@@ -829,13 +829,15 @@
   function renderWinner() {
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var top = ranked.length ? total(ranked[0]) : 0;
-    var winners = ranked.filter(function (p) { return total(p) === top; });
-    var winNames = winners.map(function (p) { return esc(p.name); }).join(' <span class="dmls-amp">&amp;</span> ');
-    var meWon = winners.some(function (p) { return p.isCustomer; });
-    // The hero name display is sized for the common case (1, occasionally 2
-    // tied players) — a big multi-way tie would otherwise wrap into an
-    // unreadable wall of giant text, so it steps down instead.
-    var winNameSizeClass = winners.length > 4 ? " dmls-win-name-xs" : winners.length > 1 ? " dmls-win-name-sm" : "";
+    // The hero spotlight always names exactly one winner, even on a tie —
+    // showing every tied name turned into an unreadable wall of text with
+    // more than a couple of players. ranked[0] is always a top scorer by
+    // construction (stable sort keeps the players' original order among
+    // ties), so it's a reasonable single pick. The full score list below
+    // still shows and gold-highlights everyone who actually tied for first.
+    var winner = ranked[0];
+    var winnerName = winner ? esc(winner.name) : "";
+    var meWon = !!(winner && winner.isCustomer);
 
     // Three states for the logged-in customer's widget, per the winner-screen
     // mock: still saving / failed to save (unchanged), then once lastResult
@@ -901,7 +903,7 @@
       '<div class="dmls-win-main">' +
       logoHTML("dmls-win-logo") +
       '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
-      '<h1 class="dmls-win-name' + winNameSizeClass + '">' + winNames + "</h1>" +
+      '<h1 class="dmls-win-name">' + winnerName + "</h1>" +
       '<p class="dmls-win-points">' + top + " points</p>" +
       (meWon ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
       (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" loading="lazy">' : "") +

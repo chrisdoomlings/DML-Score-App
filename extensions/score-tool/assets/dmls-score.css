@@ -349,11 +349,6 @@
   font-size: clamp(38px, 12vw, 52px); line-height: 1.05; margin: 0 0 4px;
   overflow-wrap: anywhere;
 }
-/* Steps down for tied winners (see winNameSizeClass in dmls-score.js) — a
-   3+-way tie at the single-winner size wraps into an unreadable wall of
-   giant text; a 1-2 player win is the common case and keeps the full size. */
-.dmls-win-name-sm { font-size: clamp(26px, 9vw, 36px); line-height: 1.15; }
-.dmls-win-name-xs { font-size: clamp(17px, 6vw, 23px); line-height: 1.3; }
 .dmls-win-points { font-size: 15px; color: var(--dmls-ink-dim); margin: 0 0 4px; }
 .dmls-win-art {
   display: block; width: 100%; max-width: var(--dmls-win-art-size, 260px); height: auto;
