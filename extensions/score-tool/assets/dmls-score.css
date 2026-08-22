@@ -391,7 +391,12 @@
    above), so a wider illustration bleeds off both edges symmetrically
    instead of being squeezed to fit. 320px here is just the pre-JS fallback,
    used only until /config resolves and sets the real inline width. */
-.dmls-welcome-characters { display: block; width: 320px; max-width: none; height: auto; margin: 0 auto 12px; }
+/* !important throughout: many theme stylesheets ship a global
+   `img { max-width: 100% !important }` responsive-image reset, which (being
+   !important) would otherwise beat both this rule and the inline width the
+   JS sets per the admin's setting, silently capping/squeezing the
+   illustration and breaking the symmetric-bleed centering above. */
+.dmls-welcome-characters { display: block !important; width: 320px; max-width: none !important; height: auto !important; margin: 0 auto 12px !important; }
 
 .dmls-welcome-chars { display: flex; justify-content: center; align-items: flex-end; gap: 28px; margin: 4px 0 10px; min-height: 64px; }
 .dmls-char {

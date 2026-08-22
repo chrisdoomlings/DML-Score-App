@@ -290,7 +290,7 @@
       '<div class="dmls-card dmls-anim-in">' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
-      (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" style="width:' + charactersWidth + 'px" loading="lazy">' : "") +
+      (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" style="width:' + charactersWidth + 'px !important" loading="lazy">' : "") +
       ((hasBee || hasFish)
         ? '<div class="dmls-welcome-chars" aria-hidden="true">' +
           (hasBee ? '<div class="dmls-char dmls-char-bee" id="dmls-char-bee"' + charStyle(images.beeNormal, images.beeHover) + '></div>' : "") +
