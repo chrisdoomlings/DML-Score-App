@@ -35,10 +35,10 @@
   var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
   // Welcome screen character illustration + heading layout — all populated
   // from /config, matching the score_settings DB defaults until it loads.
-  // charactersWidth can exceed the card's own width: .dmls-card clips via
-  // overflow:hidden, so a wider illustration bleeds off both edges instead
-  // of being squeezed to fit.
-  var charactersWidth = 320; // px
+  // charactersWidth is still synced from /config and kept editable in
+  // Settings, but no longer drives the illustration's rendered size — that's
+  // now a fixed responsive width+bleed in dmls-score.css (.dmls-welcome-characters).
+  var charactersWidth = 320; // px; unused for rendering, see note above
   var headingWidth = 320; // px; max-width, controls line wrapping
   var headingFontSize = 32; // px
   function logoHTML(cls) {
@@ -290,7 +290,7 @@
       '<div class="dmls-card dmls-anim-in">' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
-      (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" style="width:' + charactersWidth + 'px !important" loading="lazy">' : "") +
+      (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" loading="lazy">' : "") +
       ((hasBee || hasFish)
         ? '<div class="dmls-welcome-chars" aria-hidden="true">' +
           (hasBee ? '<div class="dmls-char dmls-char-bee" id="dmls-char-bee"' + charStyle(images.beeNormal, images.beeHover) + '></div>' : "") +

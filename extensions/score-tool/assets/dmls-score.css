@@ -385,18 +385,18 @@
    set from JS once /config resolves); an empty slot just stays hidden. */
 /* Admin-uploaded hero illustration (images.characters) shown above the welcome
    heading — a single static image, distinct from the animated bee/fish pair
-   above. Hidden entirely when unset. Width is set inline per the admin's
-   "Character illustration width" setting and is deliberately allowed to
-   exceed the card's own width — .dmls-card clips via overflow:hidden (see
-   above), so a wider illustration bleeds off both edges symmetrically
-   instead of being squeezed to fit. 320px here is just the pre-JS fallback,
-   used only until /config resolves and sets the real inline width. */
+   above. Hidden entirely when unset. Width is CSS-driven (not the admin's
+   "Character illustration width" px setting — that field stays in Settings
+   but no longer affects this image) so it always fills the card's content
+   width and bleeds a fixed amount past the card's own edge on every screen
+   size, not just at one fixed px. .dmls-card clips via overflow:hidden (see
+   above), so the bleed reads as the illustration being symmetrically cut off
+   by the card edge instead of squeezed to fit inside it. */
 /* !important throughout: many theme stylesheets ship a global
    `img { max-width: 100% !important }` responsive-image reset, which (being
-   !important) would otherwise beat both this rule and the inline width the
-   JS sets per the admin's setting, silently capping/squeezing the
-   illustration and breaking the symmetric-bleed centering above. */
-.dmls-welcome-characters { display: block !important; width: 320px; max-width: none !important; height: auto !important; margin: 0 auto 12px !important; }
+   !important) would otherwise beat this rule, silently capping/squeezing the
+   illustration and breaking the bleed/centering below. */
+.dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; }
 
 .dmls-welcome-chars { display: flex; justify-content: center; align-items: flex-end; gap: 28px; margin: 4px 0 10px; min-height: 64px; }
 .dmls-char {
@@ -469,7 +469,7 @@ body.dmls-modal-lock { overflow: hidden; }
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 #dmls-modal .dmls-modal-close:hover { background: var(--dmls-coral); }
-#dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px; }
+#dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0; }
 /* Descendant, not direct-child — .dmls-card sits inside #dmls-app or #dmls-achv,
    both children of .dmls-modal-body. */
 #dmls-modal .dmls-modal-body .dmls-card { margin: 0; }

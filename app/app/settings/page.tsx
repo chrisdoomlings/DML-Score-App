@@ -366,10 +366,7 @@ export default function SettingsPage() {
                 )}
                 {settings.images.characters && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    className="dml-preview-characters" src={settings.images.characters} alt=""
-                    style={{ width: settings.charactersWidth }}
-                  />
+                  <img className="dml-preview-characters" src={settings.images.characters} alt="" />
                 )}
                 <h3
                   className="dml-preview-title"
@@ -384,7 +381,7 @@ export default function SettingsPage() {
             </div>
             <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
               <div>
-                <label className="dml-label">Character illustration width (px)</label>
+                <label className="dml-label">Character illustration width (px, unused — storefront is full-bleed)</label>
                 <input
                   className="dml-input dml-input-sm" type="number" min={60} max={900} value={settings.charactersWidth}
                   onChange={(e) => setSettings({ ...settings, charactersWidth: Number(e.target.value) })}

@@ -164,7 +164,7 @@ export function GlobalStyle() {
         color: #fff; font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
       }
       .dml-preview-logo { display: block; height: auto; max-width: 90%; margin: 0 auto 14px; }
-      .dml-preview-characters { display: block; height: auto; max-width: none; margin: 0 auto 10px; }
+      .dml-preview-characters { display: block; height: auto; width: calc(100% + 72px); max-width: none; margin: 0 -36px 10px; }
       .dml-preview-title { font-size: 32px; line-height: 1.15; font-weight: 700; margin: 6px auto; max-width: 100%; }
       .dml-preview-sub { font-size: 13px; line-height: 1.5; color: #b8bde4; max-width: 32ch; margin: 0 auto 14px; }
       .dml-preview-btn {
