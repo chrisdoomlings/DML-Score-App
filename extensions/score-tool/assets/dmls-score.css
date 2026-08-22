@@ -31,7 +31,12 @@
 }
 #dmls-root *, #dmls-root *::before, #dmls-root *::after,
 #dmls-modal *, #dmls-modal *::before, #dmls-modal *::after { box-sizing: border-box; }
-#dmls-root button, #dmls-modal button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+#dmls-root button, #dmls-modal button {
+  font: inherit; cursor: pointer; border: 0; background: none; color: inherit;
+  /* Without this, some browsers keep native button chrome under the
+     background colors set below (green pills rendering white/grey instead). */
+  -webkit-appearance: none; appearance: none;
+}
 #dmls-root button:focus-visible, #dmls-root input:focus-visible, #dmls-root a:focus-visible,
 #dmls-modal button:focus-visible, #dmls-modal input:focus-visible, #dmls-modal a:focus-visible { outline: 3px solid var(--dmls-gold); outline-offset: 2px; }
 #dmls-root ul, #dmls-modal ul { list-style: none; margin: 0; padding: 0; }
@@ -512,6 +517,15 @@ body.dmls-modal-lock { overflow: hidden; }
   display: flex; flex-direction: column;
 }
 #dmls-modal .dmls-modal-card.dmls-modal-wide { width: min(94vw, 1040px); }
+/* Achievements needs .dmls-modal-card to have a *definite* height, not just
+   the max-height cap it normally relies on — percentage heights (the
+   #dmls-achv .dmls-card fix above) only resolve against a definite
+   containing-block height; a max-height-only box doesn't count, so without
+   this the browser silently falls back to auto-sizing and the old
+   card-grows/modal-scrolls behavior returns. Scoped to a toggled class (see
+   openAchievementsModal/render in dmls-score.js) so every other screen keeps
+   shrinking to its own content instead of always being forced to full height. */
+#dmls-modal .dmls-modal-card.dmls-modal-tall { height: 90vh; }
 /* Kept fully inside the card (not poking past its edge) so it can never be
    clipped by the viewport on narrow phones — the primary target device. */
 #dmls-modal .dmls-modal-close {
@@ -631,23 +645,40 @@ body.dmls-modal-lock { overflow: hidden; }
   padding: 7px; border-radius: 8px;
 }
 
-.dmls-hist-list { display: flex; flex-direction: column; gap: 8px; }
+.dmls-hist-list { display: flex; flex-direction: column; gap: 14px; }
 .dmls-hist-row {
-  display: flex; flex-direction: column; gap: 4px;
-  background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
-  border-radius: 12px; padding: 10px 14px; font-size: 13.5px; text-align: left;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 26px; padding: 18px 20px; text-align: center;
 }
-.dmls-hist-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dmls-hist-title { font-style: italic; font-weight: 700; font-size: 16px; margin: 0 0 10px; overflow-wrap: anywhere; }
+.dmls-hist-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--dmls-ink-dim); }
 .dmls-hist-date { color: var(--dmls-ink-faint); font-weight: 700; }
-.dmls-hist-info { color: var(--dmls-ink-dim); overflow-wrap: anywhere; }
-.dmls-hist-more { color: var(--dmls-ink-dim); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; flex: none; }
-.dmls-hist-more:hover { color: var(--dmls-ink); }
-.dmls-hist-detail { margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--dmls-line); display: flex; flex-direction: column; gap: 4px; }
+.dmls-hist-more { color: var(--dmls-ink); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; flex: none; }
+.dmls-hist-more:hover { color: var(--dmls-ink-dim); }
+.dmls-hist-detail { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--dmls-line); display: flex; flex-direction: column; gap: 4px; text-align: left; }
 .dmls-hist-detail-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--dmls-ink-dim); }
 .dmls-hist-detail-row b { color: var(--dmls-ink); font-weight: 700; }
 .dmls-hist-empty { font-size: 14px; color: var(--dmls-ink-dim); text-align: center; margin-top: 18px; }
+/* Bottom fade hint that there's more to scroll — scoped to achievements
+   only (not the shared .dmls-scroll-mid base, which Add Names/scoring steps
+   also use) since only this screen's design called for it. Always-on rather
+   than JS-toggled based on actual scroll overflow, which is a simplification:
+   it dims the last item's bottom edge slightly even on short lists that don't
+   need to scroll. */
+#dmls-achv .dmls-scroll-mid {
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+}
 
 .dmls-btn-full { width: 100%; }
+/* Play Doomlings (achievements/history footer) — scoped by id, not the
+   shared .dmls-btn-go, so Start scoring/Rematch!/Create account etc. keep
+   their existing shape/width; only this button gets the full-stadium,
+   fit-to-text treatment from the mock. */
+#dmls-achv-play {
+  width: auto; padding: 17px 40px; border-radius: 999px;
+  font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em;
+}
 
 @media (min-width: 640px) {
   .dmls-achv-grid { grid-template-columns: repeat(3, 1fr); }

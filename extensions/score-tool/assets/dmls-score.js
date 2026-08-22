@@ -301,6 +301,10 @@
   function render() {
     var run = function () {
       modalCardEl.classList.toggle("dmls-modal-wide", state.screen === 6);
+      // render() only ever runs for #dmls-app (game-flow) screens, never for
+      // achievements — so unconditionally clearing "tall" here is safe and
+      // is what un-sets it after leaving achv via the Play Doomlings button.
+      modalCardEl.classList.remove("dmls-modal-tall");
       if (productsEl && state.screen !== 6) productsEl.hidden = true;
       if (state.screen === 0) renderWelcome();
       else if (state.screen === 1) renderPlayers();
@@ -630,6 +634,10 @@
     // card — this screen is always narrow, so clear it explicitly instead of
     // relying on render()'s state.screen===6 toggle, which doesn't run here.
     modalCardEl.classList.remove("dmls-modal-wide");
+    // Gives .dmls-modal-card a definite height so the #dmls-achv .dmls-card
+    // height:100% chain (dmls-score.css) can actually resolve — see that
+    // rule's comment for why max-height alone isn't enough.
+    modalCardEl.classList.add("dmls-modal-tall");
     achvEl.hidden = false;
     modalDeepLinked = !!fromHash;
     achvTab = "achv";
@@ -668,7 +676,7 @@
       '<div class="dmls-card-head">' + headHTML + "</div>" +
       '<div class="dmls-scroll-mid">' + midHTML + "</div>" +
       "</div>" +
-      '<div class="dmls-nav"><button type="button" class="dmls-btn dmls-btn-go dmls-btn-full" id="dmls-achv-play">Play Doomlings</button></div>' +
+      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-achv-play">Play Doomlings</button><span class="dmls-spacer"></span></div>' +
       "</div>";
   }
 
@@ -728,11 +736,12 @@
     // No win badge/border here per client request — the old .dmls-won /
     // .dmls-hist-badge markup is intentionally not carried over.
     return '<li class="dmls-hist-row">' +
-      '<div class="dmls-hist-top">' +
+      '<p class="dmls-hist-title">' + esc((g.winnerNames || []).join(" & ")) + " Won with " + g.topScore + " pts.</p>" +
+      '<div class="dmls-hist-meta">' +
       '<span class="dmls-hist-date">' + when + "</span>" +
+      "<span>" + g.playerCount + " Players</span>" +
       '<button type="button" class="dmls-hist-more" data-more="' + idx + '">' + (expanded ? "View Less" : "View More") + "</button>" +
       "</div>" +
-      '<span class="dmls-hist-info">' + esc((g.winnerNames || []).join(" & ")) + " won · " + g.topScore + " pts · " + g.playerCount + " players</span>" +
       '<div class="dmls-hist-detail" id="dmls-hist-detail-' + idx + '"' + (expanded ? "" : " hidden") + ">" + detail + "</div>" +
       "</li>";
   }
