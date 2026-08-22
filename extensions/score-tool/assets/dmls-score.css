@@ -93,17 +93,33 @@
 }
 .dmls-card-body {
   flex: 1 1 auto;
-  /* Safety net only — in normal use the card has no max-height, so it grows
-     with content and this never has anything to scroll. overflow-x must stay
-     explicit: setting only overflow-y makes overflow-x compute to auto too,
-     which turns this into its own horizontal scroll container and breaks the
-     welcome-screen character illustration's bleed (it relies on .dmls-card's
-     overflow:hidden being the only horizontal clip — see
-     .dmls-welcome-characters below). */
+  /* On welcome (screen 0, no .dmls-modal-tall) this stays a no-op safety net
+     — the card has no max-height there, so it just grows with content and
+     this never has anything to scroll. On winner (.dmls-modal-tall gives
+     .dmls-card a definite height — see #dmls-modal .dmls-modal-card rule)
+     this is the *actual* scroll container, same role .dmls-scroll-mid plays
+     for the split screens, hence the matching scrollbar/fade below.
+     overflow-x must stay explicit: setting only overflow-y makes overflow-x
+     compute to auto too, which turns this into its own horizontal scroll
+     container and breaks the welcome-screen character illustration's bleed
+     (it relies on .dmls-card's overflow:hidden being the only horizontal
+     clip — see .dmls-welcome-characters below). */
   overflow-y: auto;
   overflow-x: visible;
   padding-right: 2px; /* keeps the scrollbar (where visible) off the text */
 }
+/* Scrollbar/fade only when this is actually the bounded scroll container
+   (.dmls-modal-tall screens — currently just winner). Unscoped, the mask
+   would permanently dim the bottom of short, never-scrolling screens like
+   welcome, which never gets .dmls-modal-tall. */
+.dmls-modal-tall .dmls-card-body {
+  scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12);
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+}
+.dmls-modal-tall .dmls-card-body::-webkit-scrollbar { width: 5px; }
+.dmls-modal-tall .dmls-card-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+.dmls-modal-tall .dmls-card-body::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
 /* Opt-in "fixed header + fixed footer, only the middle list scrolls" layout
    used by the Add Names and 4 scoring-step screens — .dmls-nav (Back/Next)
    already lives outside .dmls-card-body as a flex:none sibling, so pairing
