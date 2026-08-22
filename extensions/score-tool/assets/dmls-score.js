@@ -301,15 +301,6 @@
   function render() {
     var run = function () {
       modalCardEl.classList.toggle("dmls-modal-wide", state.screen === 6);
-      // Screens 1-6 (Add Names, the 4 scoring steps, winner) all need
-      // .dmls-modal-card to have a *definite* height so their own scroll
-      // area (.dmls-scroll-mid for the split screens, .dmls-card-body for
-      // winner) actually becomes the scroll container, instead of
-      // #dmls-modal-body scrolling the whole card. Only welcome (0) isn't
-      // covered — short, fixed content, keeps shrinking to fit. This also
-      // un-sets "tall" after leaving achievements via the Play Doomlings
-      // button, since render() only ever runs for #dmls-app.
-      modalCardEl.classList.toggle("dmls-modal-tall", state.screen >= 1 && state.screen <= 6);
       if (productsEl && state.screen !== 6) productsEl.hidden = true;
       if (state.screen === 0) renderWelcome();
       else if (state.screen === 1) renderPlayers();
@@ -639,10 +630,6 @@
     // card — this screen is always narrow, so clear it explicitly instead of
     // relying on render()'s state.screen===6 toggle, which doesn't run here.
     modalCardEl.classList.remove("dmls-modal-wide");
-    // Gives .dmls-modal-card a definite height so the #dmls-achv .dmls-card
-    // height:100% chain (dmls-score.css) can actually resolve — see that
-    // rule's comment for why max-height alone isn't enough.
-    modalCardEl.classList.add("dmls-modal-tall");
     achvEl.hidden = false;
     modalDeepLinked = !!fromHash;
     achvTab = "achv";
@@ -847,13 +834,8 @@
   /* --- winner --- */
   function renderWinner() {
     // Reached directly from finishGame()/renderGuess(), bypassing render()'s
-    // dispatcher — so the wide/tall layout classes have to be set here, not
-    // there. Winner needs "tall" too: with enough players its content (logo,
-    // heading, art, full score list, 3 buttons, 3 widgets) reliably exceeds
-    // the viewport, and without a definite .dmls-modal-card height the
-    // .dmls-card-body scroll below never gets bounded — the whole card grows
-    // and #dmls-modal-body ends up scrolling everything instead.
-    modalCardEl.classList.add("dmls-modal-wide", "dmls-modal-tall");
+    // dispatcher — so the wide-layout class has to be set here, not there.
+    modalCardEl.classList.add("dmls-modal-wide");
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var top = ranked.length ? total(ranked[0]) : 0;
     var winners = ranked.filter(function (p) { return total(p) === top; });

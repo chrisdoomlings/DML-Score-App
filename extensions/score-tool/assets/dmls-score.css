@@ -93,63 +93,44 @@
   /* Every screen (welcome, players, the four score steps, guess, winner)
      shares this one floor height — admin-configurable via the "Card minimum
      height" setting, --dmls-card-min-height (falls back to the DB default of
-     560px if the /config fetch hasn't landed yet). It's a floor, not a
-     ceiling: a screen whose content needs more room just grows the card past
-     it, and #dmls-modal-body scrolls the whole card as a last resort. */
+     560px if the /config fetch hasn't landed yet). Every screen now also
+     gets a matching *ceiling*: #dmls-modal .dmls-modal-card is a fixed 90vh
+     and #dmls-app/#dmls-achv/.dmls-card all inherit height:100% from it (see
+     that rule), so every screen is the same fixed size and content that
+     overflows scrolls internally instead of resizing the modal. */
   min-height: var(--dmls-card-min-height, 560px);
   display: flex;
   flex-direction: column;
 }
 .dmls-card-body {
   flex: 1 1 auto;
-  /* On welcome (screen 0, no .dmls-modal-tall) this stays a no-op safety net
-     — the card has no max-height there, so it just grows with content and
-     this never has anything to scroll. On winner (.dmls-modal-tall gives
-     .dmls-card a definite height — see #dmls-modal .dmls-modal-card rule)
-     this is the *actual* scroll container, same role .dmls-scroll-mid plays
-     for the split screens, hence the matching scrollbar/fade below.
-     overflow-x must stay explicit: setting only overflow-y makes overflow-x
-     compute to auto too, which turns this into its own horizontal scroll
-     container and breaks the welcome-screen character illustration's bleed
-     (it relies on .dmls-card's overflow:hidden being the only horizontal
-     clip — see .dmls-welcome-characters below). */
+  /* The bounded scroll container for any screen that isn't .dmls-split
+     (welcome, winner) — same role .dmls-scroll-mid plays for the split
+     screens below, hence the matching scrollbar/fade. overflow-x must stay
+     explicit: setting only overflow-y makes overflow-x compute to auto too,
+     which turns this into its own horizontal scroll container and breaks the
+     welcome-screen character illustration's bleed (it relies on .dmls-card's
+     overflow:hidden being the only horizontal clip — see
+     .dmls-welcome-characters below). */
   overflow-y: auto;
   overflow-x: visible;
   padding-right: 2px; /* keeps the scrollbar (where visible) off the text */
-}
-/* Scrollbar/fade only when this is actually the bounded scroll container
-   (.dmls-modal-tall screens — currently just winner). Unscoped, the mask
-   would permanently dim the bottom of short, never-scrolling screens like
-   welcome, which never gets .dmls-modal-tall. */
-.dmls-modal-tall .dmls-card-body {
   scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12);
   -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
 }
-.dmls-modal-tall .dmls-card-body::-webkit-scrollbar { width: 5px; }
-.dmls-modal-tall .dmls-card-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
-.dmls-modal-tall .dmls-card-body::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
+.dmls-card-body::-webkit-scrollbar { width: 5px; }
+.dmls-card-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+.dmls-card-body::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
 /* Opt-in "fixed header + fixed footer, only the middle list scrolls" layout
    used by the Add Names and 4 scoring-step screens — .dmls-nav (Back/Next)
    already lives outside .dmls-card-body as a flex:none sibling, so pairing
    this with .dmls-scroll-mid is what keeps only the player/score list
-   scrolling instead of the whole card body (or, previously, nothing at all
-   until the card outgrew the viewport). */
+   scrolling instead of the whole card body. */
 .dmls-card-body.dmls-split { display: flex; flex-direction: column; overflow: hidden; padding-right: 0; min-height: 0; }
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
 .dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 6px; margin: 0 -6px; }
 .dmls-card-body.dmls-split > .dmls-hint { flex: none; }
-/* By default .dmls-card has no max-height (see the .dmls-card-body comment
-   above — it's meant to grow past its floor height with #dmls-modal-body
-   scrolling the whole thing as a last resort), which means .dmls-scroll-mid
-   above never actually gets a bounded height to scroll within on its own —
-   every .dmls-split screen's list just grows the whole card and modal-body
-   scrolls everything (header/list/nav) together instead of just the list.
-   The actual height:100% fix that corrects this lives further down, scoped
-   to .dmls-modal-tall (see the #dmls-modal .dmls-modal-card rule) since it
-   needs .dmls-modal-card to have a definite height first for percentages to
-   resolve at all — this comment stays here as the "why" for anyone landing
-   on .dmls-scroll-mid first. */
 /* Custom scrollbar for every .dmls-scroll-mid list (Add Names, scoring
    steps, achievements grid, history list) — thin green thumb instead of the
    browser default, matching the mock. */
@@ -552,24 +533,22 @@ body.dmls-modal-lock { overflow: hidden; }
 #dmls-modal .dmls-modal-backdrop {
   position: absolute; inset: 0; background: rgba(6, 6, 22, 0.72);
 }
+/* Every screen — welcome, Add Names, the 4 scoring steps, winner,
+   achievements — is now the same fixed size (height:90vh, not just capped at
+   it), so navigating between them never changes the modal's footprint. This
+   also has to be a *definite* height, not just the max-height it used to
+   rely on: percentage heights (the height:100% chain right below) only
+   resolve against a definite containing-block height, so without this the
+   browser falls back to auto-sizing and scrolling happens on
+   #dmls-modal-body (the whole card — header/list/nav together) instead of
+   just .dmls-scroll-mid/.dmls-card-body. */
 #dmls-modal .dmls-modal-card {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(92vw, 520px); max-height: 90vh;
+  width: min(92vw, 520px); height: 90vh; max-height: 90vh;
   display: flex; flex-direction: column;
 }
 #dmls-modal .dmls-modal-card.dmls-modal-wide { width: min(94vw, 1040px); }
-/* .dmls-split screens (Add Names, the 4 scoring steps, achievements) need
-   .dmls-modal-card to have a *definite* height, not just the max-height cap
-   it normally relies on — percentage heights (the height:100% chain right
-   below) only resolve against a definite containing-block height; a
-   max-height-only box doesn't count, so without this the browser silently
-   falls back to auto-sizing and scrolling happens on #dmls-modal-body (the
-   whole card — header/list/nav together) instead of just .dmls-scroll-mid.
-   Toggled by both openAchievementsModal() and render() in dmls-score.js;
-   welcome/winner aren't split layouts and keep shrinking to their own
-   content instead of always being forced to full height. */
-#dmls-modal .dmls-modal-card.dmls-modal-tall { height: 90vh; }
-.dmls-modal-tall #dmls-app, .dmls-modal-tall #dmls-achv, .dmls-modal-tall .dmls-card { height: 100%; }
+#dmls-app, #dmls-achv, .dmls-card { height: 100%; }
 /* Kept fully inside the card (not poking past its edge) so it can never be
    clipped by the viewport on narrow phones — the primary target device. */
 #dmls-modal .dmls-modal-close {
