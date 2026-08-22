@@ -300,7 +300,6 @@
 
   function render() {
     var run = function () {
-      modalCardEl.classList.toggle("dmls-modal-wide", state.screen === 6);
       if (productsEl && state.screen !== 6) productsEl.hidden = true;
       if (state.screen === 0) renderWelcome();
       else if (state.screen === 1) renderPlayers();
@@ -625,11 +624,6 @@
   function openAchievementsModal(fromHash) {
     view = "achv";
     app.hidden = true;
-    // The winner screen's own "Achievements" button (see winnerClicks) is a
-    // new entry point that runs while the wide layout is still on the modal
-    // card — this screen is always narrow, so clear it explicitly instead of
-    // relying on render()'s state.screen===6 toggle, which doesn't run here.
-    modalCardEl.classList.remove("dmls-modal-wide");
     achvEl.hidden = false;
     modalDeepLinked = !!fromHash;
     achvTab = "achv";
@@ -833,9 +827,6 @@
 
   /* --- winner --- */
   function renderWinner() {
-    // Reached directly from finishGame()/renderGuess(), bypassing render()'s
-    // dispatcher — so the wide-layout class has to be set here, not there.
-    modalCardEl.classList.add("dmls-modal-wide");
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var top = ranked.length ? total(ranked[0]) : 0;
     var winners = ranked.filter(function (p) { return total(p) === top; });

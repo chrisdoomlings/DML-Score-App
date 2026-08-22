@@ -547,7 +547,6 @@ body.dmls-modal-lock { overflow: hidden; }
   width: min(92vw, 520px); height: 90vh; max-height: 90vh;
   display: flex; flex-direction: column;
 }
-#dmls-modal .dmls-modal-card.dmls-modal-wide { width: min(94vw, 1040px); }
 #dmls-app, #dmls-achv, .dmls-card { height: 100%; }
 /* Kept fully inside the card (not poking past its edge) so it can never be
    clipped by the viewport on narrow phones — the primary target device. */
