@@ -29,18 +29,27 @@
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--dmls-ink);
 }
-#dmls-root *, #dmls-root *::before, #dmls-root *::after,
-#dmls-modal *, #dmls-modal *::before, #dmls-modal *::after { box-sizing: border-box; }
-#dmls-root button, #dmls-modal button {
+/* :where() everywhere below is deliberate, not decorative — #dmls-root and
+   #dmls-modal are IDs, so a plain "#dmls-root button { border: 0 }" reset
+   would carry higher specificity than any single-class modifier like
+   .dmls-btn-outline-gold, and — regardless of source order — would always
+   win the property fight, leaving buttons borderless/unfilled text (this is
+   exactly what happened to Generate Trophy: the reset's border:0/
+   background:none was beating .dmls-btn-outline-gold's border/background
+   every time). :where(#dmls-root, #dmls-modal) contributes zero specificity,
+   so these resets always lose to any component class as intended. */
+:where(#dmls-root, #dmls-modal) *, :where(#dmls-root, #dmls-modal) *::before, :where(#dmls-root, #dmls-modal) *::after { box-sizing: border-box; }
+:where(#dmls-root, #dmls-modal) button {
   font: inherit; cursor: pointer; border: 0; background: none; color: inherit;
   /* Without this, some browsers keep native button chrome under the
      background colors set below (green pills rendering white/grey instead). */
   -webkit-appearance: none; appearance: none;
 }
-#dmls-root button:focus-visible, #dmls-root input:focus-visible, #dmls-root a:focus-visible,
-#dmls-modal button:focus-visible, #dmls-modal input:focus-visible, #dmls-modal a:focus-visible { outline: 3px solid var(--dmls-gold); outline-offset: 2px; }
-#dmls-root ul, #dmls-modal ul { list-style: none; margin: 0; padding: 0; }
-#dmls-root a, #dmls-modal a { color: inherit; }
+:where(#dmls-root, #dmls-modal) button:focus-visible,
+:where(#dmls-root, #dmls-modal) input:focus-visible,
+:where(#dmls-root, #dmls-modal) a:focus-visible { outline: 3px solid var(--dmls-gold); outline-offset: 2px; }
+:where(#dmls-root, #dmls-modal) ul { list-style: none; margin: 0; padding: 0; }
+:where(#dmls-root, #dmls-modal) a { color: inherit; }
 
 /* ---------------------------------------------------------------------
    On-page launcher (#dmls-root) — replaces the old inline-rendered app.
