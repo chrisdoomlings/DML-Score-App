@@ -234,7 +234,7 @@ export default function SettingsPage() {
           <section className="dml-card dml-card-wide">
             <h2 className="dml-card-title">Achievements</h2>
             <p className="dml-card-hint">
-              20 fixed achievement triggers. Toggle which are active and customize the name, icon, and
+              21 fixed achievement triggers. Toggle which are active and customize the name, icon, and
               description &mdash; description is an admin-only reminder of the trigger condition, players
               never see it (names/icons stay hidden until unlocked).
             </p>

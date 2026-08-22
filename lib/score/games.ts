@@ -83,7 +83,8 @@ export async function saveGame(
   customerId: string | null,
   players: GamePlayer[],
   deviceType: "mobile" | "desktop" | null,
-  playedAtLocalDate: string | null
+  playedAtLocalDate: string | null,
+  geo: { lat: number; lng: number } | null = null
 ): Promise<{ game: SavedGame; achievementsUnlocked: AchievementUnlock[]; guessOffered: boolean }> {
   const db = getDb();
   const topScore = Math.max(...players.map((p) => p.total));
@@ -141,7 +142,7 @@ export async function saveGame(
   if (customerId && achievementsConfig) {
     const candidateKeys = await evaluateAchievements(
       db,
-      { shop, customerId, players, gamesLoggedBefore, deviceType, playedLocalDate: playedAtLocalDate },
+      { shop, customerId, players, gamesLoggedBefore, deviceType, playedLocalDate: playedAtLocalDate, geo },
       achievementsConfig
     );
 

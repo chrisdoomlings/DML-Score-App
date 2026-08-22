@@ -5,7 +5,7 @@ import { sanitizeImageUrl } from "@/lib/score/imageUrl";
 /**
  * Achievement rules — server-evaluated from validated game data only.
  * Replaces the old points/milestones system entirely (lib/score/milestones.ts,
- * now deleted): 20 fixed, stable keys. Unlike milestones, thresholds/point
+ * now deleted): 21 fixed, stable keys. Unlike milestones, thresholds/point
  * values here are NOT admin-configurable — only enabled/name/description/
  * iconUrl are (score_settings.achievements JSONB merged over
  * DEFAULT_ACHIEVEMENTS). `name` is always visible on a tile; `description`
@@ -41,7 +41,8 @@ export type AchievementKey =
   | "christmas"
   | "valentines"
   | "halloween"
-  | "birthday";
+  | "birthday"
+  | "gencon";
 
 export const ACHIEVEMENT_KEYS: AchievementKey[] = [
   "first_game_ever",
@@ -64,6 +65,7 @@ export const ACHIEVEMENT_KEYS: AchievementKey[] = [
   "valentines",
   "halloween",
   "birthday",
+  "gencon",
 ];
 
 export interface AchievementDef {
@@ -196,6 +198,12 @@ export const DEFAULT_ACHIEVEMENTS: AchievementConfig = {
     description: "Played on the customer's self-reported birthday.",
     iconUrl: null,
   },
+  gencon: {
+    enabled: true,
+    name: "Gen Conquered",
+    description: "Played Doomlings in Indianapolis during Gen Con week.",
+    iconUrl: null,
+  },
 };
 
 /** Merge stored JSONB (possibly partial/stale keys) over the defaults. */
@@ -236,8 +244,47 @@ function monthDay(date: string | Date): string {
 }
 
 /**
+ * Gen Con (Indianapolis) — venue + this-and-next-few-years' dates are fixed
+ * in code, same as every other trigger condition in this file (see the
+ * module doc comment: nothing here is admin-configurable except
+ * enabled/name/description/iconUrl). Update GENCON_DATES as Gen Con
+ * announces further-out years (https://www.gencon.com/attend/futuredates);
+ * a year missing from the table just means the achievement can't unlock
+ * that year — no error, no crash.
+ */
+const GENCON_VENUE = { lat: 39.7691, lng: -86.1653 }; // Indiana Convention Center
+const GENCON_RADIUS_KM = 2; // covers the ICC, Lucas Oil Stadium, and downtown HQ hotels
+const GENCON_DATES: Record<number, [string, string]> = {
+  2026: ["2026-07-30", "2026-08-02"],
+  2027: ["2027-08-05", "2027-08-08"],
+  2028: ["2028-08-03", "2028-08-06"],
+  2029: ["2029-08-02", "2029-08-05"],
+  2030: ["2030-08-01", "2030-08-04"],
+};
+
+/** Great-circle distance in km between two lat/lng points (haversine). */
+function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const la1 = (a.lat * Math.PI) / 180;
+  const la2 = (b.lat * Math.PI) / 180;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function isGencon(playedLocalDate: string | null, geo: { lat: number; lng: number } | null): boolean {
+  if (!playedLocalDate || !geo) return false;
+  const year = Number(playedLocalDate.slice(0, 4));
+  const window = GENCON_DATES[year];
+  if (!window) return false;
+  if (playedLocalDate < window[0] || playedLocalDate > window[1]) return false;
+  return distanceKm(GENCON_VENUE, geo) <= GENCON_RADIUS_KM;
+}
+
+/**
  * Pure/sync: everything derivable from a single game's data (keys #1-14 and
- * #16-19). Only returns keys that are both enabled in `config` and whose
+ * #16-20). Only returns keys that are both enabled in `config` and whose
  * condition is true for this game — the "first ever" semantics for
  * first_game_ever/first_game_mobile/first_game_desktop/first_tie come from
  * the caller's idempotent insert (ON CONFLICT DO NOTHING), not from querying
@@ -248,7 +295,8 @@ export function evaluateSingleGameAchievements(
   gamesLoggedBefore: number,
   deviceType: "mobile" | "desktop" | null,
   playedLocalDate: string | null,
-  config: AchievementConfig
+  config: AchievementConfig,
+  geo: { lat: number; lng: number } | null = null
 ): AchievementKey[] {
   const hits: AchievementKey[] = [];
   const hit = (key: AchievementKey, ok: boolean) => {
@@ -286,6 +334,8 @@ export function evaluateSingleGameAchievements(
     hit("valentines", md === "02-14");
     hit("halloween", md === "10-31");
   }
+
+  hit("gencon", isGencon(playedLocalDate, geo));
 
   return hits;
 }
@@ -358,6 +408,7 @@ export interface EvaluateAchievementsParams {
   gamesLoggedBefore: number;
   deviceType: "mobile" | "desktop" | null;
   playedLocalDate: string | null;
+  geo: { lat: number; lng: number } | null;
 }
 
 /**
@@ -371,10 +422,10 @@ export async function evaluateAchievements(
   params: EvaluateAchievementsParams,
   config: AchievementConfig
 ): Promise<AchievementKey[]> {
-  const { shop, customerId, players, gamesLoggedBefore, deviceType, playedLocalDate } = params;
+  const { shop, customerId, players, gamesLoggedBefore, deviceType, playedLocalDate, geo } = params;
 
   const hits = new Set<AchievementKey>(
-    evaluateSingleGameAchievements(players, gamesLoggedBefore, deviceType, playedLocalDate, config)
+    evaluateSingleGameAchievements(players, gamesLoggedBefore, deviceType, playedLocalDate, config, geo)
   );
 
   if (playedLocalDate) {

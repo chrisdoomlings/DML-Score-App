@@ -56,6 +56,44 @@
     return d.getFullYear() + "-" + m + "-" + day;
   }
 
+  // Mirrors GENCON_DATES in lib/score/achievements.ts — kept in sync there;
+  // this copy only gates *whether we bother asking for a location permission
+  // prompt at all*, so a stale/missing year here just means we skip asking
+  // (the server is the actual source of truth for whether the achievement
+  // unlocks). Update alongside the server-side table.
+  var GENCON_DATES = {
+    2026: ["2026-07-30", "2026-08-02"],
+    2027: ["2027-08-05", "2027-08-08"],
+    2028: ["2028-08-03", "2028-08-06"],
+    2029: ["2029-08-02", "2029-08-05"],
+    2030: ["2030-08-01", "2030-08-04"],
+  };
+  function inGenconWindow(dateStr) {
+    var w = GENCON_DATES[dateStr.slice(0, 4)];
+    return !!w && dateStr >= w[0] && dateStr <= w[1];
+  }
+  // Only ever prompts for location during the ~4 days/year Gen Con actually
+  // runs — outside that window this resolves to null with no permission
+  // prompt at all. Capped at 2.5s so a stalled/ignored permission dialog
+  // can't hold up saving the game; declining or timing out just means the
+  // Gen Con achievement doesn't unlock this time, no error shown.
+  function getGenconLocation() {
+    if (!navigator.geolocation || !inGenconWindow(localDateStr())) return Promise.resolve(null);
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = setTimeout(function () { if (!settled) { settled = true; resolve(null); } }, 2500);
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          if (settled) return;
+          settled = true; clearTimeout(timer);
+          resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        function () { if (settled) return; settled = true; clearTimeout(timer); resolve(null); },
+        { timeout: 2500, maximumAge: 300000 }
+      );
+    });
+  }
+
   var state = {
     screen: 0,
     players: [], // {name, we, fv, bp, mp, isCustomer}
@@ -502,10 +540,14 @@
       renderWinner();
     }, 3000);
 
-    apiPost("/game", {
-      players: state.players,
-      deviceType: DEVICE_TYPE,
-      playedAtLocalDate: localDateStr(),
+    getGenconLocation().then(function (loc) {
+      return apiPost("/game", {
+        players: state.players,
+        deviceType: DEVICE_TYPE,
+        playedAtLocalDate: localDateStr(),
+        lat: loc ? loc.lat : undefined,
+        lng: loc ? loc.lng : undefined,
+      });
     })
       .then(function (res) {
         if (!res || !res.saved) {
