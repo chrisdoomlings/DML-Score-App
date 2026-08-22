@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       images: body.images,
       tipText: body.tipText,
       homeHeading: body.homeHeading,
+      discordUrl: body.discordUrl,
       logoWidth: body.logoWidth,
       cardMinHeight: body.cardMinHeight,
       winnerImageSize: body.winnerImageSize,

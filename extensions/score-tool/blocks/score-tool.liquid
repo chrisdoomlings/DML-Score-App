@@ -41,19 +41,24 @@
               <span class="dmls-prod-price">{{ product.price | money }}</span>
             </div>
             {% if product.available %}
-              <button class="dmls-prod-buy" type="button"
+              <button class="dmls-prod-buy" type="button" aria-label="Add {{ product.title | escape }} to cart"
                 data-variant-id="{{ product.selected_or_first_available_variant.id }}"
                 data-title="{{ product.title | escape }}">
-                Add to cart
+                <span aria-hidden="true">+</span>
               </button>
             {% else %}
-              <a class="dmls-prod-buy dmls-prod-view" href="{{ product.url }}">View</a>
+              <a class="dmls-prod-buy dmls-prod-view" href="{{ product.url }}" aria-label="View {{ product.title | escape }}">
+                <span aria-hidden="true">&rsaquo;</span>
+              </a>
             {% endif %}
           </div>
         {% endfor %}
       </div>
       {% if block.settings.products_note != blank %}
         <p class="dmls-prod-note">{{ block.settings.products_note | escape }}</p>
+      {% endif %}
+      {% if block.settings.recs_collection.url %}
+        <a class="dmls-btn dmls-btn-ghost dmls-btn-full dmls-prod-more" href="{{ block.settings.recs_collection.url }}">Shop more</a>
       {% endif %}
     </div>
   {% endif %}

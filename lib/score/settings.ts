@@ -36,6 +36,7 @@ export interface ScoreSettings {
   charactersWidth: number; // px; welcome-screen character illustration — can exceed the card width to bleed off the edges (card clips via overflow:hidden)
   headingWidth: number; // px; max-width of the welcome heading, controls line wrapping
   headingFontSize: number; // px
+  discordUrl: string; // winner-screen "Join us on Discord" banner link; empty = banner hidden
 }
 
 const DEFAULTS = {
@@ -44,6 +45,7 @@ const DEFAULTS = {
   guessEveryN: 3,
   tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
   homeHeading: "",
+  discordUrl: "",
   logoWidth: 220,
   cardMinHeight: 560,
   winnerImageSize: 260,
@@ -81,6 +83,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageFishHover: string;
       tipText: string;
       homeHeading: string;
+      discordUrl: string;
       logoWidth: number;
       cardMinHeight: number;
       winnerImageSize: number;
@@ -109,6 +112,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_fish_hover  AS "imageFishHover",
            tip_text         AS "tipText",
            home_heading     AS "homeHeading",
+           discord_url      AS "discordUrl",
            logo_width       AS "logoWidth",
            card_min_height  AS "cardMinHeight",
            winner_image_size AS "winnerImageSize",
@@ -125,6 +129,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     guessEveryN: r?.guessEveryN ?? DEFAULTS.guessEveryN,
     tipText: r?.tipText ?? DEFAULTS.tipText,
     homeHeading: r?.homeHeading ?? DEFAULTS.homeHeading,
+    discordUrl: r?.discordUrl ?? DEFAULTS.discordUrl,
     logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
@@ -168,6 +173,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     images: nextImages,
     tipText: typeof s.tipText === "string" ? s.tipText.trim().slice(0, 280) : current.tipText,
     homeHeading: typeof s.homeHeading === "string" ? s.homeHeading.trim().slice(0, 120) : current.homeHeading,
+    discordUrl: typeof s.discordUrl === "string" ? sanitizeExternalUrl(s.discordUrl) : current.discordUrl,
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
@@ -181,7 +187,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       shop, achievements, guess_enabled, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
-      tip_text, home_heading, logo_width, card_min_height, winner_image_size,
+      tip_text, home_heading, discord_url, logo_width, card_min_height, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
     )
@@ -189,7 +195,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${shop}, ${jsonb(next.achievements)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
-      ${next.tipText}, ${next.homeHeading}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.discordUrl}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
     )
@@ -214,6 +220,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_fish_hover  = EXCLUDED.image_fish_hover,
       tip_text         = EXCLUDED.tip_text,
       home_heading     = EXCLUDED.home_heading,
+      discord_url      = EXCLUDED.discord_url,
       logo_width       = EXCLUDED.logo_width,
       card_min_height  = EXCLUDED.card_min_height,
       winner_image_size = EXCLUDED.winner_image_size,
@@ -223,6 +230,21 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       updated_at       = NOW()
   `;
   return next;
+}
+
+/** External link (winner-screen Discord banner) — http(s) only, rejects anything
+ * that could break out of an href attribute once interpolated on the storefront. */
+function sanitizeExternalUrl(v: string): string {
+  const trimmed = v.trim();
+  if (!trimmed) return "";
+  if (/["'<>\\\s]/.test(trimmed)) return "";
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return "";
+  } catch {
+    return "";
+  }
+  return trimmed.slice(0, 300);
 }
 
 function clampInt(v: unknown, min: number, max: number): number {

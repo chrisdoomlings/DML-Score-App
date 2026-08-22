@@ -305,25 +305,27 @@
   margin: 18px auto 4px;
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.4));
 }
-.dmls-win-cta { display: block; width: 100%; max-width: 280px; margin: 22px auto 0; padding: 16px; font-size: 17px; }
-.dmls-win-arrows {
-  display: flex; justify-content: space-between; align-items: center;
-  margin: 22px -22px -30px; padding: 14px 22px;
-  background: rgba(0, 0, 0, 0.32); border-top: 1px solid var(--dmls-line);
-  border-radius: 0 0 20px 20px;
+/* every player's score, winner (top score) picked out in gold — the badges
+   above only ever named the winner, this is the rest of the table. */
+.dmls-win-scores { width: 100%; max-width: 320px; margin: 18px auto 0; }
+.dmls-win-score-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 8px 4px; border-bottom: 1px solid var(--dmls-line);
+  font-size: 14.5px;
 }
-.dmls-arrow {
-  width: 40px; height: 40px; border-radius: 50%; flex: none;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(255, 255, 255, 0.16); color: #fff; font-size: 20px; font-weight: 700; line-height: 1;
-}
-.dmls-arrow:hover { background: rgba(255, 255, 255, 0.26); }
-.dmls-arrow-next { background: var(--dmls-green); color: #0d1200; }
-.dmls-arrow-next:hover { filter: brightness(1.08); }
-.dmls-arrow-label {
-  color: rgba(255, 255, 255, 0.6); font-size: 12px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.06em;
-}
+.dmls-win-score-row:last-child { border-bottom: none; }
+.dmls-win-score-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+.dmls-win-score-pts { color: var(--dmls-ink-dim); }
+.dmls-win-score-row-top .dmls-win-score-name,
+.dmls-win-score-row-top .dmls-win-score-pts { color: var(--dmls-gold); }
+
+.dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
+.dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
+.dmls-win-trophy { display: block; width: 100%; max-width: 280px; margin: 20px auto 0; padding: 13px; font-size: 14px; }
+
+.dmls-win-cta-row { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 14px auto 0; width: 100%; max-width: 280px; }
+.dmls-win-cta { display: block; width: 100%; padding: 16px; font-size: 17px; }
+.dmls-win-cta-secondary { width: 100%; padding: 11px; font-size: 14px; }
 
 /* widgets */
 .dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; }
@@ -342,6 +344,17 @@
   display: block; text-align: center; margin-top: 10px; font-size: 13px;
   color: var(--dmls-ink-dim); text-decoration: underline; text-underline-offset: 3px;
 }
+
+/* winner-screen Discord banner — overrides the plain dark .dmls-widget look
+   with a bright brand-gradient badge; no dedicated art asset for this yet,
+   so the gradient + emoji is the placeholder. */
+.dmls-discord-banner {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: linear-gradient(120deg, var(--dmls-coral), var(--dmls-gold) 50%, var(--dmls-green));
+  border: none; padding: 16px; text-decoration: none;
+}
+.dmls-discord-icon { font-size: 22px; line-height: 1; }
+.dmls-discord-text { font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 0.03em; color: #10153f; }
 
 /* winner-screen "games played" / "new achievement" widget variants — both
    centered, unlike the left-aligned default .dmls-widget content. */
@@ -376,11 +389,15 @@
 .dmls-prod-title:hover { text-decoration: underline; }
 .dmls-prod-price { font-size: 13px; color: var(--dmls-ink-dim); }
 .dmls-prod-buy {
-  flex: none; background: var(--dmls-green); color: #0d1200; font-weight: 700; font-size: 13px;
-  padding: 9px 14px; border-radius: 9px; text-decoration: none;
+  flex: none; width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--dmls-green); color: #0d1200; font-weight: 700; font-size: 19px; line-height: 1;
+  text-decoration: none;
 }
+.dmls-prod-buy span { margin-top: -2px; } /* optically centers the "+" glyph in the circle */
 .dmls-prod-buy[disabled] { background: rgba(255, 255, 255, 0.18); color: var(--dmls-ink); }
 .dmls-prod-note { font-size: 12px; color: var(--dmls-ink-faint); margin-top: 10px; line-height: 1.5; padding-top: 6px; }
+.dmls-prod-more { margin-top: 12px; }
 #dmls-products { margin: 0; }
 
 /* resume banner */

@@ -32,6 +32,7 @@
   var signupUrl = root.getAttribute("data-signup-url") || "/account/register";
   var loginUrl = root.getAttribute("data-login-url") || "/account/login";
   var homeTip = ""; // populated from /config; empty = tip bar hidden
+  var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
   var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
   // Welcome screen character illustration + heading layout — all populated
   // from /config, matching the score_settings DB defaults until it loads.
@@ -905,11 +906,17 @@
       "</div>" +
       (meWon ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
       (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" loading="lazy">' : "") +
-      '<button type="button" class="dmls-btn dmls-btn-go dmls-win-cta" id="dmls-cta"></button>' +
-      '<div class="dmls-win-arrows">' +
-      '<button type="button" class="dmls-arrow" id="dmls-arrow-prev" aria-label="Previous option">&lsaquo;</button>' +
-      '<span class="dmls-arrow-label" id="dmls-arrow-label"></span>' +
-      '<button type="button" class="dmls-arrow dmls-arrow-next" id="dmls-arrow-next" aria-label="Next option">&rsaquo;</button>' +
+      '<ul class="dmls-win-scores">' +
+      ranked.map(function (p) {
+        return '<li class="dmls-win-score-row' + (total(p) === top ? " dmls-win-score-row-top" : "") + '">' +
+          '<span class="dmls-win-score-name">' + esc(p.name) + "</span>" +
+          '<span class="dmls-win-score-pts">' + total(p) + " points</span></li>";
+      }).join("") +
+      "</ul>" +
+      '<button type="button" class="dmls-btn dmls-btn-outline-gold dmls-win-trophy" data-trophy>Generate Trophy</button>' +
+      '<div class="dmls-win-cta-row">' +
+      '<button type="button" class="dmls-btn dmls-btn-go dmls-win-cta" data-rematch>Rematch!</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-win-cta-secondary" data-new-players>Or New Players</button>' +
       "</div></div>" +
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
       "</div></div>";
@@ -921,21 +928,28 @@
       productsEl.classList.add("dmls-widget");
       widgets.appendChild(productsEl);
     }
+    // Discord banner goes last, below products — only when an admin has set
+    // a link in Settings (empty = hidden, no dead/placeholder-URL banner).
+    if (discordUrl && widgets) {
+      widgets.insertAdjacentHTML(
+        "beforeend",
+        '<a class="dmls-widget dmls-discord-banner" href="' + esc(discordUrl) + '" target="_blank" rel="noopener noreferrer">' +
+        '<span class="dmls-discord-icon" aria-hidden="true">💬</span>' +
+        '<span class="dmls-discord-text">Join us on Discord</span></a>'
+      );
+    }
 
     app.addEventListener("click", winnerClicks);
 
-    // Rematch / New players share one CTA button; the arrows cycle between
-    // the two so the screen reads as a single clean action instead of a
-    // crowded two-button row.
-    function doRematch() {
+    document.querySelector("[data-rematch]").addEventListener("click", function () {
       state.players.forEach(function (p) { p.we = 0; p.fv = 0; p.bp = 0; p.mp = 0; });
       lastResult = null;
       guessResult = null;
       state.screen = 2;
       save();
       render();
-    }
-    function doNewPlayers() {
+    });
+    document.querySelector("[data-new-players]").addEventListener("click", function () {
       state.players = [];
       state.customerOptedOut = false;
       lastResult = null;
@@ -943,28 +957,11 @@
       state.screen = 1;
       save();
       render();
-    }
-    var ctaActions = [
-      { label: "Rematch!", run: doRematch },
-      { label: "New players", run: doNewPlayers },
-    ];
-    var ctaIndex = 0;
-    var ctaBtn = document.getElementById("dmls-cta");
-    var ctaLabel = document.getElementById("dmls-arrow-label");
-    function bindCta() {
-      ctaBtn.textContent = ctaActions[ctaIndex].label;
-      ctaBtn.onclick = ctaActions[ctaIndex].run;
-      var other = ctaActions[(ctaIndex + 1) % ctaActions.length];
-      ctaLabel.textContent = "or " + other.label.replace(/!$/, "");
-    }
-    bindCta();
-    document.getElementById("dmls-arrow-prev").addEventListener("click", function () {
-      ctaIndex = (ctaIndex + ctaActions.length - 1) % ctaActions.length;
-      bindCta();
     });
-    document.getElementById("dmls-arrow-next").addEventListener("click", function () {
-      ctaIndex = (ctaIndex + 1) % ctaActions.length;
-      bindCta();
+    // Trophy image/download isn't built yet — this just tells the player so,
+    // rather than leaving the button looking broken.
+    document.querySelector("[data-trophy]").addEventListener("click", function () {
+      toast("Trophy generator coming soon!");
     });
 
     confettiBurst();
@@ -983,7 +980,7 @@
       })
         .then(function (r) {
           if (!r.ok) throw new Error("cart");
-          buy.textContent = "Added ✓";
+          buy.textContent = "✓"; // circular icon button — no room for "Added ✓"; the toast says the rest
           toast(buy.getAttribute("data-title") + " added to cart");
           document.dispatchEvent(new CustomEvent("dmls:cart:added"));
         })
@@ -1097,6 +1094,12 @@
         homeTip = c.tipText;
         needsRerender = true;
       }
+      // Not gated behind needsRerender/screen 0 like the rest of this block —
+      // it only affects the winner screen, which is reached directly from
+      // finishGame()/renderGuess() rather than through render()'s dispatcher,
+      // so there's nothing here to usefully re-render anyway. By the time a
+      // game finishes, /config has long since resolved at boot.
+      if (typeof c.discordUrl === "string") discordUrl = c.discordUrl;
       if (typeof c.logoWidth === "number" && c.logoWidth !== logoWidth) {
         logoWidth = c.logoWidth;
         needsRerender = true;

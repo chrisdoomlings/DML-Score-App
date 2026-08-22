@@ -19,6 +19,7 @@ interface Settings {
   images: Record<string, string>;
   tipText: string;
   homeHeading: string;
+  discordUrl: string;
   logoWidth: number;
   cardMinHeight: number;
   winnerImageSize: number;
@@ -343,6 +344,14 @@ export default function SettingsPage() {
             <input
               className="dml-input" type="text" maxLength={280} value={settings.tipText}
               onChange={(e) => setSettings({ ...settings, tipText: e.target.value })}
+            />
+            <label className="dml-label" style={{ marginTop: 14 }}>
+              Discord invite link (shown on the winner screen — leave blank to hide the banner)
+            </label>
+            <input
+              className="dml-input" type="url" maxLength={300} placeholder="https://discord.gg/…"
+              value={settings.discordUrl}
+              onChange={(e) => setSettings({ ...settings, discordUrl: e.target.value })}
             />
           </section>
 

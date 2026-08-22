@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
         images,
         tipText: settings.tipText,
         homeHeading: settings.homeHeading,
+        discordUrl: settings.discordUrl,
         logoWidth: settings.logoWidth,
         cardMinHeight: settings.cardMinHeight,
         winnerImageSize: settings.winnerImageSize,
