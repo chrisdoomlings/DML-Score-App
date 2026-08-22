@@ -109,6 +109,23 @@
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
 .dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 6px; margin: 0 -6px; }
 .dmls-card-body.dmls-split > .dmls-hint { flex: none; }
+/* Achievements only: .dmls-card has no max-height by default (see the
+   .dmls-card-body comment above — it's meant to grow past its floor height
+   with #dmls-modal-body scrolling the whole thing as a last resort), which
+   means .dmls-scroll-mid above never actually gets a bounded height to
+   scroll within here — the achievements grid just grows the whole card and
+   modal-body scrolls everything together. The design wants the opposite:
+   ACHV./HISTORY tabs and the Play Doomlings button pinned in place, only the
+   grid/list between them scrolling. Scoped to #dmls-achv (not #dmls-app) so
+   every other screen keeps its existing grow-then-modal-scrolls behavior. */
+#dmls-achv, #dmls-achv .dmls-card { height: 100%; }
+/* Custom scrollbar for every .dmls-scroll-mid list (Add Names, scoring
+   steps, achievements grid, history list) — thin green thumb instead of the
+   browser default, matching the mock. */
+.dmls-scroll-mid { scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12); }
+.dmls-scroll-mid::-webkit-scrollbar { width: 5px; }
+.dmls-scroll-mid::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+.dmls-scroll-mid::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
 /* expansion-points step gets its own art (client spec, May 2026) */
 .dmls-card-exp {
   background-image:
@@ -168,10 +185,16 @@
   transition: transform 0.12s ease;
 }
 .dmls-btn:active:not(:disabled) { transform: scale(0.97); }
-/* Dark pill CTA (client-supplied reference design) — flat var(--dmls-night)
-   fill, no drop-shadow/glow. Focus-visible ring above and the ghost border
-   below are untouched (accessibility/state, not decoration). */
-.dmls-btn-go { background: var(--dmls-night); color: #ffffff; border: 1px solid var(--dmls-line); }
+/* Bright green glowing pill CTA, matching the reference mocks (Play
+   Doomlings, Rematch!, Start scoring) — supersedes the earlier flat dark-navy
+   "client reference design" this class used, per explicit client feedback
+   that the buttons weren't matching the mock. Focus-visible ring above and
+   the ghost border below are untouched (accessibility/state, not decoration). */
+.dmls-btn-go {
+  background: var(--dmls-green); color: #0d1200; border: none;
+  box-shadow: 0 0 18px rgba(128, 210, 53, 0.55);
+}
+.dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
 .dmls-btn-ghost { border: 2px solid var(--dmls-line); color: var(--dmls-ink-dim); }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -574,8 +597,9 @@ body.dmls-modal-lock { overflow: hidden; }
 
 .dmls-achv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .dmls-achv-tile {
-  background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
-  border-radius: 14px; padding: 14px 10px; text-align: center;
+  /* No box/border per the mock — icon + name + description sit directly on
+     the card's own background, not inside a bordered card-within-a-card. */
+  padding: 14px 10px; text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
 .dmls-achv-icon {
@@ -596,7 +620,6 @@ body.dmls-modal-lock { overflow: hidden; }
 .dmls-achv-desc { font-size: 11px; color: var(--dmls-ink-dim); line-height: 1.35; }
 .dmls-achv-tile.dmls-achv-locked .dmls-achv-desc { letter-spacing: 0.12em; }
 .dmls-achv-date { font-size: 10px; color: var(--dmls-ink-faint); margin-top: 2px; }
-.dmls-achv-tile.dmls-achv-unlocked { border-color: rgba(255, 213, 74, 0.4); }
 
 .dmls-bday-form { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 4px; }
 .dmls-bday-input {
