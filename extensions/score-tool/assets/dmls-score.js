@@ -29,8 +29,8 @@
   }
 
   var heading = root.getAttribute("data-heading") || "Ready to see who won the game?";
-  var signupUrl = root.getAttribute("data-signup-url") || "/account/register";
   var loginUrl = root.getAttribute("data-login-url") || "/account/login";
+  var accountUrl = root.getAttribute("data-account-url") || "/account";
   var homeTip = ""; // populated from /config; empty = tip bar hidden
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
   var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
@@ -896,11 +896,15 @@
           "<p>Saving your game…</p></div>";
       }
     } else {
+      // Single "My Account" CTA per the mock — routes.account_url already
+      // sends an unauthenticated visitor to login (which itself links to
+      // registration), so one button covers both "never signed up" and
+      // "has an account, just isn't signed in right now" without us having
+      // to tell those two apart (we can't — both look like "no session").
       loyaltyHTML =
-        '<div class="dmls-widget"><h3 class="dmls-widget-title">Save this victory</h3>' +
-        "<p>Create or sign in to your free Doomlings account to track your game history and earn achievements.</p>" +
-        '<a class="dmls-btn dmls-btn-go" href="' + esc(signupUrl) + '">Create account</a>' +
-        '<a class="dmls-inline-link dmls-win-signin" href="' + esc(loginUrl) + '">Already have an account? Sign in</a>' +
+        '<div class="dmls-widget dmls-widget-center"><h3 class="dmls-widget-title">Save this victory</h3>' +
+        "<p>Create or Sign In to your free Doomlings account to track your game history and earn achievements.</p>" +
+        '<a class="dmls-btn dmls-btn-ghost" href="' + esc(accountUrl) + '">My Account</a>' +
         "</div>";
     }
 
@@ -909,10 +913,9 @@
       '<div class="dmls-card-body">' +
       '<div class="dmls-win-main">' +
       logoHTML("dmls-win-logo") +
-      '<div class="dmls-win-badges">' +
-      '<span class="dmls-win-badge dmls-win-badge-name">' + winNames + "</span>" +
-      '<span class="dmls-win-badge dmls-win-badge-msg">WON THE END OF THE WORLD!!!!!!</span>' +
-      "</div>" +
+      '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
+      '<h1 class="dmls-win-name">' + winNames + "</h1>" +
+      '<p class="dmls-win-points">' + top + " points</p>" +
       (meWon ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
       (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" loading="lazy">' : "") +
       '<ul class="dmls-win-scores">' +

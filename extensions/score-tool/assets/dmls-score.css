@@ -131,6 +131,16 @@
 .dmls-scroll-mid::-webkit-scrollbar { width: 5px; }
 .dmls-scroll-mid::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
 .dmls-scroll-mid::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
+/* Bottom fade hint that there's more to scroll — same treatment on every
+   .dmls-scroll-mid list (Add Names, scoring steps, achievements grid,
+   history list), not just achievements, so scrolling reads the same
+   everywhere. Always-on rather than JS-toggled on actual overflow, which is
+   a simplification: it dims the last item's bottom edge slightly even on
+   short lists that don't need to scroll. */
+.dmls-scroll-mid {
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+}
 /* expansion-points step gets its own art (client spec, May 2026) */
 .dmls-card-exp {
   background-image:
@@ -183,10 +193,15 @@
 .dmls-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); }
 .dmls-dots i.dmls-on { background: var(--dmls-green); }
 
-/* buttons */
+/* buttons — one shared shape/weight/case for every .dmls-btn across every
+   screen (Back/Next, Play Doomlings, Rematch!, Start scoring, etc.), so
+   nothing needs a per-screen radius/case override anymore; only size
+   (padding/font-size) still varies via modifier classes where a screen's
+   hero CTA is meant to read bigger (.dmls-win-cta and friends). */
 .dmls-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 13px 26px; border-radius: 12px; font-weight: 700; font-size: 16px;
+  padding: 13px 26px; border-radius: 999px; font-weight: 800; font-size: 16px;
+  text-transform: uppercase; letter-spacing: 0.02em;
   transition: transform 0.12s ease;
 }
 .dmls-btn:active:not(:disabled) { transform: scale(0.97); }
@@ -316,18 +331,18 @@
     var(--dmls-bg-winner-url, var(--dmls-bg-url, none)),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
 }
-.dmls-win-logo { display: block; height: auto; max-width: 80%; margin: 0 auto 12px; }
-.dmls-win-badges { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.dmls-win-badge {
-  display: inline-block; max-width: 90%;
-  background: rgba(8, 8, 26, 0.72); border: 2px solid rgba(255, 255, 255, 0.22);
-  border-radius: 14px; padding: 9px 20px;
-  font-weight: 800; color: #fff; text-transform: uppercase;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+.dmls-win-logo { display: block; height: auto; max-width: 80%; margin: 0 auto 10px; }
+.dmls-win-eyebrow {
+  font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
+  font-size: clamp(18px, 5vw, 22px); line-height: 1.2; margin: 0 0 2px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
 }
-.dmls-win-badge-name { font-size: 15px; letter-spacing: 0.04em; }
-.dmls-win-badge-msg { font-size: clamp(19px, 5.5vw, 25px); line-height: 1.25; }
-.dmls-win-badge .dmls-amp { text-transform: none; }
+.dmls-win-name {
+  font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
+  font-size: clamp(38px, 12vw, 52px); line-height: 1.05; margin: 0 0 4px;
+  overflow-wrap: anywhere;
+}
+.dmls-win-points { font-size: 15px; color: var(--dmls-ink-dim); margin: 0 0 4px; }
 .dmls-win-art {
   display: block; width: 100%; max-width: var(--dmls-win-art-size, 260px); height: auto;
   margin: 18px auto 4px;
@@ -368,11 +383,6 @@
 .dmls-widget p { font-size: 14.5px; color: var(--dmls-ink-dim); line-height: 1.55; margin: 0; }
 .dmls-widget p strong { color: var(--dmls-ink); }
 .dmls-widget .dmls-btn { margin-top: 12px; width: 100%; padding: 11px; text-decoration: none; }
-.dmls-win-signin {
-  display: block; text-align: center; margin-top: 10px; font-size: 13px;
-  color: var(--dmls-ink-dim); text-decoration: underline; text-underline-offset: 3px;
-}
-
 /* winner-screen Discord banner — overrides the plain dark .dmls-widget look
    with a bright brand-gradient badge; no dedicated art asset for this yet,
    so the gradient + emoji is the placeholder. */
@@ -659,26 +669,8 @@ body.dmls-modal-lock { overflow: hidden; }
 .dmls-hist-detail-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--dmls-ink-dim); }
 .dmls-hist-detail-row b { color: var(--dmls-ink); font-weight: 700; }
 .dmls-hist-empty { font-size: 14px; color: var(--dmls-ink-dim); text-align: center; margin-top: 18px; }
-/* Bottom fade hint that there's more to scroll — scoped to achievements
-   only (not the shared .dmls-scroll-mid base, which Add Names/scoring steps
-   also use) since only this screen's design called for it. Always-on rather
-   than JS-toggled based on actual scroll overflow, which is a simplification:
-   it dims the last item's bottom edge slightly even on short lists that don't
-   need to scroll. */
-#dmls-achv .dmls-scroll-mid {
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
-}
 
 .dmls-btn-full { width: 100%; }
-/* Play Doomlings (achievements/history footer) — scoped by id, not the
-   shared .dmls-btn-go, so Start scoring/Rematch!/Create account etc. keep
-   their existing shape/width; only this button gets the full-stadium,
-   fit-to-text treatment from the mock. */
-#dmls-achv-play {
-  width: auto; padding: 17px 40px; border-radius: 999px;
-  font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em;
-}
 
 @media (min-width: 640px) {
   .dmls-achv-grid { grid-template-columns: repeat(3, 1fr); }
