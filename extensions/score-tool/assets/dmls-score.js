@@ -301,10 +301,16 @@
   function render() {
     var run = function () {
       modalCardEl.classList.toggle("dmls-modal-wide", state.screen === 6);
-      // render() only ever runs for #dmls-app (game-flow) screens, never for
-      // achievements — so unconditionally clearing "tall" here is safe and
-      // is what un-sets it after leaving achv via the Play Doomlings button.
-      modalCardEl.classList.remove("dmls-modal-tall");
+      // Screens 1-5 (Add Names + the 4 scoring steps) use the fixed-header/
+      // scrollable-middle/fixed-footer .dmls-split layout — same as
+      // achievements, they need .dmls-modal-card to have a *definite* height
+      // for their .dmls-scroll-mid to actually become the scroll container,
+      // instead of #dmls-modal-body scrolling the whole card (name/score
+      // list, header, and Back/Next nav all together). Welcome (0) and
+      // winner (6) aren't split layouts and keep shrinking to their own
+      // content. This also un-sets "tall" after leaving achievements via the
+      // Play Doomlings button, since render() only ever runs for #dmls-app.
+      modalCardEl.classList.toggle("dmls-modal-tall", state.screen >= 1 && state.screen <= 5);
       if (productsEl && state.screen !== 6) productsEl.hidden = true;
       if (state.screen === 0) renderWelcome();
       else if (state.screen === 1) renderPlayers();

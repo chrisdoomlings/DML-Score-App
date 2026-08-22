@@ -114,16 +114,17 @@
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
 .dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 6px; margin: 0 -6px; }
 .dmls-card-body.dmls-split > .dmls-hint { flex: none; }
-/* Achievements only: .dmls-card has no max-height by default (see the
-   .dmls-card-body comment above — it's meant to grow past its floor height
-   with #dmls-modal-body scrolling the whole thing as a last resort), which
-   means .dmls-scroll-mid above never actually gets a bounded height to
-   scroll within here — the achievements grid just grows the whole card and
-   modal-body scrolls everything together. The design wants the opposite:
-   ACHV./HISTORY tabs and the Play Doomlings button pinned in place, only the
-   grid/list between them scrolling. Scoped to #dmls-achv (not #dmls-app) so
-   every other screen keeps its existing grow-then-modal-scrolls behavior. */
-#dmls-achv, #dmls-achv .dmls-card { height: 100%; }
+/* By default .dmls-card has no max-height (see the .dmls-card-body comment
+   above — it's meant to grow past its floor height with #dmls-modal-body
+   scrolling the whole thing as a last resort), which means .dmls-scroll-mid
+   above never actually gets a bounded height to scroll within on its own —
+   every .dmls-split screen's list just grows the whole card and modal-body
+   scrolls everything (header/list/nav) together instead of just the list.
+   The actual height:100% fix that corrects this lives further down, scoped
+   to .dmls-modal-tall (see the #dmls-modal .dmls-modal-card rule) since it
+   needs .dmls-modal-card to have a definite height first for percentages to
+   resolve at all — this comment stays here as the "why" for anyone landing
+   on .dmls-scroll-mid first. */
 /* Custom scrollbar for every .dmls-scroll-mid list (Add Names, scoring
    steps, achievements grid, history list) — thin green thumb instead of the
    browser default, matching the mock. */
@@ -527,15 +528,18 @@ body.dmls-modal-lock { overflow: hidden; }
   display: flex; flex-direction: column;
 }
 #dmls-modal .dmls-modal-card.dmls-modal-wide { width: min(94vw, 1040px); }
-/* Achievements needs .dmls-modal-card to have a *definite* height, not just
-   the max-height cap it normally relies on — percentage heights (the
-   #dmls-achv .dmls-card fix above) only resolve against a definite
-   containing-block height; a max-height-only box doesn't count, so without
-   this the browser silently falls back to auto-sizing and the old
-   card-grows/modal-scrolls behavior returns. Scoped to a toggled class (see
-   openAchievementsModal/render in dmls-score.js) so every other screen keeps
-   shrinking to its own content instead of always being forced to full height. */
+/* .dmls-split screens (Add Names, the 4 scoring steps, achievements) need
+   .dmls-modal-card to have a *definite* height, not just the max-height cap
+   it normally relies on — percentage heights (the height:100% chain right
+   below) only resolve against a definite containing-block height; a
+   max-height-only box doesn't count, so without this the browser silently
+   falls back to auto-sizing and scrolling happens on #dmls-modal-body (the
+   whole card — header/list/nav together) instead of just .dmls-scroll-mid.
+   Toggled by both openAchievementsModal() and render() in dmls-score.js;
+   welcome/winner aren't split layouts and keep shrinking to their own
+   content instead of always being forced to full height. */
 #dmls-modal .dmls-modal-card.dmls-modal-tall { height: 90vh; }
+.dmls-modal-tall #dmls-app, .dmls-modal-tall #dmls-achv, .dmls-modal-tall .dmls-card { height: 100%; }
 /* Kept fully inside the card (not poking past its edge) so it can never be
    clipped by the viewport on narrow phones — the primary target device. */
 #dmls-modal .dmls-modal-close {
