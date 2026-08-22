@@ -338,6 +338,20 @@
 .dmls-widget p { font-size: 14.5px; color: var(--dmls-ink-dim); line-height: 1.55; margin: 0; }
 .dmls-widget p strong { color: var(--dmls-ink); }
 .dmls-widget .dmls-btn { margin-top: 12px; width: 100%; padding: 11px; text-decoration: none; }
+.dmls-win-signin {
+  display: block; text-align: center; margin-top: 10px; font-size: 13px;
+  color: var(--dmls-ink-dim); text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* winner-screen "games played" / "new achievement" widget variants — both
+   centered, unlike the left-aligned default .dmls-widget content. */
+.dmls-widget-center { text-align: center; }
+.dmls-widget-center .dmls-widget-title { text-align: center; }
+.dmls-win-stat-num { font-size: 44px; font-weight: 800; line-height: 1; color: #fff; margin: 0 0 4px; }
+.dmls-win-achv-item { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0 0 6px; }
+.dmls-win-achv-item .dmls-achv-icon { width: 72px; height: 72px; }
+.dmls-win-achv-item .dmls-achv-name { font-size: 15px; }
+.dmls-win-guess-note { font-size: 13px; color: var(--dmls-ink-dim); margin: 8px 0 0; }
 
 .dmls-bonuses { margin-top: 10px; text-align: left; }
 .dmls-bonuses li {

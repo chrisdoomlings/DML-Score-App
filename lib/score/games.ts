@@ -85,7 +85,12 @@ export async function saveGame(
   deviceType: "mobile" | "desktop" | null,
   playedAtLocalDate: string | null,
   geo: { lat: number; lng: number } | null = null
-): Promise<{ game: SavedGame; achievementsUnlocked: AchievementUnlock[]; guessOffered: boolean }> {
+): Promise<{
+  game: SavedGame;
+  achievementsUnlocked: AchievementUnlock[];
+  guessOffered: boolean;
+  gamesPlayed: number | null;
+}> {
   const db = getDb();
   const topScore = Math.max(...players.map((p) => p.total));
   const winnerNames = players.filter((p) => p.total === topScore).map((p) => p.name);
@@ -162,7 +167,12 @@ export async function saveGame(
     }
   }
 
-  return { game, achievementsUnlocked, guessOffered };
+  return {
+    game,
+    achievementsUnlocked,
+    guessOffered,
+    gamesPlayed: customerId ? gamesLoggedBefore + 1 : null,
+  };
 }
 
 /** Merges settings config with this customer's unlock rows — enabled achievements only. */

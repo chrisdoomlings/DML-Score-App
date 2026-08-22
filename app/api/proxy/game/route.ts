@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     const playedAtLocalDate = sanitizeLocalDate(body.playedAtLocalDate);
     const geo = sanitizeGeo(body.lat, body.lng);
 
-    const { game, achievementsUnlocked, guessOffered } = await saveGame(
+    const { game, achievementsUnlocked, guessOffered, gamesPlayed } = await saveGame(
       shop,
       customerId,
       players,
@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
         ...(guessOffered ? {} : { winnerNames: game.winnerNames, topScore: game.topScore }),
         achievementsUnlocked,
         guessOffered,
+        gamesPlayed,
       },
       { headers: HEADERS }
     );

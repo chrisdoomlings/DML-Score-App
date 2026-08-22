@@ -624,6 +624,11 @@
   function openAchievementsModal(fromHash) {
     view = "achv";
     app.hidden = true;
+    // The winner screen's own "Achievements" button (see winnerClicks) is a
+    // new entry point that runs while the wide layout is still on the modal
+    // card — this screen is always narrow, so clear it explicitly instead of
+    // relying on render()'s state.screen===6 toggle, which doesn't run here.
+    modalCardEl.classList.remove("dmls-modal-wide");
     achvEl.hidden = false;
     modalDeepLinked = !!fromHash;
     achvTab = "achv";
@@ -835,22 +840,42 @@
     var winNames = winners.map(function (p) { return esc(p.name); }).join(' <span class="dmls-amp">&amp;</span> ');
     var meWon = winners.some(function (p) { return p.isCustomer; });
 
+    // Three states for the logged-in customer's widget, per the winner-screen
+    // mock: still saving / failed to save (unchanged), then once lastResult
+    // lands either "new achievement(s) unlocked this game" (featured, with
+    // icon+name) or — the more common case — just a running games-played
+    // count. Both link to the Achievements modal instead of listing details
+    // inline. Guests still get the create-account pitch, now also offering
+    // sign-in for existing accounts that aren't currently logged in.
     var loyaltyHTML;
     if (CUSTOMER) {
       if (lastResult) {
         var unlocked = lastResult.achievementsUnlocked || [];
-        var lines = unlocked.map(function (a) {
-          return '<li><b>Unlocked:</b> ' + esc(a.name) + "</li>";
-        }).join("");
-        if (guessResult) {
-          lines += guessResult.correct
-            ? "<li>You guessed the winner right!</li>"
-            : "<li>Nice try — wrong guess this time.</li>";
+        var guessLine = guessResult
+          ? '<p class="dmls-win-guess-note">' +
+            (guessResult.correct ? "You guessed the winner right!" : "Nice try — wrong guess this time.") +
+            "</p>"
+          : "";
+        if (unlocked.length) {
+          var achvItems = unlocked.map(function (a) {
+            return '<div class="dmls-win-achv-item">' +
+              '<div class="dmls-achv-icon"' +
+              (a.iconUrl ? ' style="background-image:url(\'' + a.iconUrl.replace(/'/g, "%27") + '\')"' : "") +
+              '></div><p class="dmls-achv-name">' + esc(a.name) + "</p></div>";
+          }).join("");
+          loyaltyHTML =
+            '<div class="dmls-widget dmls-widget-center">' +
+            '<h3 class="dmls-widget-title">' + (unlocked.length > 1 ? "New Achievements!" : "New Achievement!") + "</h3>" +
+            achvItems + guessLine +
+            '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
+        } else {
+          loyaltyHTML =
+            '<div class="dmls-widget dmls-widget-center">' +
+            '<p class="dmls-win-stat-num">' + (lastResult.gamesPlayed != null ? lastResult.gamesPlayed : "—") + "</p>" +
+            '<h3 class="dmls-widget-title">Games Played</h3>' +
+            guessLine +
+            '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
         }
-        loyaltyHTML = '<div class="dmls-widget"><h3 class="dmls-widget-title">Your Game</h3>' +
-          "<p>Game saved to your account.</p>" +
-          (lines ? '<ul class="dmls-bonuses">' + lines + "</ul>" : "") +
-          "</div>";
       } else if (saveFailed) {
         loyaltyHTML =
           '<div class="dmls-widget"><h3 class="dmls-widget-title">Your Game</h3>' +
@@ -863,8 +888,10 @@
     } else {
       loyaltyHTML =
         '<div class="dmls-widget"><h3 class="dmls-widget-title">Save this victory</h3>' +
-        "<p>Create a free account to keep your game history and earn achievements for every game you log.</p>" +
-        '<a class="dmls-btn dmls-btn-go" href="' + esc(signupUrl) + '">Create account</a></div>';
+        "<p>Create or sign in to your free Doomlings account to track your game history and earn achievements.</p>" +
+        '<a class="dmls-btn dmls-btn-go" href="' + esc(signupUrl) + '">Create account</a>' +
+        '<a class="dmls-inline-link dmls-win-signin" href="' + esc(loginUrl) + '">Already have an account? Sign in</a>' +
+        "</div>";
     }
 
     app.innerHTML =
@@ -944,6 +971,8 @@
   }
 
   function winnerClicks(e) {
+    var achvBtn = e.target.closest("[data-achv-link]");
+    if (achvBtn) { openAchievementsModal(false); return; }
     var buy = e.target.closest("button[data-variant-id]");
     if (buy) {
       buy.disabled = true;
