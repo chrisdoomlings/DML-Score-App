@@ -299,18 +299,17 @@
   }
 
   function render() {
-    var run = function () {
-      if (productsEl && state.screen !== 6) productsEl.hidden = true;
-      if (state.screen === 0) renderWelcome();
-      else if (state.screen === 1) renderPlayers();
-      else if (state.screen >= 2 && state.screen <= 5) renderStep(state.screen);
-      else renderWinner();
-    };
-    // Screen-to-screen navigation only (in-place updates like adding a player
-    // or nudging a score call renderX() directly and skip this) — gives a
-    // soft crossfade between steps instead of an abrupt swap, when supported.
-    if (!reduceMotion && document.startViewTransition) document.startViewTransition(run);
-    else run();
+    // Used to wrap this in document.startViewTransition() for a soft
+    // crossfade between steps. Dropped it — the transition's before/after
+    // snapshots didn't account for #dmls-app's own internal scroll state
+    // (.dmls-scroll-mid/.dmls-card-body), so a scrollbar toggling on/off
+    // between screens caused a visible flicker and, intermittently, a
+    // stray scrollbar during the ~220ms animation. Plain instant swap.
+    if (productsEl && state.screen !== 6) productsEl.hidden = true;
+    if (state.screen === 0) renderWelcome();
+    else if (state.screen === 1) renderPlayers();
+    else if (state.screen >= 2 && state.screen <= 5) renderStep(state.screen);
+    else renderWinner();
   }
 
   /* --- welcome --- */
@@ -716,7 +715,8 @@
     var d = new Date(g.playedAt);
     var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     var expanded = !!achvExpanded[idx];
-    var detail = (g.players || []).map(function (p) {
+    var players = g.players || [];
+    var detail = players.map(function (p) {
       return '<div class="dmls-hist-detail-row"><span>' + esc(p.name) + '</span><b>' + (p.total | 0) + ' pts</b></div>';
     }).join("");
     // No win badge/border here per client request — the old .dmls-won /
@@ -726,9 +726,16 @@
       '<div class="dmls-hist-meta">' +
       '<span class="dmls-hist-date">' + when + "</span>" +
       "<span>" + g.playerCount + " Players</span>" +
-      '<button type="button" class="dmls-hist-more" data-more="' + idx + '">' + (expanded ? "View Less" : "View More") + "</button>" +
+      // Per-player breakdown is the only thing this reveals — no point
+      // offering it when there's nothing stored to show (e.g. older rows
+      // saved before the players column existed).
+      (players.length
+        ? '<button type="button" class="dmls-hist-more" data-more="' + idx + '">' + (expanded ? "View Less" : "View More") + "</button>"
+        : "") +
       "</div>" +
-      '<div class="dmls-hist-detail" id="dmls-hist-detail-' + idx + '"' + (expanded ? "" : " hidden") + ">" + detail + "</div>" +
+      (players.length
+        ? '<div class="dmls-hist-detail" id="dmls-hist-detail-' + idx + '"' + (expanded ? "" : " hidden") + ">" + detail + "</div>"
+        : "") +
       "</li>";
   }
 
@@ -909,7 +916,7 @@
       (ICONS.winner ? '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" loading="lazy">' : "") +
       '<ul class="dmls-win-scores">' +
       ranked.map(function (p) {
-        return '<li class="dmls-win-score-row' + (total(p) === top ? " dmls-win-score-row-top" : "") + '">' +
+        return '<li class="dmls-win-score-row">' +
           '<span class="dmls-win-score-name">' + esc(p.name) + "</span>" +
           '<span class="dmls-win-score-pts">' + total(p) + " points</span></li>";
       }).join("") +

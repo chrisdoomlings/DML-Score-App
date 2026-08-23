@@ -94,7 +94,7 @@ export function GlobalStyle() {
         background: #f6f6f7; border: 1px solid #e1e3e5; display: flex; align-items: center; justify-content: center;
       }
       .dml-achv-icon-thumb img { width: 100%; height: 100%; object-fit: cover; }
-      .dml-achv-icon-actions { display: flex; gap: 4px; }
+      .dml-achv-icon-actions { display: flex; flex-wrap: wrap; gap: 4px; }
       .dml-achv-fields { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
       .dml-achv-key { font-size: 11px; color: #8a8d91; font-family: monospace; }
 
@@ -107,7 +107,7 @@ export function GlobalStyle() {
       .dml-image-thumb img { width: 100%; height: 100%; object-fit: cover; }
       .dml-image-placeholder { font-size: 11px; color: #a1a4a8; font-weight: 600; }
       .dml-image-name { font-size: 12px; font-weight: 600; color: #202223; line-height: 1.3; min-height: 32px; }
-      .dml-image-actions { display: flex; gap: 6px; }
+      .dml-image-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 
       .dml-btn-primary, .dml-btn-secondary, .dml-btn-ghost {
         font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px;
@@ -120,7 +120,11 @@ export function GlobalStyle() {
       .dml-btn-secondary:hover { background: #e4e5e7; }
       .dml-btn-ghost { padding: 7px 10px; background: none; color: #202223; border: 1px solid #c9cccf; }
       .dml-btn-ghost:hover { background: #f6f6f7; }
-      .dml-btn-sm { flex: 1; }
+      /* Tighter than the base padding/font-size — needed to fit "Upload" /
+         "Browse" / "Reset" within the 72px-wide achievement icon column
+         (.dml-achv-icon) without each button's own text overflowing it,
+         even after flex-wrap stacks them one per line. */
+      .dml-btn-sm { flex: 1; padding: 6px 8px; font-size: 12px; }
 
       .dml-bar-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #f1f2f3; }
       .dml-bar-label { font-size: 13px; color: #202223; width: 130px; flex-shrink: 0; }

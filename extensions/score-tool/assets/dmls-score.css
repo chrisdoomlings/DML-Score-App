@@ -318,17 +318,6 @@
   background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2);
   background-size: cover; background-position: center;
 }
-@media (prefers-reduced-motion: no-preference) {
-  /* Same view-transition-name reused across every step (not per-step) is
-     deliberate: it's what makes the View Transitions API treat "the left
-     character slot on the old step" and "the left character slot on the new
-     step" as one continuous element to morph between, instead of a generic
-     whole-card crossfade — giving the pop/slide transition the spec asks for
-     with no extra JS orchestration, and no-op in unsupported browsers. */
-  .dmls-step-char-left { view-transition-name: dmls-char-left; }
-  .dmls-step-char-right { view-transition-name: dmls-char-right; }
-}
-
 /* winner */
 .dmls-card.dmls-winner {
   /* Own art direction for the reveal moment — falls back to the standard
@@ -355,19 +344,18 @@
   margin: 18px auto 4px;
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.4));
 }
-/* every player's score, winner (top score) picked out in gold — the badges
-   above only ever named the winner, this is the rest of the table. */
+/* every player's score — matches the reference exactly: no divider lines
+   between rows and no gold pick-out for the winner, every row reads the
+   same plain white/bold style (the hero name above already spotlights the
+   winner, this table doesn't need to repeat that). */
 .dmls-win-scores { width: 100%; max-width: 320px; margin: 18px auto 0; }
 .dmls-win-score-row {
   display: flex; justify-content: space-between; gap: 12px;
-  padding: 8px 4px; border-bottom: 1px solid var(--dmls-line);
+  padding: 8px 4px;
   font-size: 14.5px;
 }
-.dmls-win-score-row:last-child { border-bottom: none; }
 .dmls-win-score-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
-.dmls-win-score-pts { color: var(--dmls-ink-dim); }
-.dmls-win-score-row-top .dmls-win-score-name,
-.dmls-win-score-row-top .dmls-win-score-pts { color: var(--dmls-gold); }
+.dmls-win-score-pts { font-weight: 700; }
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
 .dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
@@ -563,14 +551,6 @@ body.dmls-modal-lock { overflow: hidden; }
   @keyframes dmls-modal-pop {
     from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
     to { opacity: 1; transform: translate(-50%, -50%); }
-  }
-  /* Named so screen-to-screen navigation inside the modal (see render() in
-     dmls-score.js) crossfades instead of hard-cutting; unsupported browsers
-     just no-op. */
-  #dmls-app { view-transition-name: dmls-app; }
-  ::view-transition-old(dmls-app), ::view-transition-new(dmls-app) {
-    animation-duration: 0.22s;
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
   }
   .dmls-card.dmls-anim-in { animation: dmls-pop 0.35s ease; }
   @keyframes dmls-pop {
