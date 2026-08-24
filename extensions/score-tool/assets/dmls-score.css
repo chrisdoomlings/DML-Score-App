@@ -339,10 +339,22 @@
   overflow-wrap: anywhere;
 }
 .dmls-win-points { font-size: 15px; color: var(--dmls-ink-dim); margin: 0 0 4px; }
+/* Name + points overlaid on the character art (see renderWinner()) — full
+   card width, no size cap, with a caption positioned over the bottom of the
+   image. Strong text-shadow instead of a background scrim keeps it legible
+   over arbitrary admin-uploaded artwork without covering the art itself. */
+.dmls-win-art-wrap { position: relative; margin: 14px 0 4px; }
 .dmls-win-art {
-  display: block; width: 100%; max-width: var(--dmls-win-art-size, 260px); height: auto;
-  margin: 18px auto 4px;
+  display: block; width: 100%; height: auto;
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.4));
+}
+.dmls-win-art-caption {
+  position: absolute; left: 0; right: 0; bottom: 6%;
+  text-align: center; pointer-events: none;
+}
+.dmls-win-art-caption .dmls-win-name,
+.dmls-win-art-caption .dmls-win-points {
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.5);
 }
 /* every player's score — matches the reference exactly: no divider lines
    between rows and no gold pick-out for the winner, every row reads the

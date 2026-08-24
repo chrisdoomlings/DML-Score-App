@@ -320,7 +320,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="dml-label">Winner image size (px)</label>
+                <label className="dml-label">Winner image size (px, unused — image is full-width)</label>
                 <input
                   className="dml-input dml-input-sm" type="number" min={100} max={500} value={settings.winnerImageSize}
                   onChange={(e) => setSettings({ ...settings, winnerImageSize: Number(e.target.value) })}
