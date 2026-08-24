@@ -22,7 +22,7 @@
   --dmls-ink: #ffffff;
   --dmls-ink-dim: #b8bde4;
   --dmls-ink-faint: #8a90c9;
-  --dmls-green: #80d235;
+  --dmls-green: #17c94b;
   --dmls-gold: #ffd54a;
   --dmls-coral: #ff6a5c;
   --dmls-line: rgba(255, 255, 255, 0.14);
@@ -340,7 +340,7 @@
 }
 .dmls-win-points { font-size: 15px; color: var(--dmls-ink-dim); margin: 0 0 4px; }
 /* Name + points overlaid on the character art (see renderWinner()) — full
-   card width, no size cap, with a caption positioned over the bottom of the
+   card width, no size cap, with a caption positioned over the top of the
    image. Strong text-shadow instead of a background scrim keeps it legible
    over arbitrary admin-uploaded artwork without covering the art itself. */
 .dmls-win-art-wrap { position: relative; margin: 14px 0 4px; }
@@ -349,7 +349,7 @@
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.4));
 }
 .dmls-win-art-caption {
-  position: absolute; left: 0; right: 0; bottom: 6%;
+  position: absolute; left: 0; right: 0; top: 6%;
   text-align: center; pointer-events: none;
 }
 .dmls-win-art-caption .dmls-win-name,
@@ -360,32 +360,37 @@
    between rows and no gold pick-out for the winner, every row reads the
    same plain white/bold style (the hero name above already spotlights the
    winner, this table doesn't need to repeat that). */
-.dmls-win-scores { width: 100%; max-width: 320px; margin: 18px auto 0; }
+.dmls-win-scores { width: 100%;  margin: 18px auto 0; padding: 0 30px; }
 .dmls-win-score-row {
   display: flex; justify-content: space-between; gap: 12px;
   padding: 8px 4px;
-  font-size: 14.5px;
+  font-size: 24px;
 }
 .dmls-win-score-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
 .dmls-win-score-pts { font-weight: 700; }
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
 .dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
-.dmls-win-trophy { display: block; width: 100%; max-width: 280px; margin: 20px auto 0; padding: 13px; font-size: 14px; }
+.dmls-win-trophy { display: block;  margin: 20px auto 0; padding: 13px 26px; font-size: 22px; background: #221946;}
 
 .dmls-win-cta-row { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 14px auto 0; width: 100%; max-width: 280px; }
 .dmls-win-cta { display: block; width: 100%; padding: 16px; font-size: 17px; }
-.dmls-win-cta-secondary { width: 100%; padding: 11px; font-size: 14px; }
+.dmls-win-cta-secondary { width: 100%; padding: 11px; font-size: 14px; background: #221946;}
 
 /* widgets */
-.dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; }
+.dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 40px; }
 .dmls-widget {
   background: rgba(0, 0, 0, 0.24); border: 1px solid var(--dmls-line);
   border-radius: 16px; padding: 18px;
 }
 .dmls-widget-title {
-  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--dmls-gold); margin: 0 0 10px; font-weight: 700;
+  font-size: 24px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: white;
+    margin: 0 0 10px;
+    font-weight: 700;
+    text-align: center;
 }
 .dmls-widget p { font-size: 14.5px; color: var(--dmls-ink-dim); line-height: 1.55; margin: 0; }
 .dmls-widget p strong { color: var(--dmls-ink); }
@@ -423,7 +428,7 @@
 .dmls-prod {
   display: flex; align-items: center; gap: 13px;
   background: rgba(255, 255, 255, 0.06); border: 1px solid var(--dmls-line);
-  border-radius: 12px; padding: 10px;
+  border-radius: 12px; padding: 20px;
 }
 .dmls-prod-img {
   width: 64px; height: 64px; border-radius: 14px; flex: none; object-fit: contain;
@@ -437,9 +442,13 @@
   flex: none; width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: var(--dmls-green); color: #0d1200; font-weight: 700; font-size: 19px; line-height: 1;
-  text-decoration: none;
+  text-decoration: none; box-shadow:
+        0 0 8px rgba(0, 255, 60, 0.85),
+        0 0 18px rgba(0, 255, 60, 0.75),
+        0 0 32px rgba(0, 255, 60, 0.55),
+        0 0 50px rgba(0, 255, 60, 0.35);
 }
-.dmls-prod-buy span { margin-top: -2px; } /* optically centers the "+" glyph in the circle */
+.dmls-prod-buy span { margin-top: -5px; } /* optically centers the "+" glyph in the circle */
 .dmls-prod-buy[disabled] { background: rgba(255, 255, 255, 0.18); color: var(--dmls-ink); }
 .dmls-prod-note { font-size: 12px; color: var(--dmls-ink-faint); margin-top: 10px; line-height: 1.5; padding-top: 6px; }
 .dmls-prod-more { margin-top: 12px; }
