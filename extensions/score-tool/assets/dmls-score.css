@@ -28,6 +28,13 @@
   --dmls-line: rgba(255, 255, 255, 0.14);
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--dmls-ink);
+  /* Fluid base size — every font-size in this file below is in em, so it
+     scales off this one clamp instead of each rule needing its own. Chosen
+     to sit close to the browser's implicit 16px at the upper end (so
+     desktop/tablet renders basically unchanged) and shrink gently on narrow
+     phones; vw here is relative to the actual viewport, not the 520px-capped
+     card, so the max keeps it from ballooning on wide screens. */
+  font-size: clamp(14.5px, 3.6vw, 16.5px);
 }
 /* :where() everywhere below is deliberate, not decorative — #dmls-root and
    #dmls-modal are IDs, so a plain "#dmls-root button { border: 0 }" reset
@@ -54,7 +61,7 @@
 /* ---------------------------------------------------------------------
    On-page launcher (#dmls-root) — replaces the old inline-rendered app.
    Everything else (welcome screen onward) now lives inside #dmls-modal. */
-.dmls-launcher { max-width: 520px; margin: 36px auto 60px; padding: 0 16px; }
+.dmls-launcher { max-width: 520px; margin: 36px auto 60px; padding: 0 1em; }
 .dmls-launcher-btn {
   width: 100%; display: flex; align-items: center; gap: 14px; text-align: left;
   background-image:
@@ -64,14 +71,14 @@
   background-size: cover, cover, cover;
   background-position: center, center, center;
   border: 1px solid var(--dmls-line); border-radius: 20px;
-  padding: 18px 20px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+  padding: 1.125em 1.25em; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
   transition: transform 0.12s ease;
 }
 .dmls-launcher-btn:active { transform: scale(0.98); }
-.dmls-launcher-icon { flex: none; font-size: 30px; line-height: 1; }
+.dmls-launcher-icon { flex: none; font-size: 1.875em; line-height: 1; }
 .dmls-launcher-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.dmls-launcher-title { font-weight: 800; font-size: 17px; }
-.dmls-launcher-sub { font-size: 13px; color: var(--dmls-ink-dim); }
+.dmls-launcher-title { font-weight: 800; font-size: 1.0625em; }
+.dmls-launcher-sub { font-size: 0.8125em; color: var(--dmls-ink-dim); }
 
 .dmls-card {
   /* Three layers: dark tint on top, the admin's uploaded photo in the middle
@@ -86,7 +93,7 @@
   background-position: center, center, center;
   border: 1px solid var(--dmls-line);
   border-radius: 22px;
-  padding: 26px 0;
+  padding: 1.625em 0;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -114,7 +121,7 @@
      .dmls-welcome-characters below). */
   overflow-y: auto;
   overflow-x: visible;
-  padding-right: 2px; /* keeps the scrollbar (where visible) off the text */
+  padding-right: 0.125em; /* keeps the scrollbar (where visible) off the text */
   scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12);
   -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
@@ -129,7 +136,7 @@
    scrolling instead of the whole card body. */
 .dmls-card-body.dmls-split { display: flex; flex-direction: column; overflow: hidden; padding-right: 0; min-height: 0; }
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
-.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 6px; margin: 0 -6px; }
+.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0.25em 0.375em; margin: 0 -6px; }
 .dmls-card-body.dmls-split > .dmls-hint { flex: none; }
 /* Custom scrollbar for every .dmls-scroll-mid list (Add Names, scoring
    steps, achievements grid, history list) — thin green thumb instead of the
@@ -165,32 +172,32 @@
    translucent overlay, or it washes out to near-invisible on a light page. */
 .dmls-tip {
   display: flex; align-items: center; gap: 12px;
-  margin-top: 14px; padding: 14px 16px;
+  margin-top: 14px; padding: 0.875em 1em;
   background: var(--dmls-night); border: 1px solid var(--dmls-line);
   border-radius: 14px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 .dmls-tip-icon {
   flex: none; width: 24px; height: 24px; border-radius: 50%;
   background: #ffffff; color: var(--dmls-night);
-  font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 13px;
+  font-family: Georgia, serif; font-style: italic; font-weight: 700; font-size: 0.8125em;
   display: flex; align-items: center; justify-content: center;
 }
-.dmls-tip p { margin: 0; font-size: 13px; color: var(--dmls-ink); line-height: 1.4; }
+.dmls-tip p { margin: 0; font-size: 0.8125em; color: var(--dmls-ink); line-height: 1.4; }
 
 .dmls-eyebrow {
-  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  font-size: 0.6875em; letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--dmls-gold); margin: 10px 0 6px; font-weight: 600;
 }
 .dmls-title {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive;
-  font-size: clamp(28px, 6vw, 40px);
+  font-size: clamp(32px, 8vw, 48px);
   line-height: 1.12;
   font-weight: 400;
-  margin: 8px auto 6px; padding-top:15px;
+  margin: 8px auto 6px; padding-top:0.9375em;
   max-width: 100%;
 }
 .dmls-sub {
-  color: var(--dmls-ink-dim); font-size: 15px; line-height: 1.5;
+  color: var(--dmls-ink-dim); font-size: 0.9375em; line-height: 1.5;
   max-width: 40ch; margin: 0 auto 10px;
 }
 .dmls-sub i { color: var(--dmls-ink); font-style: italic; }
@@ -207,7 +214,7 @@
    hero CTA is meant to read bigger (.dmls-win-cta and friends). */
 .dmls-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 13px 26px; border-radius: 999px; font-weight: 800; font-size: 16px;
+  padding: 0.8125em 1.625em; border-radius: 999px; font-weight: 800; font-size: 1em;
   text-transform: uppercase; letter-spacing: 0.02em;
   transition: transform 0.12s ease;
 }
@@ -225,7 +232,7 @@
 .dmls-btn-ghost { border: 2px solid var(--dmls-line); color: var(--dmls-ink-dim); }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.dmls-btn-link { color: var(--dmls-ink-dim); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; background: none; border: none; }
+.dmls-btn-link { color: var(--dmls-ink-dim); font-size: 0.875em; text-decoration: underline; text-underline-offset: 3px; background: none; border: none; }
 /* flex: none keeps this pinned at its natural size at the bottom of the
    fixed-height card — .dmls-card-body's flex: 1 1 auto is what pushes it
    there by consuming all the leftover space above it. */
@@ -235,7 +242,7 @@
 /* players — "Add Names" screen */
 .dmls-addrow { display: flex; gap: 10px; max-width: 380px; margin: 22px auto 8px; }
 .dmls-addrow input {
-  flex: 1; min-width: 0; padding: 13px 16px; font-size: 16px;
+  flex: 1; min-width: 0; padding: 0.8125em 1em; font-size: 1em;
   border: 2px solid #9287b0; border-radius: 12px; background: #fff; color: #1a1a2e;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
@@ -243,14 +250,14 @@
 .dmls-addrow input::placeholder { color: #8a8aa0; }
 .dmls-addrow-plus {
   flex: none; width: 46px; height: 46px; border-radius: 50%;
-  background: #4f9317; color: #fff; font-size: 24px; font-weight: 800; line-height: 1;
+  background: #4f9317; color: #fff; font-size: 1.5em; font-weight: 800; line-height: 1;
   display: flex; align-items: center; justify-content: center; padding: 0;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
   transition: background 0.15s ease;
 }
 .dmls-addrow-plus:hover { background: #5cab1d; }
 .dmls-addrow-plus:active { background: #427e12; }
-.dmls-hint { font-size: 12.5px; color: var(--dmls-ink-faint); margin-top: 10px; text-align: center; }
+.dmls-hint { font-size: 0.7813em; color: var(--dmls-ink-faint); margin-top: 10px; text-align: center; }
 
 /* Full-width centered pills, restyled from the old compact left-aligned
    chip list per the client mock — one pill per row instead of a wrapping
@@ -260,7 +267,7 @@
   position: relative; display: flex; align-items: center; justify-content: center;
   width: 100%; min-height: 46px;
   background: rgba(255, 255, 255, 0.1); border: 1px solid var(--dmls-line);
-  border-radius: 999px; padding: 12px 46px; font-size: 15.5px; font-weight: 600;
+  border-radius: 999px; padding: 0.75em 2.875em; font-size: 0.9688em; font-weight: 600;
   text-align: center;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
@@ -273,11 +280,11 @@
     to { opacity: 1; transform: none; }
   }
 }
-.dmls-pill .dmls-tag { font-size: 10.5px; color: var(--dmls-green); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-left: 4px; }
+.dmls-pill .dmls-tag { font-size: 0.6563em; color: var(--dmls-green); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-left: 4px; }
 .dmls-pill-rm {
   position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
   width: 26px; height: 26px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15); font-size: 13px !important; line-height: 1; color: var(--dmls-ink-dim);
+  background: rgba(255, 255, 255, 0.15); font-size: 0.8125em !important; line-height: 1; color: var(--dmls-ink-dim);
 }
 .dmls-pill-rm:hover { background: var(--dmls-coral); color: #fff; }
 
@@ -287,20 +294,20 @@
 .dmls-scores li {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
-  border-radius: 14px; padding: 9px 10px 9px 16px;
+  border-radius: 14px; padding: 0.5625em 0.625em 0.5625em 1em;
 }
 .dmls-scores .dmls-nm {
-  flex: 0 1 auto; min-width: 0; max-width: 40%; text-align: left; font-size: 16.5px; font-weight: 600;
+  flex: 0 1 auto; min-width: 0; max-width: 40%; text-align: left; font-size: 1.0313em; font-weight: 600;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .dmls-step { display: flex; align-items: center; gap: 6px; }
 .dmls-step button {
-  width: 38px; height: 38px; border-radius: 10px; font-size: 20px; font-weight: 700;
+  width: 38px; height: 38px; border-radius: 10px; font-size: 1.25em; font-weight: 700;
   background: rgba(255, 255, 255, 0.12); color: var(--dmls-ink);
 }
 .dmls-step button:hover { background: rgba(255, 255, 255, 0.22); }
 .dmls-step input {
-  width: 56px; height: 38px; text-align: center; font-size: 17px; font-weight: 700;
+  width: 56px; height: 38px; text-align: center; font-size: 1.0625em; font-weight: 700;
   border: 0; border-radius: 10px; background: #fff; color: #1a1a2e;
   font-variant-numeric: tabular-nums;
 }
@@ -335,10 +342,10 @@
 }
 .dmls-win-name {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
-  font-size: clamp(38px, 12vw, 52px); line-height: 1.05; margin: 0 0 4px;
-  overflow-wrap: anywhere; font-size: 52px;
+  font-size: clamp(44px, 15vw, 68px); line-height: 1.05; margin: 0 0 4px;
+  overflow-wrap: anywhere;
 }
-.dmls-win-points { font-size: 22px; color: white; margin: 0 0 4px; }
+.dmls-win-points { font-size: 1.375em; color: white; margin: 0 0 4px; }
 /* Name + points overlaid on the character art (see renderWinner()) — full
    card width, no size cap, with a caption positioned over the top of the
    image. Strong text-shadow instead of a background scrim keeps it legible
@@ -361,31 +368,31 @@
    between rows and no gold pick-out for the winner, every row reads the
    same plain white/bold style (the hero name above already spotlights the
    winner, this table doesn't need to repeat that). */
-.dmls-win-scores { width: 100%;  margin: 18px auto 0; padding: 0 30px; }
+.dmls-win-scores { width: 100%;  margin: 18px auto 0; padding: 0 1.875em; }
 .dmls-win-score-row {
   display: flex; justify-content: space-between; gap: 12px;
-  padding: 8px 4px;
-  font-size: 24px;
+  padding: 0.5em 0.25em;
+  font-size: 1.5em;
 }
 .dmls-win-score-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; font-family: "DMLS Catastrophe", "Segoe UI", cursive; }
 .dmls-win-score-pts { font-weight: 700; }
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
 .dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
-.dmls-win-trophy { display: block;  margin: 20px auto 0; padding: 13px 26px; font-size: 22px; background: #221946;}
+.dmls-win-trophy { display: block;  margin: 20px auto 0; padding: 0.8125em 1.625em; font-size: 1.375em; background: #221946;}
 
 .dmls-win-cta-row { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 14px auto 0; width: 100%; max-width: 280px; }
-.dmls-win-cta { display: block; width: 100%; padding: 16px; font-size: 17px; }
-.dmls-win-cta-secondary { width: 100%; padding: 11px; font-size: 14px; background: #221946;}
+.dmls-win-cta { display: block; width: 100%; padding: 1em; font-size: 1.0625em; }
+.dmls-win-cta-secondary { width: 100%; padding: 0.6875em; font-size: 0.875em; background: #221946;}
 
 /* widgets */
-.dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 40px; }
+.dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 2.5em; }
 .dmls-widget {
   background: rgba(0, 0, 0, 0.24); border: 1px solid var(--dmls-line);
-  border-radius: 16px; padding: 18px;
+  border-radius: 16px; padding: 1.125em;
 }
 .dmls-widget-title {
-  font-size: 24px;
+  font-size: 1.5em;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: white;
@@ -393,34 +400,34 @@
     font-weight: 700;
     text-align: center;
 }
-.dmls-widget p { font-size: 14.5px; color: var(--dmls-ink-dim); line-height: 1.55; margin: 0; }
+.dmls-widget p { font-size: 0.9063em; color: var(--dmls-ink-dim); line-height: 1.55; margin: 0; }
 .dmls-widget p strong { color: var(--dmls-ink); }
-.dmls-widget .dmls-btn { margin-top: 12px; width: 100%; padding: 11px; text-decoration: none; }
+.dmls-widget .dmls-btn { margin-top: 12px; width: 100%; padding: 0.6875em; text-decoration: none; }
 /* winner-screen Discord banner — overrides the plain dark .dmls-widget look
    with a bright brand-gradient badge; no dedicated art asset for this yet,
    so the gradient + emoji is the placeholder. */
 .dmls-discord-banner {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   background: linear-gradient(120deg, var(--dmls-coral), var(--dmls-gold) 50%, var(--dmls-green));
-  border: none; padding: 16px; text-decoration: none;
+  border: none; padding: 1em; text-decoration: none;
 }
-.dmls-discord-icon { font-size: 22px; line-height: 1; }
-.dmls-discord-text { font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 0.03em; color: #10153f; }
+.dmls-discord-icon { font-size: 1.375em; line-height: 1; }
+.dmls-discord-text { font-weight: 800; font-size: 0.9375em; text-transform: uppercase; letter-spacing: 0.03em; color: #10153f; }
 
 /* winner-screen "games played" / "new achievement" widget variants — both
    centered, unlike the left-aligned default .dmls-widget content. */
 .dmls-widget-center { text-align: center; }
 .dmls-widget-center .dmls-widget-title { text-align: center; }
-.dmls-win-stat-num { font-size: 44px; font-weight: 800; line-height: 1; color: #fff; margin: 0 0 4px; }
+.dmls-win-stat-num { font-size: 2.75em; font-weight: 800; line-height: 1; color: #fff; margin: 0 0 4px; }
 .dmls-win-achv-item { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0 0 6px; }
 .dmls-win-achv-item .dmls-achv-icon { width: 72px; height: 72px; }
-.dmls-win-achv-item .dmls-achv-name { font-size: 15px; }
-.dmls-win-guess-note { font-size: 13px; color: var(--dmls-ink-dim); margin: 8px 0 0; }
+.dmls-win-achv-item .dmls-achv-name { font-size: 0.9375em; }
+.dmls-win-guess-note { font-size: 0.8125em; color: var(--dmls-ink-dim); margin: 8px 0 0; }
 
 .dmls-bonuses { margin-top: 10px; text-align: left; }
 .dmls-bonuses li {
-  font-size: 13px; color: var(--dmls-ink-dim);
-  padding: 4px 0; border-top: 1px dashed var(--dmls-line);
+  font-size: 0.8125em; color: var(--dmls-ink-dim);
+  padding: 0.25em 0; border-top: 1px dashed var(--dmls-line);
 }
 .dmls-bonuses li b { color: var(--dmls-gold); }
 
@@ -429,20 +436,20 @@
 .dmls-prod {
   display: flex; align-items: center; gap: 13px;
   background: rgba(255, 255, 255, 0.06); border: 1px solid var(--dmls-line);
-  border-radius: 12px; padding: 20px;
+  border-radius: 12px; padding: 1.25em;
 }
 .dmls-prod-img {
   width: 64px; height: 64px; border-radius: 14px; flex: none; object-fit: contain;
-  background: rgba(255, 255, 255, 0.92); padding: 6px;
+  background: rgba(255, 255, 255, 0.92); padding: 0.375em;
 }
 .dmls-prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.dmls-prod-title { font-size: 14.5px; line-height: 1.25; font-weight: 700; color: var(--dmls-ink); text-decoration: none; }
+.dmls-prod-title { font-size: 0.9063em; line-height: 1.25; font-weight: 700; color: var(--dmls-ink); text-decoration: none; }
 .dmls-prod-title:hover { text-decoration: underline; }
-.dmls-prod-price { font-size: 13px; color: var(--dmls-ink-dim); }
+.dmls-prod-price { font-size: 0.8125em; color: var(--dmls-ink-dim); }
 .dmls-prod-buy {
   flex: none; width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: var(--dmls-green); color: #0d1200; font-weight: 700; font-size: 19px; line-height: 1;
+  background: var(--dmls-green); color: #0d1200; font-weight: 700; font-size: 1.1875em; line-height: 1;
   text-decoration: none; box-shadow:
         0 0 8px rgba(0, 255, 60, 0.85),
         0 0 18px rgba(0, 255, 60, 0.75),
@@ -451,7 +458,7 @@
 }
 .dmls-prod-buy span { margin-top: -5px; } /* optically centers the "+" glyph in the circle */
 .dmls-prod-buy[disabled] { background: rgba(255, 255, 255, 0.18); color: var(--dmls-ink); }
-.dmls-prod-note { font-size: 12px; color: var(--dmls-ink-faint); margin-top: 10px; line-height: 1.5; padding-top: 6px; }
+.dmls-prod-note { font-size: 0.75em; color: var(--dmls-ink-faint); margin-top: 10px; line-height: 1.5; padding-top: 0.375em; }
 .dmls-prod-more { margin-top: 12px; }
 #dmls-products { margin: 0; }
 
@@ -459,8 +466,8 @@
 .dmls-resume {
   display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap;
   background: rgba(255, 213, 74, 0.12); border: 1px solid rgba(255, 213, 74, 0.4);
-  border-radius: 12px; padding: 12px 16px; margin: 18px auto 0;
-  font-size: 14px; color: var(--dmls-gold);
+  border-radius: 12px; padding: 0.75em 1em; margin: 18px auto 0;
+  font-size: 0.875em; color: var(--dmls-gold);
 }
 .dmls-resume button { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; color: var(--dmls-gold); }
 
@@ -510,7 +517,7 @@
 .dmls-toast {
   position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px);
   background: #0d1200; color: #eaffd0; border: 1px solid var(--dmls-green);
-  padding: 11px 20px; border-radius: 999px; font-size: 14.5px; font-weight: 600;
+  padding: 0.6875em 1.25em; border-radius: 999px; font-size: 0.9063em; font-weight: 600;
   opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
   z-index: 10020; max-width: 90vw;
 }
@@ -559,7 +566,7 @@ body.dmls-modal-lock { overflow: hidden; }
   position: absolute; top: 10px; right: 10px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
   background: rgba(8, 8, 26, 0.55); border: 1px solid var(--dmls-line);
-  color: #fff; font-size: 19px; line-height: 1;
+  color: #fff; font-size: 1.1875em; line-height: 1;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
@@ -585,7 +592,7 @@ body.dmls-modal-lock { overflow: hidden; }
 /* No .dmls-card-body/.dmls-nav split here (transient, <3s, no footer) — just
    center its short content in the fixed-height card instead of leaving it
    stuck to the top with blank space below. */
-.dmls-counting { justify-content: center; padding-top: 46px; padding-bottom: 52px; }
+.dmls-counting { justify-content: center; padding-top: 2.875em; padding-bottom: 3.25em; }
 .dmls-count-dots { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
 .dmls-count-dots i {
   width: 12px; height: 12px; border-radius: 50%;
@@ -602,9 +609,9 @@ body.dmls-modal-lock { overflow: hidden; }
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--dmls-line);
   border-radius: 14px;
-  padding: 14px 10px;
+  padding: 0.875em 0.625em;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 1em;
   overflow-wrap: anywhere;
   transition: background 0.15s, border-color 0.15s;
 }
@@ -622,8 +629,8 @@ body.dmls-modal-lock { overflow: hidden; }
 
 .dmls-achv-tabs { display: flex; gap: 8px; margin: 4px 0 16px; flex: none; }
 .dmls-achv-tab {
-  flex: 1; padding: 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.08);
-  font-weight: 700; font-size: 13px; letter-spacing: 0.04em; color: var(--dmls-ink-dim);
+  flex: 1; padding: 0.625em; border-radius: 12px; background: rgba(255, 255, 255, 0.08);
+  font-weight: 700; font-size: 0.8125em; letter-spacing: 0.04em; color: var(--dmls-ink-dim);
   transition: background 0.15s ease, color 0.15s ease;
 }
 .dmls-achv-tab.dmls-achv-tab-on { background: var(--dmls-green); color: #0d1200; }
@@ -632,7 +639,7 @@ body.dmls-modal-lock { overflow: hidden; }
 .dmls-achv-tile {
   /* No box/border per the mock — icon + name + description sit directly on
      the card's own background, not inside a bordered card-within-a-card. */
-  padding: 14px 10px; text-align: center;
+  padding: 0.875em 0.625em; text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
 .dmls-achv-icon {
@@ -649,35 +656,35 @@ body.dmls-modal-lock { overflow: hidden; }
   border: 2px dashed rgba(255, 255, 255, 0.2);
   box-shadow: none;
 }
-.dmls-achv-name { font-size: 12.5px; font-weight: 700; line-height: 1.3; }
-.dmls-achv-desc { font-size: 11px; color: var(--dmls-ink-dim); line-height: 1.35; }
+.dmls-achv-name { font-size: 0.7813em; font-weight: 700; line-height: 1.3; }
+.dmls-achv-desc { font-size: 0.6875em; color: var(--dmls-ink-dim); line-height: 1.35; }
 .dmls-achv-tile.dmls-achv-locked .dmls-achv-desc { letter-spacing: 0.12em; }
-.dmls-achv-date { font-size: 10px; color: var(--dmls-ink-faint); margin-top: 2px; }
+.dmls-achv-date { font-size: 0.625em; color: var(--dmls-ink-faint); margin-top: 2px; }
 
 .dmls-bday-form { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 4px; }
 .dmls-bday-input {
-  width: 100%; padding: 8px; font-size: 12px; border-radius: 8px; border: 2px solid #9287b0;
+  width: 100%; padding: 0.5em; font-size: 0.75em; border-radius: 8px; border: 2px solid #9287b0;
   background: #fff; color: #1a1a2e;
 }
 .dmls-bday-submit {
-  background: var(--dmls-green); color: #0d1200; font-weight: 700; font-size: 11px;
-  padding: 7px; border-radius: 8px;
+  background: var(--dmls-green); color: #0d1200; font-weight: 700; font-size: 0.6875em;
+  padding: 0.4375em; border-radius: 8px;
 }
 
 .dmls-hist-list { display: flex; flex-direction: column; gap: 14px; }
 .dmls-hist-row {
   border: 1.5px solid rgba(255, 255, 255, 0.3);
-  border-radius: 26px; padding: 18px 20px; text-align: center;
+  border-radius: 26px; padding: 1.125em 1.25em; text-align: center;
 }
-.dmls-hist-title { font-style: italic; font-weight: 700; font-size: 16px; margin: 0 0 10px; overflow-wrap: anywhere; }
-.dmls-hist-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--dmls-ink-dim); }
+.dmls-hist-title { font-style: italic; font-weight: 700; font-size: 1em; margin: 0 0 10px; overflow-wrap: anywhere; }
+.dmls-hist-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.8125em; color: var(--dmls-ink-dim); }
 .dmls-hist-date { color: var(--dmls-ink-faint); font-weight: 700; }
-.dmls-hist-more { color: var(--dmls-ink); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; flex: none; }
+.dmls-hist-more { color: var(--dmls-ink); font-size: 0.75em; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; flex: none; }
 .dmls-hist-more:hover { color: var(--dmls-ink-dim); }
-.dmls-hist-detail { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--dmls-line); display: flex; flex-direction: column; gap: 4px; text-align: left; }
-.dmls-hist-detail-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--dmls-ink-dim); }
+.dmls-hist-detail { margin-top: 10px; padding-top: 0.5em; border-top: 1px dashed var(--dmls-line); display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.dmls-hist-detail-row { display: flex; justify-content: space-between; gap: 10px; font-size: 0.7813em; color: var(--dmls-ink-dim); }
 .dmls-hist-detail-row b { color: var(--dmls-ink); font-weight: 700; }
-.dmls-hist-empty { font-size: 14px; color: var(--dmls-ink-dim); text-align: center; margin-top: 18px; }
+.dmls-hist-empty { font-size: 0.875em; color: var(--dmls-ink-dim); text-align: center; margin-top: 18px; }
 
 .dmls-btn-full { width: 100%; }
 
