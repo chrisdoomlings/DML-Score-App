@@ -32,9 +32,18 @@ url = "https://dml-score-nine.vercel.app/api/proxy"
 subpath = "score"
 prefix = "apps"
 
-# This app doesn't use Shopify Events, but current Shopify CLI requires
-# [events] to be present regardless (see the "[events]: Required" /
-# "[events.api_version]: Required" validation errors otherwise). Same
-# api_version as [webhooks] above, for consistency — no subscriptions.
+# This app doesn't use Shopify Events (still developer-preview, unstable
+# API version only) — but current Shopify CLI requires [events] to be
+# present regardless of whether it's used, or `deploy` fails validation.
+# uri points at the same handler [webhooks] already uses; that handler only
+# acts on topic == "app/uninstalled" and no-ops for anything else, so an
+# actual "Product" delivery here (which shouldn't happen — nothing about
+# this app subscribes it to real product changes) is harmless either way.
 [events]
-api_version = "2026-01"
+api_version = "unstable"
+
+  [[events.subscription]]
+  handle = "unused-stub"
+  topic = "Product"
+  actions = ["create"]
+  uri = "/api/webhooks"
