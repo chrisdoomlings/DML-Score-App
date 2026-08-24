@@ -909,18 +909,20 @@
       '<div class="dmls-card-body">' +
       '<div class="dmls-win-main">' +
       logoHTML("dmls-win-logo") +
-      '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
-      // Name + points are burned onto the art itself (an absolutely
-      // positioned caption over the image) when there's art to put them on;
-      // falls back to plain stacked text when no winner image is configured.
+      // Eyebrow + name + points are all burned onto the art itself (an
+      // absolutely positioned caption over the image) when there's art to
+      // put them on; falls back to plain stacked text when no winner image
+      // is configured.
       (ICONS.winner
         ? '<div class="dmls-win-art-wrap">' +
           '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" loading="lazy">' +
           '<div class="dmls-win-art-caption">' +
+          '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
           '<h1 class="dmls-win-name">' + winnerName + "</h1>" +
           '<p class="dmls-win-points">' + top + " points</p>" +
           "</div></div>"
-        : '<h1 class="dmls-win-name">' + winnerName + "</h1>" +
+        : '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
+          '<h1 class="dmls-win-name">' + winnerName + "</h1>" +
           '<p class="dmls-win-points">' + top + " points</p>") +
       (meWon ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
       '<ul class="dmls-win-scores">' +

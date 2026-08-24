@@ -336,9 +336,9 @@
 .dmls-win-name {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
   font-size: clamp(38px, 12vw, 52px); line-height: 1.05; margin: 0 0 4px;
-  overflow-wrap: anywhere;
+  overflow-wrap: anywhere; font-size: 52px;
 }
-.dmls-win-points { font-size: 15px; color: var(--dmls-ink-dim); margin: 0 0 4px; }
+.dmls-win-points { font-size: 22px; color: white; margin: 0 0 4px; }
 /* Name + points overlaid on the character art (see renderWinner()) — full
    card width, no size cap, with a caption positioned over the top of the
    image. Strong text-shadow instead of a background scrim keeps it legible
@@ -352,6 +352,7 @@
   position: absolute; left: 0; right: 0; top: 6%;
   text-align: center; pointer-events: none;
 }
+.dmls-win-art-caption .dmls-win-eyebrow,
 .dmls-win-art-caption .dmls-win-name,
 .dmls-win-art-caption .dmls-win-points {
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.5);
@@ -366,7 +367,7 @@
   padding: 8px 4px;
   font-size: 24px;
 }
-.dmls-win-score-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+.dmls-win-score-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; font-family: "DMLS Catastrophe", "Segoe UI", cursive; }
 .dmls-win-score-pts { font-weight: 700; }
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
