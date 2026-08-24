@@ -977,10 +977,16 @@
       save();
       render();
     });
-    // Trophy image/download isn't built yet — this just tells the player so,
-    // rather than leaving the button looking broken.
+    // Server-rendered shareable image (app/api/proxy/trophy) — stateless,
+    // built entirely from query params we already have at reveal time, so
+    // no extra round trip before opening it. Opens in a new tab rather than
+    // trying to build a custom save/share UI: mobile browsers already offer
+    // a native save/share action on a plain image view.
     document.querySelector("[data-trophy]").addEventListener("click", function () {
-      toast("Trophy generator coming soon!");
+      var url = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
+        "&score=" + encodeURIComponent(top) +
+        "&date=" + encodeURIComponent(localDateStr());
+      window.open(url, "_blank");
     });
 
     confettiBurst();
