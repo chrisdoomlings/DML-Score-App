@@ -86,7 +86,7 @@
   background-position: center, center, center;
   border: 1px solid var(--dmls-line);
   border-radius: 22px;
-  padding: 26px 22px 30px;
+  padding: 26px 0;
   text-align: center;
   position: relative;
   overflow: hidden;
