@@ -31,3 +31,9 @@ embedded = false
 url = "https://dml-score-nine.vercel.app/api/proxy"
 subpath = "score"
 prefix = "apps"
+
+# Empty on purpose — this app doesn't use Shopify Events, but current
+# Shopify CLI requires the [events] table to be present regardless (see
+# the "[events]: Required" validation error otherwise). Confirmed via
+# `shopify app config validate` that an empty table satisfies it.
+[events]

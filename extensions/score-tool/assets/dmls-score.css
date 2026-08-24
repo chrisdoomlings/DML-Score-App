@@ -386,7 +386,7 @@
 .dmls-win-cta-secondary { width: 100%; padding: 0.6875em; font-size: 0.875em; background: #221946;}
 
 /* widgets */
-.dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 2.5em; }
+.dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 1.5em; }
 .dmls-widget {
   background: rgba(0, 0, 0, 0.24); border: 1px solid var(--dmls-line);
   border-radius: 16px; padding: 1.125em;
