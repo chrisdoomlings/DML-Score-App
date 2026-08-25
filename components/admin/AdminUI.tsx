@@ -42,6 +42,18 @@ export function GlobalStyle() {
       .dml-nav-link:hover { color: #202223; }
       .dml-nav-link.active { color: #008060; border-bottom-color: #008060; }
 
+      .dml-subtabs {
+        max-width: 1120px; margin: 0 auto; padding: 16px 24px 0;
+        display: flex; gap: 6px; flex-wrap: wrap;
+      }
+      .dml-subtab-btn {
+        font-size: 13px; font-weight: 700; cursor: pointer; color: #6d7175;
+        background: #f1f2f3; border: 1px solid transparent; border-radius: 999px;
+        padding: 8px 16px; transition: background 0.15s, color 0.15s;
+      }
+      .dml-subtab-btn:hover { background: #e4e5e7; color: #202223; }
+      .dml-subtab-btn.active { background: #202223; color: #fff; }
+
       .dml-main { max-width: 1120px; margin: 0 auto; padding: 24px; }
 
       .dml-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; align-items: start; }

@@ -33,6 +33,8 @@
   var accountUrl = root.getAttribute("data-account-url") || "/account";
   var homeTip = ""; // populated from /config; empty = tip bar hidden
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
+  var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
+  var trophySubheading = "Did Not."; // populated from /config, matches the DB default until it loads
   var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
   // Welcome screen character illustration + heading layout — all populated
   // from /config, matching the score_settings DB defaults until it loads.
@@ -1020,11 +1022,11 @@
       '<div class="dmls-card-body">' +
       (ICONS.trophyTop ? '<img class="dmls-trophy-top" src="' + ICONS.trophyTop + '" alt="" loading="lazy">' : "") +
       '<p class="dmls-trophy-plate">' + winnerName + "</p>" +
-      '<h2 class="dmls-trophy-heading">Won The End Of The World!</h2>' +
+      '<h2 class="dmls-trophy-heading">' + esc(trophyHeading) + "</h2>" +
       '<hr class="dmls-trophy-divider">' +
       (loserNames
         ? '<p class="dmls-trophy-losers">' + loserNames + "</p>" +
-          '<p class="dmls-trophy-didnot">Did Not.</p>'
+          '<p class="dmls-trophy-didnot">' + esc(trophySubheading) + "</p>"
         : "") +
       "</div>" +
       '<div class="dmls-nav">' +
@@ -1169,6 +1171,8 @@
       // so there's nothing here to usefully re-render anyway. By the time a
       // game finishes, /config has long since resolved at boot.
       if (typeof c.discordUrl === "string") discordUrl = c.discordUrl;
+      if (typeof c.trophyHeading === "string" && c.trophyHeading) trophyHeading = c.trophyHeading;
+      if (typeof c.trophySubheading === "string" && c.trophySubheading) trophySubheading = c.trophySubheading;
       if (typeof c.logoWidth === "number" && c.logoWidth !== logoWidth) {
         logoWidth = c.logoWidth;
         needsRerender = true;

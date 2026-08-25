@@ -20,6 +20,8 @@ interface Settings {
   tipText: string;
   homeHeading: string;
   discordUrl: string;
+  trophyHeading: string;
+  trophySubheading: string;
   logoWidth: number;
   cardMinHeight: number;
   winnerImageSize: number;
@@ -34,13 +36,31 @@ interface LibraryImage {
   uploadedAt: string;
 }
 
-const IMAGE_FIELDS: { key: string; label: string }[] = [
-  { key: "logo", label: "Home screen logo" },
-  { key: "characters", label: "Home screen character illustration" },
-  { key: "winner", label: "Winner reveal art" },
+type Tab = "general" | "welcome" | "winner" | "trophy";
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: "general", label: "General" },
+  { key: "welcome", label: "Welcome" },
+  { key: "winner", label: "Winner" },
+  { key: "trophy", label: "Trophy" },
+];
+
+const GENERAL_IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "bg", label: "Background (main screens)" },
   { key: "bgExp", label: "Background (expansion-points screen)" },
+];
+
+const WELCOME_IMAGE_FIELDS: { key: string; label: string }[] = [
+  { key: "logo", label: "Home screen logo" },
+  { key: "characters", label: "Home screen character illustration" },
+];
+
+const WINNER_IMAGE_FIELDS: { key: string; label: string }[] = [
+  { key: "winner", label: "Winner reveal art" },
   { key: "bgWinner", label: "Background (winner reveal screen)" },
+];
+
+const TROPHY_IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "trophyBg", label: "Background (trophy screen)" },
   { key: "trophyTop", label: "Trophy screen top illustration" },
 ];
@@ -57,6 +77,7 @@ const CHARACTER_IMAGE_FIELDS: { key: string; label: string }[] = [
 ];
 
 export default function SettingsPage() {
+  const [tab, setTab] = useState<Tab>("general");
   const [settings, setSettings] = useState<Settings | null>(null);
   const [saved, setSaved] = useState<Settings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -184,6 +205,44 @@ export default function SettingsPage() {
   if (loadError) return <CenteredMessage>Couldn&rsquo;t load: {loadError}</CenteredMessage>;
   if (!settings) return <CenteredMessage>Loading…</CenteredMessage>;
 
+  function imageGrid(fields: { key: string; label: string }[]) {
+    return (
+      <div className="dml-image-grid">
+        {fields.map(({ key, label: fieldLabel }) => (
+          <div className="dml-image-tile" key={key}>
+            <div className="dml-image-thumb">
+              {settings!.images[key] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={settings!.images[key]} alt="" />
+              ) : (
+                <span className="dml-image-placeholder">Default</span>
+              )}
+            </div>
+            <div className="dml-image-name">{fieldLabel}</div>
+            <div className="dml-image-actions">
+              <label className="dml-btn-secondary dml-btn-sm">
+                {uploading === key ? "Uploading…" : "Upload"}
+                <input
+                  type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                  disabled={uploading !== null}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(key, f); e.target.value = ""; }}
+                />
+              </label>
+              <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(key)}>
+                Browse
+              </button>
+              {settings!.images[key] && (
+                <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => clearImage(key)}>
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
       <div style={{
@@ -201,303 +260,320 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      <div className="dml-subtabs">
+        {TABS.map((t) => (
+          <button
+            key={t.key} type="button"
+            className={"dml-subtab-btn" + (tab === t.key ? " active" : "")}
+            onClick={() => setTab(t.key)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <main className="dml-main">
         <div className="dml-grid">
-          <section className="dml-card">
-            <h2 className="dml-card-title">&ldquo;Guess Who Won?&rdquo; mini-game</h2>
-            <p className="dml-card-hint">
-              Offered before the reveal on close games only, to logged-in customers, every Nth game.
-              No points payout &mdash; just the guess/reveal moment.
-            </p>
-            <label className="dml-checkbox-row">
-              <input
-                type="checkbox" checked={settings.guessEnabled}
-                onChange={(e) => setSettings({ ...settings, guessEnabled: e.target.checked })}
-              />
-              Enabled
-            </label>
-            <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
-              <div>
-                <label className="dml-label">Max gap for a &ldquo;close game&rdquo;</label>
-                <input
-                  className="dml-input" type="number" min={0} value={settings.guessGapMax}
-                  onChange={(e) => setSettings({ ...settings, guessGapMax: Number(e.target.value) })}
-                />
-              </div>
-              <div>
-                <label className="dml-label">Offer every Nth game</label>
-                <input
-                  className="dml-input" type="number" min={1} value={settings.guessEveryN}
-                  onChange={(e) => setSettings({ ...settings, guessEveryN: Number(e.target.value) })}
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="dml-card dml-card-wide">
-            <h2 className="dml-card-title">Achievements</h2>
-            <p className="dml-card-hint">
-              21 fixed achievement triggers. Toggle which are active and customize the name, icon, and
-              description &mdash; description is an admin-only reminder of the trigger condition, players
-              never see it (names/icons stay hidden until unlocked).
-            </p>
-            {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-            <div className="dml-achv-list">
-              {ACHIEVEMENT_KEYS.map((key) => {
-                const achv = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
-                const uploadId = `achv:${key}`;
-                return (
-                  <div className="dml-achv-row" key={key}>
+          {tab === "general" && (
+            <>
+              <section className="dml-card">
+                <h2 className="dml-card-title">&ldquo;Guess Who Won?&rdquo; mini-game</h2>
+                <p className="dml-card-hint">
+                  Offered before the reveal on close games only, to logged-in customers, every Nth game.
+                  No points payout &mdash; just the guess/reveal moment.
+                </p>
+                <label className="dml-checkbox-row">
+                  <input
+                    type="checkbox" checked={settings.guessEnabled}
+                    onChange={(e) => setSettings({ ...settings, guessEnabled: e.target.checked })}
+                  />
+                  Enabled
+                </label>
+                <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+                  <div>
+                    <label className="dml-label">Max gap for a &ldquo;close game&rdquo;</label>
                     <input
-                      type="checkbox" checked={achv.enabled}
-                      onChange={(e) => patchAchievement(key, { enabled: e.target.checked })}
+                      className="dml-input" type="number" min={0} value={settings.guessGapMax}
+                      onChange={(e) => setSettings({ ...settings, guessGapMax: Number(e.target.value) })}
                     />
-                    <div className="dml-achv-icon">
-                      <div className="dml-achv-icon-thumb">
-                        {achv.iconUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={achv.iconUrl} alt="" />
-                        ) : (
-                          <span className="dml-image-placeholder">?</span>
-                        )}
-                      </div>
-                      <div className="dml-achv-icon-actions">
-                        <label className="dml-btn-secondary dml-btn-sm">
-                          {uploading === uploadId ? "…" : "Upload"}
-                          <input
-                            type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
-                            disabled={uploading !== null}
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              if (f) uploadAchievementIcon(key, f);
-                              e.target.value = "";
-                            }}
-                          />
-                        </label>
-                        <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(`achv:${key}`)}>
-                          Browse
-                        </button>
-                        {achv.iconUrl && (
-                          <button
-                            type="button" className="dml-btn-ghost dml-btn-sm"
-                            onClick={() => clearAchievementIcon(key)}
-                          >
-                            Reset
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="dml-achv-fields">
-                      <span className="dml-achv-key">{key}</span>
-                      <input
-                        className="dml-input" type="text" maxLength={60} value={achv.name}
-                        onChange={(e) => patchAchievement(key, { name: e.target.value })}
-                      />
-                      <textarea
-                        className="dml-textarea" maxLength={200} rows={2} value={achv.description}
-                        onChange={(e) => patchAchievement(key, { description: e.target.value })}
-                      />
-                    </div>
                   </div>
-                );
-              })}
-            </div>
-          </section>
+                  <div>
+                    <label className="dml-label">Offer every Nth game</label>
+                    <input
+                      className="dml-input" type="number" min={1} value={settings.guessEveryN}
+                      onChange={(e) => setSettings({ ...settings, guessEveryN: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </section>
 
-          <section className="dml-card dml-card-wide">
-            <h2 className="dml-card-title">Home screen</h2>
-            <div className="dml-field-row">
-              <div>
-                <label className="dml-label">Logo width (px)</label>
-                <input
-                  className="dml-input dml-input-sm" type="number" min={40} max={600} value={settings.logoWidth}
-                  onChange={(e) => setSettings({ ...settings, logoWidth: Number(e.target.value) })}
-                />
-              </div>
-              <div>
+              <section className="dml-card">
+                <h2 className="dml-card-title">Card minimum height</h2>
+                <p className="dml-card-hint">
+                  How tall every screen of the tool is at minimum — a game with more players just grows
+                  past this instead of scrolling, so raise it if your players usually have big groups.
+                </p>
                 <label className="dml-label">Card minimum height (px)</label>
                 <input
                   className="dml-input dml-input-sm" type="number" min={300} max={1200} value={settings.cardMinHeight}
                   onChange={(e) => setSettings({ ...settings, cardMinHeight: Number(e.target.value) })}
                 />
-              </div>
-              <div>
-                <label className="dml-label">Winner image size (px, unused — image is full-width)</label>
-                <input
-                  className="dml-input dml-input-sm" type="number" min={100} max={500} value={settings.winnerImageSize}
-                  onChange={(e) => setSettings({ ...settings, winnerImageSize: Number(e.target.value) })}
-                />
-              </div>
-            </div>
-            <p className="dml-card-hint" style={{ marginTop: -4 }}>
-              How tall every screen of the tool is at minimum — a game with more players just grows past
-              this instead of scrolling, so raise it if your players usually have big groups.
-            </p>
-            <label className="dml-label" style={{ marginTop: 14 }}>
-              Welcome screen heading (leave blank to use the theme block&rsquo;s default)
-            </label>
-            <input
-              className="dml-input" type="text" maxLength={120} value={settings.homeHeading}
-              onChange={(e) => setSettings({ ...settings, homeHeading: e.target.value })}
-            />
-            <label className="dml-label" style={{ marginTop: 14 }}>
-              Tip banner text (shown under the welcome card — leave blank to hide it)
-            </label>
-            <input
-              className="dml-input" type="text" maxLength={280} value={settings.tipText}
-              onChange={(e) => setSettings({ ...settings, tipText: e.target.value })}
-            />
-            <label className="dml-label" style={{ marginTop: 14 }}>
-              Discord invite link (shown on the winner screen — leave blank to hide the banner)
-            </label>
-            <input
-              className="dml-input" type="url" maxLength={300} placeholder="https://discord.gg/…"
-              value={settings.discordUrl}
-              onChange={(e) => setSettings({ ...settings, discordUrl: e.target.value })}
-            />
-          </section>
+              </section>
 
-          <section className="dml-card dml-card-wide">
-            <h2 className="dml-card-title">Welcome screen layout</h2>
-            <p className="dml-card-hint">
-              Size and position the character illustration and heading. The illustration can be made wider
-              than the card itself &mdash; it bleeds off both edges symmetrically and gets cropped there, it
-              never stretches the card.
-            </p>
-            <div className="dml-preview-frame">
-              <div
-                className="dml-preview-card"
-                style={settings.images.bg ? {
-                  backgroundImage: `linear-gradient(180deg, rgba(16,21,63,0.45), rgba(16,21,63,0.72)), url(${settings.images.bg})`,
-                } : undefined}
-              >
-                {settings.images.logo && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className="dml-preview-logo" src={settings.images.logo} alt="" style={{ width: settings.logoWidth }} />
-                )}
-                {settings.images.characters && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className="dml-preview-characters" src={settings.images.characters} alt="" />
-                )}
-                <h3
-                  className="dml-preview-title"
-                  style={{ maxWidth: settings.headingWidth, fontSize: settings.headingFontSize }}
-                >
-                  {settings.homeHeading || "Ready to see who won the game?"}
-                </h3>
-                <p className="dml-preview-sub">Tally World&rsquo;s End, face value, and bonus points — we&rsquo;ll crown the winner.</p>
-                <span className="dml-preview-btn">Start scoring</span>
-              </div>
-              <p className="dml-preview-caption">Live preview &mdash; approximates the real welcome screen.</p>
-            </div>
-            <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-              <div>
-                <label className="dml-label">Character illustration width (px, unused — storefront is full-bleed)</label>
-                <input
-                  className="dml-input dml-input-sm" type="number" min={60} max={900} value={settings.charactersWidth}
-                  onChange={(e) => setSettings({ ...settings, charactersWidth: Number(e.target.value) })}
-                />
-              </div>
-              <div>
-                <label className="dml-label">Heading width (px)</label>
-                <input
-                  className="dml-input dml-input-sm" type="number" min={100} max={600} value={settings.headingWidth}
-                  onChange={(e) => setSettings({ ...settings, headingWidth: Number(e.target.value) })}
-                />
-              </div>
-              <div>
-                <label className="dml-label">Heading font size (px)</label>
-                <input
-                  className="dml-input dml-input-sm" type="number" min={14} max={60} value={settings.headingFontSize}
-                  onChange={(e) => setSettings({ ...settings, headingFontSize: Number(e.target.value) })}
-                />
-              </div>
-            </div>
-          </section>
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Achievements</h2>
+                <p className="dml-card-hint">
+                  21 fixed achievement triggers. Toggle which are active and customize the name, icon, and
+                  description &mdash; description is an admin-only reminder of the trigger condition, players
+                  never see it (names/icons stay hidden until unlocked).
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                <div className="dml-achv-list">
+                  {ACHIEVEMENT_KEYS.map((key) => {
+                    const achv = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
+                    const uploadId = `achv:${key}`;
+                    return (
+                      <div className="dml-achv-row" key={key}>
+                        <input
+                          type="checkbox" checked={achv.enabled}
+                          onChange={(e) => patchAchievement(key, { enabled: e.target.checked })}
+                        />
+                        <div className="dml-achv-icon">
+                          <div className="dml-achv-icon-thumb">
+                            {achv.iconUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={achv.iconUrl} alt="" />
+                            ) : (
+                              <span className="dml-image-placeholder">?</span>
+                            )}
+                          </div>
+                          <div className="dml-achv-icon-actions">
+                            <label className="dml-btn-secondary dml-btn-sm">
+                              {uploading === uploadId ? "…" : "Upload"}
+                              <input
+                                type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                                disabled={uploading !== null}
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f) uploadAchievementIcon(key, f);
+                                  e.target.value = "";
+                                }}
+                              />
+                            </label>
+                            <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(`achv:${key}`)}>
+                              Browse
+                            </button>
+                            {achv.iconUrl && (
+                              <button
+                                type="button" className="dml-btn-ghost dml-btn-sm"
+                                onClick={() => clearAchievementIcon(key)}
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="dml-achv-fields">
+                          <span className="dml-achv-key">{key}</span>
+                          <input
+                            className="dml-input" type="text" maxLength={60} value={achv.name}
+                            onChange={(e) => patchAchievement(key, { name: e.target.value })}
+                          />
+                          <textarea
+                            className="dml-textarea" maxLength={200} rows={2} value={achv.description}
+                            onChange={(e) => patchAchievement(key, { description: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
 
-          <section className="dml-card dml-card-wide">
-            <h2 className="dml-card-title">Welcome screen characters</h2>
-            <p className="dml-card-hint">
-              Bee and fish Doomlings on the welcome screen bob up and down continuously and pop in one at a
-              time on page load. Each needs its own normal and hover-peak art since they animate independently
-              &mdash; leave blank to use the built-in default.
-            </p>
-            {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-            <div className="dml-image-grid">
-              {CHARACTER_IMAGE_FIELDS.map(({ key, label: fieldLabel }) => (
-                <div className="dml-image-tile" key={key}>
-                  <div className="dml-image-thumb">
-                    {settings.images[key] ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={settings.images[key]} alt="" />
-                    ) : (
-                      <span className="dml-image-placeholder">Default</span>
-                    )}
-                  </div>
-                  <div className="dml-image-name">{fieldLabel}</div>
-                  <div className="dml-image-actions">
-                    <label className="dml-btn-secondary dml-btn-sm">
-                      {uploading === key ? "Uploading…" : "Upload"}
-                      <input
-                        type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
-                        disabled={uploading !== null}
-                        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(key, f); e.target.value = ""; }}
-                      />
-                    </label>
-                    <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(key)}>
-                      Browse
-                    </button>
-                    {settings.images[key] && (
-                      <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => clearImage(key)}>
-                        Reset
-                      </button>
-                    )}
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Shared background images</h2>
+                <p className="dml-card-hint">
+                  Used across the main scoring screens (not the welcome, winner, or trophy screens &mdash;
+                  those have their own tabs). Leave blank to use the built-in default.
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                {imageGrid(GENERAL_IMAGE_FIELDS)}
+              </section>
+            </>
+          )}
+
+          {tab === "welcome" && (
+            <>
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Welcome screen text</h2>
+                <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+                  <div>
+                    <label className="dml-label">Logo width (px)</label>
+                    <input
+                      className="dml-input dml-input-sm" type="number" min={40} max={600} value={settings.logoWidth}
+                      onChange={(e) => setSettings({ ...settings, logoWidth: Number(e.target.value) })}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
+                <label className="dml-label" style={{ marginTop: 14 }}>
+                  Welcome screen heading (leave blank to use the theme block&rsquo;s default)
+                </label>
+                <input
+                  className="dml-input" type="text" maxLength={120} value={settings.homeHeading}
+                  onChange={(e) => setSettings({ ...settings, homeHeading: e.target.value })}
+                />
+                <label className="dml-label" style={{ marginTop: 14 }}>
+                  Tip banner text (shown under the welcome card — leave blank to hide it)
+                </label>
+                <input
+                  className="dml-input" type="text" maxLength={280} value={settings.tipText}
+                  onChange={(e) => setSettings({ ...settings, tipText: e.target.value })}
+                />
+              </section>
 
-          <section className="dml-card dml-card-wide">
-            <h2 className="dml-card-title">Images</h2>
-            <p className="dml-card-hint">
-              Replace any art asset with your own. Leave blank to use the built-in default.
-            </p>
-            {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-            <div className="dml-image-grid">
-              {IMAGE_FIELDS.map(({ key, label: fieldLabel }) => (
-                <div className="dml-image-tile" key={key}>
-                  <div className="dml-image-thumb">
-                    {settings.images[key] ? (
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Welcome screen layout</h2>
+                <p className="dml-card-hint">
+                  Size and position the character illustration and heading. The illustration can be made wider
+                  than the card itself &mdash; it bleeds off both edges symmetrically and gets cropped there, it
+                  never stretches the card.
+                </p>
+                <div className="dml-preview-frame">
+                  <div
+                    className="dml-preview-card"
+                    style={settings.images.bg ? {
+                      backgroundImage: `linear-gradient(180deg, rgba(16,21,63,0.45), rgba(16,21,63,0.72)), url(${settings.images.bg})`,
+                    } : undefined}
+                  >
+                    {settings.images.logo && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={settings.images[key]} alt="" />
-                    ) : (
-                      <span className="dml-image-placeholder">Default</span>
+                      <img className="dml-preview-logo" src={settings.images.logo} alt="" style={{ width: settings.logoWidth }} />
                     )}
+                    {settings.images.characters && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img className="dml-preview-characters" src={settings.images.characters} alt="" />
+                    )}
+                    <h3
+                      className="dml-preview-title"
+                      style={{ maxWidth: settings.headingWidth, fontSize: settings.headingFontSize }}
+                    >
+                      {settings.homeHeading || "Ready to see who won the game?"}
+                    </h3>
+                    <p className="dml-preview-sub">Tally World&rsquo;s End, face value, and bonus points — we&rsquo;ll crown the winner.</p>
+                    <span className="dml-preview-btn">Start scoring</span>
                   </div>
-                  <div className="dml-image-name">{fieldLabel}</div>
-                  <div className="dml-image-actions">
-                    <label className="dml-btn-secondary dml-btn-sm">
-                      {uploading === key ? "Uploading…" : "Upload"}
-                      <input
-                        type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
-                        disabled={uploading !== null}
-                        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(key, f); e.target.value = ""; }}
-                      />
-                    </label>
-                    <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(key)}>
-                      Browse
-                    </button>
-                    {settings.images[key] && (
-                      <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => clearImage(key)}>
-                        Reset
-                      </button>
-                    )}
+                  <p className="dml-preview-caption">Live preview &mdash; approximates the real welcome screen.</p>
+                </div>
+                <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+                  <div>
+                    <label className="dml-label">Character illustration width (px, unused — storefront is full-bleed)</label>
+                    <input
+                      className="dml-input dml-input-sm" type="number" min={60} max={900} value={settings.charactersWidth}
+                      onChange={(e) => setSettings({ ...settings, charactersWidth: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="dml-label">Heading width (px)</label>
+                    <input
+                      className="dml-input dml-input-sm" type="number" min={100} max={600} value={settings.headingWidth}
+                      onChange={(e) => setSettings({ ...settings, headingWidth: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="dml-label">Heading font size (px)</label>
+                    <input
+                      className="dml-input dml-input-sm" type="number" min={14} max={60} value={settings.headingFontSize}
+                      onChange={(e) => setSettings({ ...settings, headingFontSize: Number(e.target.value) })}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
+
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Welcome screen characters</h2>
+                <p className="dml-card-hint">
+                  Bee and fish Doomlings on the welcome screen bob up and down continuously and pop in one at a
+                  time on page load. Each needs its own normal and hover-peak art since they animate independently
+                  &mdash; leave blank to use the built-in default.
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                {imageGrid(CHARACTER_IMAGE_FIELDS)}
+              </section>
+
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Images</h2>
+                <p className="dml-card-hint">
+                  Replace the welcome screen&rsquo;s art with your own. Leave blank to use the built-in default.
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                {imageGrid(WELCOME_IMAGE_FIELDS)}
+              </section>
+            </>
+          )}
+
+          {tab === "winner" && (
+            <>
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Winner screen</h2>
+                <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+                  <div>
+                    <label className="dml-label">Winner image size (px, unused — image is full-width)</label>
+                    <input
+                      className="dml-input dml-input-sm" type="number" min={100} max={500} value={settings.winnerImageSize}
+                      onChange={(e) => setSettings({ ...settings, winnerImageSize: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <label className="dml-label" style={{ marginTop: 14 }}>
+                  Discord invite link (shown on the winner screen — leave blank to hide the banner)
+                </label>
+                <input
+                  className="dml-input" type="url" maxLength={300} placeholder="https://discord.gg/…"
+                  value={settings.discordUrl}
+                  onChange={(e) => setSettings({ ...settings, discordUrl: e.target.value })}
+                />
+              </section>
+
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Images</h2>
+                <p className="dml-card-hint">
+                  Replace the winner reveal screen&rsquo;s art with your own. Leave blank to use the built-in default.
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                {imageGrid(WINNER_IMAGE_FIELDS)}
+              </section>
+            </>
+          )}
+
+          {tab === "trophy" && (
+            <>
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Trophy screen text</h2>
+                <p className="dml-card-hint">
+                  Shown on the &ldquo;Generate Trophy&rdquo; screen after the winner reveal.
+                </p>
+                <label className="dml-label">Heading (below the winner&rsquo;s name)</label>
+                <input
+                  className="dml-input" type="text" maxLength={120} value={settings.trophyHeading}
+                  onChange={(e) => setSettings({ ...settings, trophyHeading: e.target.value })}
+                />
+                <label className="dml-label" style={{ marginTop: 14 }}>Subheading (below the other players&rsquo; names)</label>
+                <input
+                  className="dml-input" type="text" maxLength={60} value={settings.trophySubheading}
+                  onChange={(e) => setSettings({ ...settings, trophySubheading: e.target.value })}
+                />
+              </section>
+
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Images</h2>
+                <p className="dml-card-hint">
+                  Replace the trophy screen&rsquo;s art with your own. Leave blank to use the built-in default.
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                {imageGrid(TROPHY_IMAGE_FIELDS)}
+              </section>
+            </>
+          )}
         </div>
       </main>
 

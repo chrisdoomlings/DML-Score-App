@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
       tipText: body.tipText,
       homeHeading: body.homeHeading,
       discordUrl: body.discordUrl,
+      trophyHeading: body.trophyHeading,
+      trophySubheading: body.trophySubheading,
       logoWidth: body.logoWidth,
       cardMinHeight: body.cardMinHeight,
       winnerImageSize: body.winnerImageSize,
