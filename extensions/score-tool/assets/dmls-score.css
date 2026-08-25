@@ -203,9 +203,13 @@
 .dmls-sub i { color: var(--dmls-ink); font-style: italic; }
 .dmls-inline-link { color: var(--dmls-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
 
-.dmls-dots { display: flex; gap: 7px; justify-content: center; margin: 16px 0 4px; }
-.dmls-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); }
-.dmls-dots i.dmls-on { background: var(--dmls-green); }
+/* Lives once in the modal chrome (#dmls-modal-topbar, above the card, next
+   to the close button) instead of inside each screen's own card head — see
+   setModalDots() in dmls-score.js. Hollow ring for the upcoming steps,
+   solid green for the current/completed ones. */
+.dmls-dots { display: flex; gap: 10px; justify-content: center; }
+.dmls-dots i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.35); background: transparent; box-sizing: border-box; }
+.dmls-dots i.dmls-on { background: var(--dmls-green); border-color: var(--dmls-green); }
 
 /* buttons — one shared shape/weight/case for every .dmls-btn across every
    screen (Back/Next, Play Doomlings, Rematch!, Start scoring, etc.), so
@@ -635,15 +639,19 @@ body.dmls-modal-lock { overflow: hidden; }
   display: flex; flex-direction: column;
 }
 #dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; }
-/* Kept fully inside the card (not poking past its edge) so it can never be
-   clipped by the viewport on narrow phones — the primary target device. */
+/* Chrome row above the card (dots + close), not inside it — flex:none
+   sibling of .dmls-modal-body so it claims its own space within the
+   modal-card's fixed 90vh and never scrolls away or gets clipped. */
+#dmls-modal .dmls-modal-topbar {
+  flex: none; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 40px; padding: 12px 50px 8px;
+}
 #dmls-modal .dmls-modal-close {
-  position: absolute; top: 10px; right: 10px; z-index: 1;
+  position: absolute; top: 6px; right: 6px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
-  
   color: #fff; font-size: 2.1875em; line-height: 1;
   display: flex; align-items: center; justify-content: center;
-  
 }
 #dmls-modal .dmls-modal-close:hover { background: var(--dmls-coral); }
 #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0; }

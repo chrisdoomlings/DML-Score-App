@@ -110,7 +110,10 @@
 
   var saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch (e) { /* ignore */ }
-  var hasResume = !!(saved && saved.players && saved.players.length >= 2 && saved.screen > 0 && saved.screen < 6);
+  // >= 1, not >= 2 — a single name typed on the Add Names screen is already
+  // meaningful entered data; requiring 2 meant refreshing right after adding
+  // just one name silently dropped it with no "Resume it" banner to get it back.
+  var hasResume = !!(saved && saved.players && saved.players.length >= 1 && saved.screen > 0 && saved.screen < 6);
 
   function save() {
     try {
@@ -197,7 +200,10 @@
   modalEl.innerHTML =
     '<div class="dmls-modal-backdrop" id="dmls-modal-backdrop"></div>' +
     '<div class="dmls-modal-card" id="dmls-modal-card" role="dialog" aria-modal="true" aria-label="Doomlings Score Tool">' +
+    '<div class="dmls-modal-topbar">' +
+    '<div class="dmls-dots" id="dmls-modal-dots" aria-hidden="true" hidden></div>' +
     '<button type="button" class="dmls-modal-close" id="dmls-modal-close" aria-label="Close">&times;</button>' +
+    "</div>" +
     '<div class="dmls-modal-body" id="dmls-modal-body">' +
     '<div id="dmls-app" aria-live="polite"></div>' +
     '<div id="dmls-achv" hidden></div>' +
@@ -208,7 +214,21 @@
   var achvEl = document.getElementById("dmls-achv");
   var trophyEl = document.getElementById("dmls-trophy");
   var modalCardEl = document.getElementById("dmls-modal-card");
+  var modalDotsEl = document.getElementById("dmls-modal-dots");
   var productsEl = document.getElementById("dmls-products");
+
+  // Progress dots live once in the modal chrome (above the card, next to the
+  // close button — see the reference mock) instead of being re-rendered
+  // inside every screen's own card head. Only the Add Names + 4 scoring
+  // steps are part of this 5-step flow; every other view hides them.
+  function setModalDots(n) {
+    if (!modalDotsEl) return;
+    if (n === null) { modalDotsEl.hidden = true; return; }
+    modalDotsEl.hidden = false;
+    var h = "";
+    for (var i = 0; i < 5; i++) h += "<i" + (i <= n ? ' class="dmls-on"' : "") + "></i>";
+    modalDotsEl.innerHTML = h;
+  }
 
   var view = "game"; // "game" | "achv"
   var modalOpen = false;
@@ -287,12 +307,6 @@
     },
   ];
 
-  function dots(n) {
-    var h = '<div class="dmls-dots" aria-hidden="true">';
-    for (var i = 0; i < 5; i++) h += "<i" + (i <= n ? ' class="dmls-on"' : "") + "></i>";
-    return h + "</div>";
-  }
-
   // Placeholder flanking-character slots for the 4 scoring steps — no real
   // art/admin upload slot yet (future work); scaffolding only. Real images
   // can be wired in later by setting background-image on the element whose
@@ -326,6 +340,7 @@
     return s ? ' style="' + s + '"' : "";
   }
   function renderWelcome() {
+    setModalDots(null);
     var images = (serverConfig && serverConfig.images) || {};
     var hasBee = !!images.beeNormal;
     var hasFish = !!images.fishNormal;
@@ -395,12 +410,12 @@
     justAddedIndex = -1; // consumed for this render pass
 
     var enough = state.players.length >= 2;
+    setModalDots(0);
 
     app.innerHTML =
       '<div class="dmls-card' + (quiet ? "" : " dmls-anim-in") + '">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
-      dots(0) +
       '<h2 class="dmls-title">Add Names</h2>' +
       (CUSTOMER
         ? '<p class="dmls-sub">Playing as <strong style="color:var(--dmls-green)">' + esc(cap(CUSTOMER.firstName) || "you") + "</strong> — this game will save to your account.</p>"
@@ -468,13 +483,13 @@
         '<button type="button" data-d="1" data-i="' + i + '" aria-label="Increase ' + esc(p.name) + '">+</button>' +
         "</span></li>";
     }).join("");
+    setModalDots(stepNo);
 
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in' + (st.exp ? " dmls-card-exp" : "") + '">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       stepChars(st.key) +
-      dots(stepNo) +
       '<h2 class="dmls-title">' + st.title + "</h2>" +
       '<p class="dmls-sub">' + st.sub + "</p>" +
       "</div>" +
@@ -631,6 +646,7 @@
     app.hidden = true;
     trophyEl.hidden = true;
     achvEl.hidden = false;
+    setModalDots(null);
     modalDeepLinked = !!fromHash;
     achvTab = "achv";
     achvExpanded = {};
@@ -841,6 +857,7 @@
 
   /* --- winner --- */
   function renderWinner() {
+    setModalDots(null);
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var top = ranked.length ? total(ranked[0]) : 0;
     // The hero spotlight always names exactly one winner, even on a tie —
@@ -1014,6 +1031,7 @@
     view = "trophy";
     app.hidden = true;
     trophyEl.hidden = false;
+    setModalDots(null);
     renderTrophy();
   }
   function renderTrophy() {
