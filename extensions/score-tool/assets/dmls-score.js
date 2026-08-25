@@ -49,6 +49,7 @@
   var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
   var trophySubheading = "Did Not."; // populated from /config, matches the DB default until it loads
   var trophyTagline = ""; // populated from /config; optional second line, hidden when empty
+  var trophyTopImages = []; // populated from /config; pool of trophy graphics, one picked at random per renderTrophy()
   var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
   // Welcome screen character illustration + heading layout — all populated
   // from /config, matching the score_settings DB defaults until it loads.
@@ -1052,6 +1053,12 @@
     var shareImageUrl = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
       "&score=" + encodeURIComponent(top) +
       "&date=" + encodeURIComponent(localDateStr());
+    // One of the admin's trophy-design pool, picked fresh on every visit to
+    // this screen (client spec: random per generation, for variety — not a
+    // single fixed graphic).
+    var trophyTopUrl = trophyTopImages.length
+      ? trophyTopImages[Math.floor(Math.random() * trophyTopImages.length)]
+      : "";
 
     // No pinned .dmls-nav footer here on purpose — the action row lives
     // inside the scrollable .dmls-card-body, below the trophy art, so the
@@ -1069,9 +1076,9 @@
       "</button>" +
       '<div class="dmls-card-body">' +
       '<div class="dmls-trophy-fill">' +
-      (ICONS.trophyTop
+      (trophyTopUrl
         ? '<div class="dmls-trophy-top-wrap">' +
-          '<img class="dmls-trophy-top" src="' + ICONS.trophyTop + '" alt="" loading="lazy">' +
+          '<img class="dmls-trophy-top" src="' + trophyTopUrl + '" alt="" loading="lazy">' +
           '<p class="dmls-trophy-plate dmls-trophy-plate-overlay">' + winnerName + "</p>" +
           "</div>"
         : '<p class="dmls-trophy-plate">' + winnerName + "</p>") +
@@ -1262,6 +1269,9 @@
       if (typeof c.trophyHeading === "string" && c.trophyHeading) trophyHeading = c.trophyHeading;
       if (typeof c.trophySubheading === "string" && c.trophySubheading) trophySubheading = c.trophySubheading;
       if (typeof c.trophyTagline === "string") trophyTagline = c.trophyTagline;
+      if (Array.isArray(c.trophyTopImages)) {
+        trophyTopImages = c.trophyTopImages.filter(function (u) { return typeof u === "string" && u; });
+      }
       if (c.steps && typeof c.steps === "object") {
         for (var stepKey in stepContent) {
           var sc = c.steps[stepKey];

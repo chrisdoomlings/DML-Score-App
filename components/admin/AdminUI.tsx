@@ -117,6 +117,14 @@ export function GlobalStyle() {
         background: #f6f6f7; border: 1px solid #e1e3e5; display: flex; align-items: center; justify-content: center;
       }
       .dml-image-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      /* Clickable "add another" tile for open-ended image pools (e.g. the
+         trophy design pool) — dashed border instead of a solid thumb frame
+         so it reads as an action, not a filled-in image slot. */
+      .dml-image-thumb-add {
+        border-style: dashed; cursor: pointer; font-size: 12px; font-weight: 600;
+        color: #6d7175; text-align: center; padding: 8px;
+      }
+      .dml-image-thumb-add:hover { border-color: #008060; color: #008060; }
       .dml-image-placeholder { font-size: 11px; color: #a1a4a8; font-weight: 600; }
       .dml-image-name { font-size: 12px; font-weight: 600; color: #202223; line-height: 1.3; min-height: 32px; }
       .dml-image-actions { display: flex; flex-wrap: wrap; gap: 6px; }

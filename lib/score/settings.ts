@@ -22,7 +22,6 @@ export const IMAGE_KEYS = [
   "fishNormal",
   "fishHover",
   "trophyBg",
-  "trophyTop",
 ] as const;
 
 export type ImageKey = (typeof IMAGE_KEYS)[number];
@@ -48,6 +47,7 @@ export interface ScoreSettings {
   trophyTagline: string; // optional second line shown between the loser names and trophySubheading; empty = hidden
   trophyActionsBg: string; // hex color behind the trophy screen's action buttons; empty = transparent (card's own default background)
   steps: StepConfig; // per-step heading/description for the 4 scoring screens; backgrounds are images.bgWe/bgFv/bgBp/bgExp
+  trophyTopImages: string[]; // pool of trophy-graphic designs; storefront picks one at random per "Generate Trophy" (client spec — variety, not a single fixed design)
 }
 
 const DEFAULTS = {
@@ -73,7 +73,7 @@ const EMPTY_IMAGES: ImageUrls = {
   worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", bg: "", bgExp: "", logo: "", bgWinner: "",
   bgWe: "", bgFv: "", bgBp: "",
   beeNormal: "", beeHover: "", fishNormal: "", fishHover: "",
-  trophyBg: "", trophyTop: "",
+  trophyBg: "",
 };
 
 export async function getSettings(shop: string): Promise<ScoreSettings> {
@@ -103,7 +103,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageFishNormal: string;
       imageFishHover: string;
       imageTrophyBg: string;
-      imageTrophyTop: string;
+      trophyTopImages: unknown;
       tipText: string;
       homeHeading: string;
       discordUrl: string;
@@ -142,7 +142,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_fish_normal AS "imageFishNormal",
            image_fish_hover  AS "imageFishHover",
            image_trophy_bg   AS "imageTrophyBg",
-           image_trophy_top  AS "imageTrophyTop",
+           trophy_top_images AS "trophyTopImages",
            tip_text         AS "tipText",
            home_heading     AS "homeHeading",
            discord_url      AS "discordUrl",
@@ -172,6 +172,9 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     trophySubheading: r?.trophySubheading ?? DEFAULTS.trophySubheading,
     trophyTagline: r?.trophyTagline ?? DEFAULTS.trophyTagline,
     trophyActionsBg: r?.trophyActionsBg ?? DEFAULTS.trophyActionsBg,
+    trophyTopImages: Array.isArray(r?.trophyTopImages)
+      ? r.trophyTopImages.filter((u): u is string => typeof u === "string" && u.length > 0)
+      : [],
     logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
@@ -198,7 +201,6 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
           fishNormal: r.imageFishNormal ?? "",
           fishHover: r.imageFishHover ?? "",
           trophyBg: r.imageTrophyBg ?? "",
-          trophyTop: r.imageTrophyTop ?? "",
         }
       : EMPTY_IMAGES,
   };
@@ -226,6 +228,13 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     trophySubheading: typeof s.trophySubheading === "string" ? s.trophySubheading.trim().slice(0, 60) || DEFAULTS.trophySubheading : current.trophySubheading,
     trophyTagline: typeof s.trophyTagline === "string" ? s.trophyTagline.trim().slice(0, 120) : current.trophyTagline,
     trophyActionsBg: typeof s.trophyActionsBg === "string" ? sanitizeHexColor(s.trophyActionsBg) : current.trophyActionsBg,
+    trophyTopImages: Array.isArray(s.trophyTopImages)
+      ? s.trophyTopImages
+          .filter((u): u is string => typeof u === "string")
+          .map(sanitizeImageUrl)
+          .filter(Boolean)
+          .slice(0, 40)
+      : current.trophyTopImages,
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
@@ -240,7 +249,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
       image_bg_we, image_bg_fv, image_bg_bp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
-      image_trophy_bg, image_trophy_top,
+      image_trophy_bg, trophy_top_images,
       tip_text, home_heading, discord_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
@@ -250,7 +259,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.bgWe}, ${next.images.bgFv}, ${next.images.bgBp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
-      ${next.images.trophyBg}, ${next.images.trophyTop},
+      ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
       ${next.tipText}, ${next.homeHeading}, ${next.discordUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
@@ -279,7 +288,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_fish_normal = EXCLUDED.image_fish_normal,
       image_fish_hover  = EXCLUDED.image_fish_hover,
       image_trophy_bg   = EXCLUDED.image_trophy_bg,
-      image_trophy_top  = EXCLUDED.image_trophy_top,
+      trophy_top_images = EXCLUDED.trophy_top_images,
       tip_text         = EXCLUDED.tip_text,
       home_heading     = EXCLUDED.home_heading,
       discord_url      = EXCLUDED.discord_url,

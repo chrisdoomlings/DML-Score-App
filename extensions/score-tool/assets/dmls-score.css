@@ -345,14 +345,15 @@
 .dmls-step input.dmls-neg { color: #c22a1c; }
 
 /* winner */
-.dmls-card.dmls-winner {
-  /* Own art direction for the reveal moment — falls back to the standard
-     background, then the flat brand gradient, if no dedicated art is set. */
+/* .dmls-card.dmls-winner {
   background-image:
     linear-gradient(180deg, rgba(16, 21, 63, 0.3), rgba(16, 21, 63, 0.5)),
     var(--dmls-bg-winner-url, var(--dmls-bg-url, none)),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
-}
+} */
+/* No card padding on the winner screen only — lets .dmls-win-art bleed edge
+   to edge instead of being inset by the default .dmls-card padding. */
+.dmls-card.dmls-winner { padding: 0; }
 .dmls-win-logo { display: block; height: auto; max-width: 80%; margin: 0 auto 10px; }
 .dmls-win-eyebrow {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;

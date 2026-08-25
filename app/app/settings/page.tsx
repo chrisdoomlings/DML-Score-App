@@ -26,6 +26,7 @@ interface Settings {
   trophySubheading: string;
   trophyTagline: string;
   trophyActionsBg: string;
+  trophyTopImages: string[];
   logoWidth: number;
   cardMinHeight: number;
   winnerImageSize: number;
@@ -75,7 +76,6 @@ const WINNER_IMAGE_FIELDS: { key: string; label: string }[] = [
 
 const TROPHY_IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "trophyBg", label: "Background (trophy screen)" },
-  { key: "trophyTop", label: "Trophy screen top illustration" },
 ];
 
 // Bee/fish welcome-screen Doomlings, split into normal + hover states so a
@@ -161,6 +161,30 @@ export default function SettingsPage() {
     setSettings({ ...settings, images: { ...settings.images, [key]: "" } });
   }
 
+  // Trophy top-illustration pool — every upload appends (score_settings.trophy_top_images
+  // is an array; the storefront picks one at random per "Generate Trophy").
+  async function uploadTrophyTopImage(file: File) {
+    if (!settings) return;
+    setUploading("trophyTopPool");
+    setUploadErr("");
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("imageKey", "trophyTopPool");
+    const res = await authedFetch("/api/admin/upload", { method: "POST", body: fd });
+    const d = await res.json();
+    setUploading(null);
+    if (d.url) {
+      setSettings({ ...settings, trophyTopImages: [...settings.trophyTopImages, d.url] });
+    } else {
+      setUploadErr(d.error ?? "Upload failed.");
+    }
+  }
+
+  function removeTrophyTopImage(index: number) {
+    if (!settings) return;
+    setSettings({ ...settings, trophyTopImages: settings.trophyTopImages.filter((_, i) => i !== index) });
+  }
+
   function patchAchievement(key: AchievementKey, patch: Partial<AchievementDef>) {
     if (!settings) return;
     const current = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
@@ -218,6 +242,8 @@ export default function SettingsPage() {
   function selectFromLibrary(url: string) {
     if (pickerFor?.startsWith("achv:")) {
       patchAchievement(pickerFor.slice(5) as AchievementKey, { iconUrl: url });
+    } else if (pickerFor === "trophyTopPool" && settings) {
+      setSettings({ ...settings, trophyTopImages: [...settings.trophyTopImages, url] });
     } else if (pickerFor && settings) {
       setSettings({ ...settings, images: { ...settings.images, [pickerFor]: url } });
     }
@@ -674,6 +700,51 @@ export default function SettingsPage() {
                 </p>
                 {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
                 {imageGrid(TROPHY_IMAGE_FIELDS)}
+              </section>
+
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Trophy designs</h2>
+                <p className="dml-card-hint">
+                  Upload as many trophy illustrations as you like &mdash; one is picked at random each time a
+                  player hits &ldquo;Generate Trophy&rdquo;, for variety. Leave empty to use the built-in default.
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                <div className="dml-image-grid">
+                  {settings.trophyTopImages.map((url, i) => (
+                    <div className="dml-image-tile" key={url + i}>
+                      <div className="dml-image-thumb">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt="" />
+                      </div>
+                      <div className="dml-image-actions">
+                        <button
+                          type="button" className="dml-btn-ghost dml-btn-sm" style={{ flex: "1 1 100%" }}
+                          onClick={() => removeTrophyTopImage(i)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="dml-image-tile">
+                    <label className="dml-image-thumb dml-image-thumb-add">
+                      {uploading === "trophyTopPool" ? "Uploading…" : "+ Add image"}
+                      <input
+                        type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                        disabled={uploading !== null}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadTrophyTopImage(f); e.target.value = ""; }}
+                      />
+                    </label>
+                    <div className="dml-image-actions">
+                      <button
+                        type="button" className="dml-btn-ghost dml-btn-sm" style={{ flex: "1 1 100%" }}
+                        onClick={() => openPicker("trophyTopPool")}
+                      >
+                        Browse existing
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </section>
             </>
           )}

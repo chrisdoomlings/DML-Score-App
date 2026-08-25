@@ -21,9 +21,19 @@ const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 // AchievementKey union the achievement engine uses, not a duplicated list.
 const ACHIEVEMENT_PREFIX = "achievement:";
 
-type ResolvedKey = { kind: "setting"; key: ImageKey } | { kind: "achievement"; key: AchievementKey };
+// The trophy screen's top illustration is a POOL (score_settings.trophy_top_images,
+// an array), not a single named slot — every upload for it just appends, so
+// unlike the achievement icons there's no per-item key to validate, only this
+// one fixed literal.
+const TROPHY_POOL_KEY = "trophyTopPool";
+
+type ResolvedKey =
+  | { kind: "setting"; key: ImageKey }
+  | { kind: "achievement"; key: AchievementKey }
+  | { kind: "trophyPool" };
 
 function resolveImageKey(raw: string): ResolvedKey | null {
+  if (raw === TROPHY_POOL_KEY) return { kind: "trophyPool" };
   if (raw.startsWith(ACHIEVEMENT_PREFIX)) {
     const suffix = raw.slice(ACHIEVEMENT_PREFIX.length);
     if ((ACHIEVEMENT_KEYS as string[]).includes(suffix)) {
@@ -63,7 +73,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File too large (max 5 MB)" }, { status: 400 });
     }
 
-    const storageSlug = resolved.kind === "achievement" ? `achievement-${resolved.key}` : resolved.key;
+    const storageSlug =
+      resolved.kind === "achievement" ? `achievement-${resolved.key}` :
+      resolved.kind === "trophyPool" ? "trophy-top-pool" :
+      resolved.key;
     const key = `${shop}/${storageSlug}-${Date.now()}.${ext}`;
     const url = await uploadToR2(Buffer.from(bytes), key, file.type);
 
