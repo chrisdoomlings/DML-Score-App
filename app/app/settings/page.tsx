@@ -10,9 +10,11 @@ import {
   type AchievementDef,
   type AchievementKey,
 } from "@/lib/score/achievements";
+import { STEP_KEYS, DEFAULT_STEPS, type StepConfig, type StepKey } from "@/lib/score/steps";
 
 interface Settings {
   achievements: AchievementConfig;
+  steps: StepConfig;
   guessEnabled: boolean;
   guessGapMax: number;
   guessEveryN: number;
@@ -38,18 +40,27 @@ interface LibraryImage {
   uploadedAt: string;
 }
 
-type Tab = "general" | "welcome" | "winner" | "trophy";
+type Tab = "general" | "welcome" | "steps" | "winner" | "trophy";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "general", label: "General" },
   { key: "welcome", label: "Welcome" },
+  { key: "steps", label: "Steps" },
   { key: "winner", label: "Winner" },
   { key: "trophy", label: "Trophy" },
 ];
 
+// One image field per step, keyed to its score_settings.images slot —
+// bgExp already existed (expansion-points screen); bgWe/bgFv/bgBp are new.
+const STEP_META: { key: StepKey; label: string; imageKey: string }[] = [
+  { key: "we", label: "World's End", imageKey: "bgWe" },
+  { key: "fv", label: "Face Value", imageKey: "bgFv" },
+  { key: "bp", label: "Bonus Points", imageKey: "bgBp" },
+  { key: "mp", label: "Expansion Points", imageKey: "bgExp" },
+];
+
 const GENERAL_IMAGE_FIELDS: { key: string; label: string }[] = [
-  { key: "bg", label: "Background (main screens)" },
-  { key: "bgExp", label: "Background (expansion-points screen)" },
+  { key: "bg", label: "Background (main screens, used as the fallback for any step with no image of its own)" },
 ];
 
 const WELCOME_IMAGE_FIELDS: { key: string; label: string }[] = [
@@ -80,6 +91,7 @@ const CHARACTER_IMAGE_FIELDS: { key: string; label: string }[] = [
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>("general");
+  const [stepTab, setStepTab] = useState<StepKey>("we");
   const [settings, setSettings] = useState<Settings | null>(null);
   const [saved, setSaved] = useState<Settings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -155,6 +167,15 @@ export default function SettingsPage() {
     setSettings({
       ...settings,
       achievements: { ...settings.achievements, [key]: { ...current, ...patch } },
+    });
+  }
+
+  function patchStep(key: StepKey, patch: Partial<StepConfig[StepKey]>) {
+    if (!settings) return;
+    const current = settings.steps[key] ?? DEFAULT_STEPS[key];
+    setSettings({
+      ...settings,
+      steps: { ...settings.steps, [key]: { ...current, ...patch } },
     });
   }
 
@@ -509,6 +530,49 @@ export default function SettingsPage() {
                 </p>
                 {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
                 {imageGrid(WELCOME_IMAGE_FIELDS)}
+              </section>
+            </>
+          )}
+
+          {tab === "steps" && (
+            <>
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Scoring steps</h2>
+                <p className="dml-card-hint">
+                  Heading, description, and background for each of the 4 scoring screens. A step with no
+                  background of its own falls back to the shared one set on the General tab.
+                </p>
+                <div className="dml-subtabs" style={{ padding: 0, margin: "0 0 18px" }}>
+                  {STEP_META.map((s) => (
+                    <button
+                      key={s.key} type="button"
+                      className={"dml-subtab-btn" + (stepTab === s.key ? " active" : "")}
+                      onClick={() => setStepTab(s.key)}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                {STEP_META.filter((s) => s.key === stepTab).map((s) => {
+                  const step = settings.steps[s.key] ?? DEFAULT_STEPS[s.key];
+                  return (
+                    <div key={s.key}>
+                      <label className="dml-label">Heading</label>
+                      <input
+                        className="dml-input" type="text" maxLength={80} value={step.heading}
+                        onChange={(e) => patchStep(s.key, { heading: e.target.value })}
+                      />
+                      <label className="dml-label" style={{ marginTop: 14 }}>Description</label>
+                      <textarea
+                        className="dml-textarea" maxLength={300} rows={3} value={step.sub}
+                        onChange={(e) => patchStep(s.key, { sub: e.target.value })}
+                      />
+                      <label className="dml-label" style={{ marginTop: 14 }}>Background image</label>
+                      {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                      {imageGrid([{ key: s.imageKey, label: s.label + " background" }])}
+                    </div>
+                  );
+                })}
               </section>
             </>
           )}

@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
         trophySubheading: settings.trophySubheading,
         trophyTagline: settings.trophyTagline,
         trophyActionsBg: settings.trophyActionsBg,
+        steps: settings.steps,
         logoWidth: settings.logoWidth,
         cardMinHeight: settings.cardMinHeight,
         winnerImageSize: settings.winnerImageSize,

@@ -162,6 +162,27 @@
     var(--dmls-bg-exp-url, none),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
 }
+/* The other 3 steps can each get their own background too (Settings →
+   Steps) — same tint as the default .dmls-card, falling back to the shared
+   "main screens" background when a step has none of its own set. */
+.dmls-card-step-we {
+  background-image:
+    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
+    var(--dmls-bg-we-url, var(--dmls-bg-url, none)),
+    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+}
+.dmls-card-step-fv {
+  background-image:
+    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
+    var(--dmls-bg-fv-url, var(--dmls-bg-url, none)),
+    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+}
+.dmls-card-step-bp {
+  background-image:
+    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
+    var(--dmls-bg-bp-url, var(--dmls-bg-url, none)),
+    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+}
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
    it centered regardless of that value; max-width is just an overflow guard. */
@@ -637,11 +658,11 @@ body.dmls-modal-lock { overflow: hidden; }
 #dmls-modal .dmls-modal-close {
   position: absolute; top: 10px; right: 10px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(16, 21, 63, 0.55);
+
   color: #fff; font-size: 2.1875em; line-height: 1;
   display: flex; align-items: center; justify-content: center;
 }
-#dmls-modal .dmls-modal-close:hover { background: var(--dmls-coral); }
+
 #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0; }
 /* Descendant, not direct-child — .dmls-card sits inside #dmls-app or #dmls-achv,
    both children of .dmls-modal-body. */

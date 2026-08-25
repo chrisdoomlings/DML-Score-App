@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const settings = await saveSettings(shop, {
       achievements: body.achievements,
+      steps: body.steps,
       guessEnabled: body.guessEnabled,
       guessGapMax: body.guessGapMax,
       guessEveryN: body.guessEveryN,

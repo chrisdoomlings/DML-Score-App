@@ -268,27 +268,32 @@
   /* steps meta */
   var STEPS = [
     null, null,
-    {
-      key: "we", min: -99,
-      title: "RESOLVE WORLD'S END EFFECTS",
-      sub: "First, play World's End ➹ effects on traits in turn order. <i>Then</i> follow ONLY the gold text on the 3rd catastrophe, and enter any +/- points below.",
+    { key: "we", min: -99 },
+    { key: "fv", min: 0 },
+    { key: "bp", min: 0 },
+    { key: "mp", min: 0, exp: true },
+  ];
+  // Admin-editable heading/description per step (Settings → Steps), matches
+  // lib/score/steps.ts's DEFAULT_STEPS until /config overrides it — see the
+  // c.steps merge below. Escaped on render like every other admin text field.
+  var stepContent = {
+    we: {
+      heading: "RESOLVE WORLD'S END EFFECTS",
+      sub: "First, play World's End ➹ effects on traits in turn order. Then follow ONLY the gold text on the 3rd catastrophe, and enter any +/- points below.",
     },
-    {
-      key: "fv", min: 0,
-      title: "TALLY FACE VALUE TOTALS",
-      sub: "Add up the face value points for each player. Ignore bonus points with ⊕ &amp; 💧 symbols for now.",
+    fv: {
+      heading: "TALLY FACE VALUE TOTALS",
+      sub: "Add up the face value points for each player. Ignore bonus points with ⊕ & 💧 symbols for now.",
     },
-    {
-      key: "bp", min: 0,
-      title: "ENTER ALL BONUS POINTS",
+    bp: {
+      heading: "ENTER ALL BONUS POINTS",
       sub: "Tally up all bonus points. Look for the Drop of Life 💧 symbol on the bottom right of each card.",
     },
-    {
-      key: "mp", min: 0, exp: true,
-      title: "(OPTIONAL) EXPANSION POINTS",
+    mp: {
+      heading: "(OPTIONAL) EXPANSION POINTS",
       sub: "Add all extra points for Suppressed Traits, Trinkets, Meaning of Life, and Class Bonuses.",
     },
-  ];
+  };
 
   function dots(n) {
     var h = '<div class="dmls-dots" aria-hidden="true">';
@@ -455,6 +460,7 @@
   function renderStep(n) {
     var st = STEPS[n];
     var stepNo = n - 1;
+    var content = stepContent[st.key];
     var rows = state.players.map(function (p, i) {
       var v = p[st.key] | 0;
       return "<li>" +
@@ -467,12 +473,13 @@
     }).join("");
 
     app.innerHTML =
-      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : "") + '">' +
+      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       dots(stepNo) +
-      '<h2 class="dmls-title">' + st.title + "</h2>" +
-      '<p class="dmls-sub">' + st.sub + "</p>" +
+      '<p class="dmls-eyebrow">Step ' + stepNo + " of 4</p>" +
+      '<h2 class="dmls-title">' + esc(content.heading) + "</h2>" +
+      '<p class="dmls-sub">' + esc(content.sub) + "</p>" +
       "</div>" +
       '<div class="dmls-scroll-mid"><ul class="dmls-scores" id="dmls-rows">' + rows + "</ul></div>" +
       "</div>" +
@@ -1199,6 +1206,9 @@
       // no re-render needed, the browser repaints whatever's on screen.
       if (images.bg) modalEl.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")');
       if (images.bgExp) modalEl.style.setProperty("--dmls-bg-exp-url", 'url("' + images.bgExp + '")');
+      if (images.bgWe) modalEl.style.setProperty("--dmls-bg-we-url", 'url("' + images.bgWe + '")');
+      if (images.bgFv) modalEl.style.setProperty("--dmls-bg-fv-url", 'url("' + images.bgFv + '")');
+      if (images.bgBp) modalEl.style.setProperty("--dmls-bg-bp-url", 'url("' + images.bgBp + '")');
       if (images.bgWinner) modalEl.style.setProperty("--dmls-bg-winner-url", 'url("' + images.bgWinner + '")');
       if (images.trophyBg) modalEl.style.setProperty("--dmls-bg-trophy-url", 'url("' + images.trophyBg + '")');
       if (images.bg) root.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")'); // launcher card reuses the same bg
@@ -1210,7 +1220,7 @@
       // (welcome) that already painted with the old default.
       var needsRerender = false;
       for (var key in images) {
-        if (key !== "bg" && key !== "bgExp" && key !== "bgWinner" && key !== "trophyBg" && images[key] && ICONS[key] !== images[key]) {
+        if (key !== "bg" && key !== "bgExp" && key !== "bgWe" && key !== "bgFv" && key !== "bgBp" && key !== "bgWinner" && key !== "trophyBg" && images[key] && ICONS[key] !== images[key]) {
           ICONS[key] = images[key];
           needsRerender = true;
         }
@@ -1228,6 +1238,14 @@
       if (typeof c.trophyHeading === "string" && c.trophyHeading) trophyHeading = c.trophyHeading;
       if (typeof c.trophySubheading === "string" && c.trophySubheading) trophySubheading = c.trophySubheading;
       if (typeof c.trophyTagline === "string") trophyTagline = c.trophyTagline;
+      if (c.steps && typeof c.steps === "object") {
+        for (var stepKey in stepContent) {
+          var sc = c.steps[stepKey];
+          if (!sc) continue;
+          if (typeof sc.heading === "string" && sc.heading) stepContent[stepKey].heading = sc.heading;
+          if (typeof sc.sub === "string" && sc.sub) stepContent[stepKey].sub = sc.sub;
+        }
+      }
       if (typeof c.trophyActionsBg === "string" && c.trophyActionsBg) {
         modalEl.style.setProperty("--dmls-trophy-actions-bg", c.trophyActionsBg);
       }

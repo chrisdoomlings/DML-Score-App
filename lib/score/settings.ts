@@ -1,5 +1,6 @@
 import { getDb, jsonb } from "@/lib/supabase/client";
 import { mergeAchievementConfig, type AchievementConfig } from "@/lib/score/achievements";
+import { mergeStepConfig, type StepConfig } from "@/lib/score/steps";
 import { sanitizeImageUrl } from "@/lib/score/imageUrl";
 
 export const IMAGE_KEYS = [
@@ -11,6 +12,9 @@ export const IMAGE_KEYS = [
   "winner",
   "bg",
   "bgExp",
+  "bgWe",
+  "bgFv",
+  "bgBp",
   "logo",
   "bgWinner",
   "beeNormal",
@@ -43,6 +47,7 @@ export interface ScoreSettings {
   trophySubheading: string; // trophy screen caption shown after the loser names (e.g. "Did Not.")
   trophyTagline: string; // optional second line shown between the loser names and trophySubheading; empty = hidden
   trophyActionsBg: string; // hex color behind the trophy screen's action buttons; empty = transparent (card's own default background)
+  steps: StepConfig; // per-step heading/description for the 4 scoring screens; backgrounds are images.bgWe/bgFv/bgBp/bgExp
 }
 
 const DEFAULTS = {
@@ -66,6 +71,7 @@ const DEFAULTS = {
 
 const EMPTY_IMAGES: ImageUrls = {
   worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", bg: "", bgExp: "", logo: "", bgWinner: "",
+  bgWe: "", bgFv: "", bgBp: "",
   beeNormal: "", beeHover: "", fishNormal: "", fishHover: "",
   trophyBg: "", trophyTop: "",
 };
@@ -75,6 +81,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
   const rows = await db<
     {
       achievements: unknown;
+      steps: unknown;
       guessEnabled: boolean;
       guessGapMax: number;
       guessEveryN: number;
@@ -86,6 +93,9 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageWinner: string;
       imageBg: string;
       imageBgExp: string;
+      imageBgWe: string;
+      imageBgFv: string;
+      imageBgBp: string;
       imageLogo: string;
       imageBgWinner: string;
       imageBeeNormal: string;
@@ -110,6 +120,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     }[]
   >`
     SELECT achievements,
+           steps,
            guess_enabled AS "guessEnabled",
            guess_gap_max AS "guessGapMax",
            guess_every_n AS "guessEveryN",
@@ -121,6 +132,9 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_winner     AS "imageWinner",
            image_bg         AS "imageBg",
            image_bg_exp     AS "imageBgExp",
+           image_bg_we      AS "imageBgWe",
+           image_bg_fv      AS "imageBgFv",
+           image_bg_bp      AS "imageBgBp",
            image_logo       AS "imageLogo",
            image_bg_winner  AS "imageBgWinner",
            image_bee_normal  AS "imageBeeNormal",
@@ -147,6 +161,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
   const r = rows[0];
   return {
     achievements: mergeAchievementConfig(r?.achievements),
+    steps: mergeStepConfig(r?.steps),
     guessEnabled: r?.guessEnabled ?? DEFAULTS.guessEnabled,
     guessGapMax: r?.guessGapMax ?? DEFAULTS.guessGapMax,
     guessEveryN: r?.guessEveryN ?? DEFAULTS.guessEveryN,
@@ -173,6 +188,9 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
           winner: r.imageWinner ?? "",
           bg: r.imageBg ?? "",
           bgExp: r.imageBgExp ?? "",
+          bgWe: r.imageBgWe ?? "",
+          bgFv: r.imageBgFv ?? "",
+          bgBp: r.imageBgBp ?? "",
           logo: r.imageLogo ?? "",
           bgWinner: r.imageBgWinner ?? "",
           beeNormal: r.imageBeeNormal ?? "",
@@ -196,6 +214,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
   }
   const next: ScoreSettings = {
     achievements: mergeAchievementConfig(s.achievements ?? current.achievements),
+    steps: mergeStepConfig(s.steps ?? current.steps),
     guessEnabled: typeof s.guessEnabled === "boolean" ? s.guessEnabled : current.guessEnabled,
     guessGapMax: clampInt(s.guessGapMax ?? current.guessGapMax, 0, 9_999),
     guessEveryN: clampInt(s.guessEveryN ?? current.guessEveryN, 1, 100),
@@ -217,8 +236,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
   const db = getDb();
   await db`
     INSERT INTO score_settings (
-      shop, achievements, guess_enabled, guess_gap_max, guess_every_n,
+      shop, achievements, steps, guess_enabled, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
+      image_bg_we, image_bg_fv, image_bg_bp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, image_trophy_top,
       tip_text, home_heading, discord_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, winner_image_size,
@@ -226,8 +246,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       updated_at
     )
     VALUES (
-      ${shop}, ${jsonb(next.achievements)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
+      ${shop}, ${jsonb(next.achievements)}, ${jsonb(next.steps)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
+      ${next.images.bgWe}, ${next.images.bgFv}, ${next.images.bgBp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${next.images.trophyTop},
       ${next.tipText}, ${next.homeHeading}, ${next.discordUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
@@ -236,6 +257,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     )
     ON CONFLICT (shop) DO UPDATE SET
       achievements     = EXCLUDED.achievements,
+      steps            = EXCLUDED.steps,
       guess_enabled    = EXCLUDED.guess_enabled,
       guess_gap_max    = EXCLUDED.guess_gap_max,
       guess_every_n    = EXCLUDED.guess_every_n,
@@ -247,6 +269,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_winner     = EXCLUDED.image_winner,
       image_bg         = EXCLUDED.image_bg,
       image_bg_exp     = EXCLUDED.image_bg_exp,
+      image_bg_we      = EXCLUDED.image_bg_we,
+      image_bg_fv      = EXCLUDED.image_bg_fv,
+      image_bg_bp      = EXCLUDED.image_bg_bp,
       image_logo       = EXCLUDED.image_logo,
       image_bg_winner  = EXCLUDED.image_bg_winner,
       image_bee_normal  = EXCLUDED.image_bee_normal,
