@@ -390,11 +390,25 @@
    falls back through the winner screen's background, then the flat brand
    gradient, same fallback chain every other screen's art follows. */
 .dmls-trophy-scene {
+  position: relative;
   background-image:
     linear-gradient(180deg, rgba(16, 21, 63, 0.25), rgba(16, 21, 63, 0.55)),
     var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
 }
+/* Sits directly on .dmls-card (outside .dmls-card-body's scroll region), so
+   it stays pinned over the trophy art regardless of scroll position — the
+   bottom action row is the only thing meant to require scrolling. */
+.dmls-trophy-share {
+  position: absolute; top: 0.75em; right: 0.75em; z-index: 2;
+  width: 2.25em; height: 2.25em; padding: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(16, 21, 63, 0.55); border: 1px solid var(--dmls-line); color: var(--dmls-ink);
+  cursor: pointer;
+}
+.dmls-trophy-share:hover { background: rgba(16, 21, 63, 0.75); }
+.dmls-trophy-share:active { transform: scale(0.94); }
+.dmls-trophy-share svg { width: 1.125em; height: 1.125em; display: block; }
 .dmls-trophy-top { display: block; width: 100%; height: auto; margin: 0; }
 /* Wraps the trophy art so the name plate can be positioned absolutely over
    the blank gold box baked into that image, instead of floating below it. */
@@ -419,7 +433,7 @@
 }
 .dmls-trophy-heading {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
-  font-size: clamp(26px, 8vw, 38px); line-height: 1.15; margin: 0 0 1.25em;
+  font-size: clamp(26px, 8vw, 38px); line-height: 1.15; margin-bottom: 15px;
 }
 .dmls-trophy-divider { border: none; border-top: 1px solid var(--dmls-line); width: 80%; margin: 0 auto 1.25em; }
 .dmls-trophy-losers { display:none;font-style: italic; font-size: 1.0625em; line-height: 1.5; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }

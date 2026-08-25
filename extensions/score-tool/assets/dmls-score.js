@@ -629,6 +629,7 @@
   function openAchievementsModal(fromHash) {
     view = "achv";
     app.hidden = true;
+    trophyEl.hidden = true;
     achvEl.hidden = false;
     modalDeepLinked = !!fromHash;
     achvTab = "achv";
@@ -966,33 +967,48 @@
 
     app.addEventListener("click", winnerClicks);
 
-    document.querySelector("[data-rematch]").addEventListener("click", function () {
-      state.players.forEach(function (p) { p.we = 0; p.fv = 0; p.bp = 0; p.mp = 0; });
-      lastResult = null;
-      guessResult = null;
-      state.screen = 2;
-      save();
-      render();
-    });
-    document.querySelector("[data-new-players]").addEventListener("click", function () {
-      state.players = [];
-      state.customerOptedOut = false;
-      lastResult = null;
-      guessResult = null;
-      state.screen = 1;
-      save();
-      render();
-    });
+    document.querySelector("[data-rematch]").addEventListener("click", rematch);
+    document.querySelector("[data-new-players]").addEventListener("click", newPlayers);
     document.querySelector("[data-trophy]").addEventListener("click", openTrophyModal);
 
     confettiBurst();
   }
 
+  // Shared by the winner screen's CTA row and the trophy screen's action row
+  // (both views can start a rematch/new-players/achievements flow) — resets
+  // state.screen has to also flip trophyEl/app visibility, since called from
+  // the trophy screen means #dmls-app is currently hidden underneath it.
+  function rematch() {
+    state.players.forEach(function (p) { p.we = 0; p.fv = 0; p.bp = 0; p.mp = 0; });
+    lastResult = null;
+    guessResult = null;
+    state.screen = 2;
+    save();
+    view = "game";
+    trophyEl.hidden = true;
+    app.hidden = false;
+    render();
+  }
+  function newPlayers() {
+    state.players = [];
+    state.customerOptedOut = false;
+    lastResult = null;
+    guessResult = null;
+    state.screen = 1;
+    save();
+    view = "game";
+    trophyEl.hidden = true;
+    app.hidden = false;
+    render();
+  }
+
   /* --- trophy screen — a separate view over the same open modal, same
      show/hide pattern as achievements (#dmls-app just hides, keeps its
-     rendered winner-screen HTML underneath, so "Back" is a plain toggle,
-     no re-render). No hash/deep-link support here unlike achievements: this
-     screen is derived from the current in-memory game result, not something
+     rendered winner-screen HTML underneath). No dedicated close/back action
+     here — its three actions (rematch/newPlayers/openAchievementsModal) all
+     already flip the view themselves, and the modal's own X handles a plain
+     close. No hash/deep-link support here unlike achievements: this screen
+     is derived from the current in-memory game result, not something
      meaningful to bookmark or resume after a reload. */
   function openTrophyModal() {
     view = "trophy";
@@ -1000,27 +1016,29 @@
     trophyEl.hidden = false;
     renderTrophy();
   }
-  function closeTrophyModal() {
-    view = "game";
-    trophyEl.hidden = true;
-    app.hidden = false;
-  }
   function renderTrophy() {
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var winner = ranked[0];
     var winnerName = winner ? esc(winner.name) : "";
     var top = ranked.length ? total(ranked[0]) : 0;
     var loserNames = ranked.slice(1).map(function (p) { return esc(p.name); }).join(", ");
-    var saveUrl = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
+    var shareImageUrl = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
       "&score=" + encodeURIComponent(top) +
       "&date=" + encodeURIComponent(localDateStr());
 
-    // No pinned .dmls-nav footer here on purpose — Save/Back live inside the
-    // scrollable .dmls-card-body, below the trophy art, so the screen opens
-    // showing only the trophy graphic (clean for a phone screenshot) and the
-    // actions only appear once the player scrolls past it.
+    // No pinned .dmls-nav footer here on purpose — the action row lives
+    // inside the scrollable .dmls-card-body, below the trophy art, so the
+    // screen opens showing only the trophy graphic (clean for a phone
+    // screenshot) and the actions only appear once the player scrolls past
+    // it. Same three actions as the winner screen's CTA row (closing this
+    // view entirely is still available via the modal's own X). The share
+    // icon sits outside .dmls-card-body so it stays pinned over the art
+    // instead of scrolling away with it.
     trophyEl.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-trophy-scene">' +
+      '<button type="button" class="dmls-trophy-share" id="dmls-trophy-share" aria-label="Share trophy image">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>' +
+      "</button>" +
       '<div class="dmls-card-body">' +
       (ICONS.trophyTop
         ? '<div class="dmls-trophy-top-wrap">' +
@@ -1036,12 +1054,41 @@
           '<p class="dmls-trophy-didnot">' + esc(trophySubheading) + "</p>"
         : "") +
       '<div class="dmls-win-cta-row">' +
-      '<a class="dmls-btn dmls-btn-go dmls-win-cta" href="' + saveUrl + '" target="_blank" rel="noopener">Save</a>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-win-cta-secondary" id="dmls-trophy-back">Back</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-go dmls-win-cta" id="dmls-trophy-rematch">Rematch!</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-win-cta-secondary" id="dmls-trophy-new-players">Or New Players</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-trophy-achv">Achievements</button>' +
       "</div>" +
       "</div></div>";
 
-    document.getElementById("dmls-trophy-back").addEventListener("click", closeTrophyModal);
+    document.getElementById("dmls-trophy-rematch").addEventListener("click", rematch);
+    document.getElementById("dmls-trophy-new-players").addEventListener("click", newPlayers);
+    document.getElementById("dmls-trophy-achv").addEventListener("click", function () { openAchievementsModal(false); });
+    document.getElementById("dmls-trophy-share").addEventListener("click", function () { shareTrophyImage(shareImageUrl); });
+  }
+
+  // Prefers the native share sheet with the actual PNG attached (works well
+  // on mobile — can share straight to Messages/Instagram/etc); falls back to
+  // sharing just the URL, then to opening it in a new tab (desktop, or any
+  // browser without the Web Share API) where a long-press/right-click saves it.
+  function shareTrophyImage(url) {
+    if (!navigator.share) { window.open(url, "_blank", "noopener"); return; }
+    if (!navigator.canShare) {
+      navigator.share({ url: url, title: "Doomlings Trophy" }).catch(function () {});
+      return;
+    }
+    fetch(url)
+      .then(function (r) { return r.blob(); })
+      .then(function (blob) {
+        var file = new File([blob], "doomlings-trophy.png", { type: "image/png" });
+        if (navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: "Doomlings Trophy" });
+        }
+        return navigator.share({ url: url, title: "Doomlings Trophy" });
+      })
+      .catch(function (err) {
+        if (err && err.name === "AbortError") return; // user dismissed the share sheet
+        window.open(url, "_blank", "noopener");
+      });
   }
 
   function winnerClicks(e) {
