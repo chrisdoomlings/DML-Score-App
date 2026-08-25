@@ -1030,16 +1030,18 @@
     // inside the scrollable .dmls-card-body, below the trophy art, so the
     // screen opens showing only the trophy graphic (clean for a phone
     // screenshot) and the actions only appear once the player scrolls past
-    // it. Same three actions as the winner screen's CTA row (closing this
-    // view entirely is still available via the modal's own X). The share
-    // icon sits outside .dmls-card-body so it stays pinned over the art
-    // instead of scrolling away with it.
+    // it. .dmls-trophy-fill forces the trophy content to occupy the card's
+    // full height on its own, so the action row starts exactly at the
+    // bottom edge of the first screenful instead of peeking into view.
+    // The share icon sits outside .dmls-card-body so it stays pinned over
+    // the art instead of scrolling away with it.
     trophyEl.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-trophy-scene">' +
       '<button type="button" class="dmls-trophy-share" id="dmls-trophy-share" aria-label="Share trophy image">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>' +
       "</button>" +
       '<div class="dmls-card-body">' +
+      '<div class="dmls-trophy-fill">' +
       (ICONS.trophyTop
         ? '<div class="dmls-trophy-top-wrap">' +
           '<img class="dmls-trophy-top" src="' + ICONS.trophyTop + '" alt="" loading="lazy">' +
@@ -1053,10 +1055,11 @@
           (trophyTagline ? '<p class="dmls-trophy-tagline">' + esc(trophyTagline) + "</p>" : "") +
           '<p class="dmls-trophy-didnot">' + esc(trophySubheading) + "</p>"
         : "") +
-      '<div class="dmls-win-cta-row">' +
-      '<button type="button" class="dmls-btn dmls-btn-go dmls-win-cta" id="dmls-trophy-rematch">Rematch!</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-win-cta-secondary" id="dmls-trophy-new-players">Or New Players</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-trophy-achv">Achievements</button>' +
+      "</div>" +
+      '<div class="dmls-trophy-actions">' +
+      '<button type="button" class="dmls-btn dmls-btn-go dmls-trophy-action-btn" id="dmls-trophy-rematch">Rematch!</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn" id="dmls-trophy-new-players">Or New Players</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn" id="dmls-trophy-achv">Achievements</button>' +
       "</div>" +
       "</div></div>";
 

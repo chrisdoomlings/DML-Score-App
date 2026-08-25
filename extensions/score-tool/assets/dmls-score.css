@@ -398,9 +398,12 @@
 }
 /* Sits directly on .dmls-card (outside .dmls-card-body's scroll region), so
    it stays pinned over the trophy art regardless of scroll position — the
-   bottom action row is the only thing meant to require scrolling. */
+   bottom action row is the only thing meant to require scrolling. Mobile
+   share sheets are the whole point of this button (see shareTrophyImage),
+   so it's hidden on desktop instead of falling back to the new-tab/save
+   behavior there. */
 .dmls-trophy-share {
-  position: absolute; top: 0.75em; right: 0.75em; z-index: 2;
+  position: absolute; top: 50%; right: 0.75em; transform: translateY(-50%); z-index: 2;
   width: 2.25em; height: 2.25em; padding: 0; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: rgba(16, 21, 63, 0.55); border: 1px solid var(--dmls-line); color: var(--dmls-ink);
@@ -439,6 +442,14 @@
 .dmls-trophy-losers { display:none;font-style: italic; font-size: 1.0625em; line-height: 1.5; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
 .dmls-trophy-tagline { font-style: italic; font-size: 1.1em; line-height: 1.4; color: var(--dmls-ink-dim); margin: 0 auto; overflow-wrap: anywhere; max-width: 220px; }
 .dmls-trophy-didnot { font-weight: 800; font-size: 1.375em; text-transform: uppercase; margin: 0; }
+/* Forces the trophy art/text to occupy the full height of .dmls-card-body on
+   its own (min-height:100% resolves against .dmls-card-body's flex-computed
+   height — same technique as the modal card sizing above), so
+   .dmls-trophy-actions always starts below the first screenful instead of
+   peeking into view before the player scrolls. */
+.dmls-trophy-fill { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
+.dmls-trophy-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 1.25em auto 0; width: 100%; max-width: 280px; }
+.dmls-trophy-action-btn { display: block; width: 100%; padding: 0.8125em; font-size: 1em; }
 
 /* widgets */
 .dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 1.5em; }
@@ -745,4 +756,5 @@ body.dmls-modal-lock { overflow: hidden; }
 
 @media (min-width: 640px) {
   .dmls-achv-grid { grid-template-columns: repeat(3, 1fr); }
+  .dmls-trophy-share { display: none; }
 }
