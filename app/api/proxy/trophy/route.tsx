@@ -9,16 +9,18 @@ import { rateLimit } from "@/lib/utils/rateLimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const WIDTH = 1200;
-const HEIGHT = 630;
+// Portrait, phone-screenshot-shaped — this is meant to be shared to a story/
+// chat the same way a player would screenshot the in-app trophy screen, not
+// a landscape link-preview card.
+const WIDTH = 1080;
+const HEIGHT = 1920;
 
 /** Cosmetic only — same trust model as the rest of the winner screen (see
  *  CLAUDE.md: "scores are entered client-side, the reveal-withholding is UX,
  *  not security"). Client-supplied params, sanitized for safe rendering and
  *  length, not verified against score_games. */
-function sanitizeName(v: string | null): string {
-  const s = (v ?? "").trim().slice(0, 40);
-  return s || "Winner";
+function sanitizeText(v: string | null, max: number): string {
+  return (v ?? "").trim().slice(0, max);
 }
 function sanitizeScore(v: string | null): number {
   const n = Math.round(Number(v));
@@ -34,13 +36,26 @@ function sanitizeDateLabel(v: string | null): string {
   }
   return new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
+/** The trophy-graphic URL is fetched server-side and embedded in the
+ *  generated image — restrict it to this app's own R2 bucket (where every
+ *  admin-uploaded trophy design actually lives) so a crafted query string
+ *  can't make this route fetch/embed an arbitrary external image. */
+function sanitizeImageParam(v: string | null): string {
+  const raw = (v ?? "").trim();
+  const base = (process.env.CLOUDFLARE_R2_PUBLIC_URL || "").replace(/\/$/, "");
+  if (!raw || !base) return "";
+  return raw.startsWith(base + "/") ? raw : "";
+}
 
-/** GET /apps/score/trophy — renders a shareable "trophy" image for the
- *  winner screen's Generate Trophy button. Stateless: everything needed to
- *  render comes from the query string (the client already has the winner's
- *  name/score/date at reveal time), so this needs no DB lookup and the same
- *  URL always renders the same image — cacheable, and trivially shareable
- *  as a plain link/image src. */
+/** GET /apps/score/trophy — renders a shareable image matching the in-app
+ *  trophy screen (renderTrophy() in dmls-score.js): the randomly-picked
+ *  trophy graphic with the winner's name plated over it, heading, loser
+ *  names, tagline, and subheading. Stateless: everything needed to render
+ *  comes from the query string (the client already has all of this at
+ *  reveal time — including which trophy design it randomly picked, passed
+ *  through as `top` so the shared image matches what the player actually
+ *  saw instead of rolling a new one), so this needs no DB lookup and the
+ *  same URL always renders the same image. */
 export async function GET(req: NextRequest) {
   const params = getVerifiedProxyParams(req.nextUrl.searchParams, process.env.SHOPIFY_API_SECRET!);
   if (!params) return new Response("Invalid signature", { status: 403 });
@@ -52,9 +67,14 @@ export async function GET(req: NextRequest) {
   }
 
   const sp = req.nextUrl.searchParams;
-  const name = sanitizeName(sp.get("name"));
+  const name = sanitizeText(sp.get("name"), 40) || "Winner";
   const score = sanitizeScore(sp.get("score"));
   const dateLabel = sanitizeDateLabel(sp.get("date"));
+  const topImage = sanitizeImageParam(sp.get("top"));
+  const heading = sanitizeText(sp.get("heading"), 80) || "Won The End Of The World!";
+  const subheading = sanitizeText(sp.get("sub"), 60) || "Did Not.";
+  const tagline = sanitizeText(sp.get("tagline"), 120);
+  const losers = sanitizeText(sp.get("losers"), 300);
 
   return new ImageResponse(
     (
@@ -75,43 +95,128 @@ export async function GET(req: NextRequest) {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            width: 1040,
-            height: 470,
-            borderRadius: 32,
+            width: 960,
+            height: 1760,
+            borderRadius: 48,
             border: "3px solid rgba(255,255,255,0.25)",
             backgroundColor: "rgba(0,0,0,0.18)",
+            overflow: "hidden",
+            padding: "56px 48px",
+            textAlign: "center",
           }}
         >
-          <div style={{ display: "flex", fontSize: 64 }}>{"\u{1F3C6}"}</div>
+          {topImage ? (
+            <div style={{ display: "flex", position: "relative", width: "100%" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={topImage} width={864} height={864} style={{ width: "100%", height: 864, objectFit: "contain" }} />
+              <div
+                style={{
+                  position: "absolute",
+                  left: "8%",
+                  right: "8%",
+                  top: "74%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    fontSize: 52,
+                    fontWeight: 800,
+                    color: "#4a3200",
+                    textTransform: "uppercase",
+                    letterSpacing: 2,
+                  }}
+                >
+                  {name}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                fontSize: 64,
+                fontWeight: 800,
+                color: "#4a3200",
+                textTransform: "uppercase",
+                background: "linear-gradient(180deg, #ffe9a8, #ffd54a)",
+                borderRadius: 20,
+                padding: "20px 48px",
+                marginTop: 40,
+              }}
+            >
+              {name}
+            </div>
+          )}
+
           <div
             style={{
               display: "flex",
-              fontSize: 22,
-              letterSpacing: 6,
-              color: "#ffd54a",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              marginTop: 8,
-            }}
-          >
-            Doomlings Champion
-          </div>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 84,
+              fontSize: 56,
               fontWeight: 800,
               color: "#ffffff",
-              marginTop: 18,
-              maxWidth: 900,
+              marginTop: 48,
+              maxWidth: 820,
               textAlign: "center",
-              lineHeight: 1.1,
+              lineHeight: 1.15,
             }}
           >
-            {name}
+            {heading}
           </div>
-          <div style={{ display: "flex", fontSize: 34, color: "#b8bde4", marginTop: 14 }}>
+
+          <div style={{ display: "flex", width: "70%", height: 1, backgroundColor: "rgba(255,255,255,0.2)", marginTop: 40 }} />
+
+          {losers ? (
+            <div
+              style={{
+                display: "flex",
+                fontSize: 32,
+                fontStyle: "italic",
+                color: "#b8bde4",
+                marginTop: 40,
+                maxWidth: 820,
+                textAlign: "center",
+              }}
+            >
+              {losers}
+            </div>
+          ) : null}
+
+          {tagline ? (
+            <div
+              style={{
+                display: "flex",
+                fontSize: 30,
+                fontStyle: "italic",
+                color: "#b8bde4",
+                marginTop: 16,
+                maxWidth: 700,
+                textAlign: "center",
+              }}
+            >
+              {tagline}
+            </div>
+          ) : null}
+
+          {losers ? (
+            <div
+              style={{
+                display: "flex",
+                fontSize: 44,
+                fontWeight: 800,
+                color: "#ffffff",
+                textTransform: "uppercase",
+                marginTop: 16,
+              }}
+            >
+              {subheading}
+            </div>
+          ) : null}
+
+          <div style={{ display: "flex", fontSize: 28, color: "#8a90c9", marginTop: "auto" }}>
             {score + " points · " + dateLabel}
           </div>
         </div>

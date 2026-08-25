@@ -1049,16 +1049,25 @@
     var winner = ranked[0];
     var winnerName = winner ? esc(winner.name) : "";
     var top = ranked.length ? total(ranked[0]) : 0;
-    var loserNames = ranked.slice(1).map(function (p) { return esc(p.name); }).join(", ");
-    var shareImageUrl = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
-      "&score=" + encodeURIComponent(top) +
-      "&date=" + encodeURIComponent(localDateStr());
+    var loserNamesRaw = ranked.slice(1).map(function (p) { return p.name; }).join(", ");
+    var loserNames = esc(loserNamesRaw);
     // One of the admin's trophy-design pool, picked fresh on every visit to
     // this screen (client spec: random per generation, for variety — not a
     // single fixed graphic).
     var trophyTopUrl = trophyTopImages.length
       ? trophyTopImages[Math.floor(Math.random() * trophyTopImages.length)]
       : "";
+    // Shared image mirrors exactly what's on screen — same trophy design,
+    // same heading/tagline/loser names — rather than a separately-templated
+    // "generic" card, so a screenshot and the shared PNG never look different.
+    var shareImageUrl = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
+      "&score=" + encodeURIComponent(top) +
+      "&date=" + encodeURIComponent(localDateStr()) +
+      "&top=" + encodeURIComponent(trophyTopUrl) +
+      "&heading=" + encodeURIComponent(trophyHeading) +
+      "&sub=" + encodeURIComponent(trophySubheading) +
+      "&tagline=" + encodeURIComponent(trophyTagline) +
+      "&losers=" + encodeURIComponent(loserNamesRaw);
 
     // No pinned .dmls-nav footer here on purpose — the action row lives
     // inside the scrollable .dmls-card-body, below the trophy art, so the
