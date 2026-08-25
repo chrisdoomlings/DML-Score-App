@@ -385,6 +385,34 @@
 .dmls-win-cta { display: block; width: 100%; padding: 1em; font-size: 1.0625em; }
 .dmls-win-cta-secondary { width: 100%; padding: 0.6875em; font-size: 0.875em; background: #221946;}
 
+/* trophy — separate view over the winner screen (Generate Trophy button,
+   see openTrophyModal/renderTrophy in dmls-score.js). Own background art;
+   falls back through the winner screen's background, then the flat brand
+   gradient, same fallback chain every other screen's art follows. */
+.dmls-trophy-scene {
+  background-image:
+    linear-gradient(180deg, rgba(16, 21, 63, 0.25), rgba(16, 21, 63, 0.55)),
+    var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
+    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+}
+.dmls-trophy-top { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto 1.125em; }
+.dmls-trophy-plate {
+  display: inline-block; max-width: 90%;
+  background: linear-gradient(180deg, #ffe9a8, var(--dmls-gold));
+  color: #4a3200; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: 1.375em; padding: 0.5em 1.25em; border-radius: 10px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  margin: 0 auto 1.25em;
+  overflow-wrap: anywhere;
+}
+.dmls-trophy-heading {
+  font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
+  font-size: clamp(26px, 8vw, 38px); line-height: 1.15; margin: 0 0 1.25em;
+}
+.dmls-trophy-divider { border: none; border-top: 1px solid var(--dmls-line); width: 80%; margin: 0 auto 1.25em; }
+.dmls-trophy-losers { font-style: italic; font-size: 1.0625em; line-height: 1.5; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
+.dmls-trophy-didnot { font-weight: 800; font-size: 1.375em; text-transform: uppercase; margin: 0; }
+
 /* widgets */
 .dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 1.5em; }
 .dmls-widget {
@@ -559,7 +587,7 @@ body.dmls-modal-lock { overflow: hidden; }
   width: min(92vw, 520px); height: 90vh; max-height: 90vh;
   display: flex; flex-direction: column;
 }
-#dmls-app, #dmls-achv, .dmls-card { height: 100%; }
+#dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; }
 /* Kept fully inside the card (not poking past its edge) so it can never be
    clipped by the viewport on narrow phones — the primary target device. */
 #dmls-modal .dmls-modal-close {

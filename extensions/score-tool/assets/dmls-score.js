@@ -198,10 +198,12 @@
     '<div class="dmls-modal-body" id="dmls-modal-body">' +
     '<div id="dmls-app" aria-live="polite"></div>' +
     '<div id="dmls-achv" hidden></div>' +
+    '<div id="dmls-trophy" hidden></div>' +
     "</div></div>";
   document.body.appendChild(modalEl);
   var app = document.getElementById("dmls-app");
   var achvEl = document.getElementById("dmls-achv");
+  var trophyEl = document.getElementById("dmls-trophy");
   var modalCardEl = document.getElementById("dmls-modal-card");
   var productsEl = document.getElementById("dmls-products");
 
@@ -249,6 +251,7 @@
   function openGameModal() {
     view = "game";
     achvEl.hidden = true;
+    trophyEl.hidden = true;
     app.hidden = false;
     modalDeepLinked = false;
     showModal();
@@ -977,19 +980,59 @@
       save();
       render();
     });
-    // Server-rendered shareable image (app/api/proxy/trophy) — stateless,
-    // built entirely from query params we already have at reveal time, so
-    // no extra round trip before opening it. Opens in a new tab rather than
-    // trying to build a custom save/share UI: mobile browsers already offer
-    // a native save/share action on a plain image view.
-    document.querySelector("[data-trophy]").addEventListener("click", function () {
-      var url = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
-        "&score=" + encodeURIComponent(top) +
-        "&date=" + encodeURIComponent(localDateStr());
-      window.open(url, "_blank");
-    });
+    document.querySelector("[data-trophy]").addEventListener("click", openTrophyModal);
 
     confettiBurst();
+  }
+
+  /* --- trophy screen — a separate view over the same open modal, same
+     show/hide pattern as achievements (#dmls-app just hides, keeps its
+     rendered winner-screen HTML underneath, so "Back" is a plain toggle,
+     no re-render). No hash/deep-link support here unlike achievements: this
+     screen is derived from the current in-memory game result, not something
+     meaningful to bookmark or resume after a reload. */
+  function openTrophyModal() {
+    view = "trophy";
+    app.hidden = true;
+    trophyEl.hidden = false;
+    renderTrophy();
+  }
+  function closeTrophyModal() {
+    view = "game";
+    trophyEl.hidden = true;
+    app.hidden = false;
+  }
+  function renderTrophy() {
+    var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
+    var winner = ranked[0];
+    var winnerName = winner ? esc(winner.name) : "";
+    var top = ranked.length ? total(ranked[0]) : 0;
+    var loserNames = ranked.slice(1).map(function (p) { return esc(p.name); }).join(", ");
+    var saveUrl = PROXY + "/trophy?name=" + encodeURIComponent(winner ? winner.name : "") +
+      "&score=" + encodeURIComponent(top) +
+      "&date=" + encodeURIComponent(localDateStr());
+
+    // Same .dmls-card/.dmls-card-body/.dmls-nav structure every other screen
+    // uses — gets the fixed height, internal scroll, and pinned-footer-nav
+    // treatment for free instead of reinventing it for one screen.
+    trophyEl.innerHTML =
+      '<div class="dmls-card dmls-anim-in dmls-trophy-scene">' +
+      '<div class="dmls-card-body">' +
+      (ICONS.trophyTop ? '<img class="dmls-trophy-top" src="' + ICONS.trophyTop + '" alt="" loading="lazy">' : "") +
+      '<p class="dmls-trophy-plate">' + winnerName + "</p>" +
+      '<h2 class="dmls-trophy-heading">Won The End Of The World!</h2>' +
+      '<hr class="dmls-trophy-divider">' +
+      (loserNames
+        ? '<p class="dmls-trophy-losers">' + loserNames + "</p>" +
+          '<p class="dmls-trophy-didnot">Did Not.</p>'
+        : "") +
+      "</div>" +
+      '<div class="dmls-nav">' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-trophy-back">Back</button>' +
+      '<a class="dmls-btn dmls-btn-go" href="' + saveUrl + '" target="_blank" rel="noopener">Save</a>' +
+      "</div></div>";
+
+    document.getElementById("dmls-trophy-back").addEventListener("click", closeTrophyModal);
   }
 
   function winnerClicks(e) {
@@ -1101,6 +1144,7 @@
       if (images.bg) modalEl.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")');
       if (images.bgExp) modalEl.style.setProperty("--dmls-bg-exp-url", 'url("' + images.bgExp + '")');
       if (images.bgWinner) modalEl.style.setProperty("--dmls-bg-winner-url", 'url("' + images.bgWinner + '")');
+      if (images.trophyBg) modalEl.style.setProperty("--dmls-bg-trophy-url", 'url("' + images.trophyBg + '")');
       if (images.bg) root.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")'); // launcher card reuses the same bg
       if (typeof c.cardMinHeight === "number") modalEl.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
@@ -1110,7 +1154,7 @@
       // (welcome) that already painted with the old default.
       var needsRerender = false;
       for (var key in images) {
-        if (key !== "bg" && key !== "bgExp" && key !== "bgWinner" && images[key] && ICONS[key] !== images[key]) {
+        if (key !== "bg" && key !== "bgExp" && key !== "bgWinner" && key !== "trophyBg" && images[key] && ICONS[key] !== images[key]) {
           ICONS[key] = images[key];
           needsRerender = true;
         }

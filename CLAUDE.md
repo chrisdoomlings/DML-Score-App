@@ -39,6 +39,17 @@ Reviews & Rewards** — never touch that repo from here; it is the client's crit
 - **Never run `shopify app deploy`** — the user deploys manually with `--config shopify.app.dml-score.toml`
 - **Never point `SUPABASE_DATABASE_URL` at another app's database**
 
+## `shopify.app.dml-score.toml` — the `[events]` block is a dead stub, not a feature
+Shopify CLI (confirmed on 4.6.1 and 4.7.0, August 2026) fails `app deploy` with
+`[events]: Required` unless a `[[events.subscription]]` is present, even though this app
+doesn't use Shopify Events (a separate, developer-preview system from `[webhooks]`) at all.
+The `topic = "Customer"` subscription in that block exists only to satisfy that validation
+bug — `"Customer"` was picked specifically because it's covered by the `read_customers`
+scope already declared, so it didn't require requesting a new one. It's not wired to
+anything; `uri` points at the existing `app/api/webhooks` handler, which already no-ops on
+any topic other than `app/uninstalled`. Safe to remove this block entirely once Shopify
+fixes the CLI bug upstream — don't mistake it for a real integration in the meantime.
+
 ## Database tables
 `shopify_sessions`, `shops`, `score_settings`, `score_games`, `score_points_ledger`
 

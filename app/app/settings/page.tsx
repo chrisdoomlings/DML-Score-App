@@ -41,6 +41,8 @@ const IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "bg", label: "Background (main screens)" },
   { key: "bgExp", label: "Background (expansion-points screen)" },
   { key: "bgWinner", label: "Background (winner reveal screen)" },
+  { key: "trophyBg", label: "Background (trophy screen)" },
+  { key: "trophyTop", label: "Trophy screen top illustration" },
 ];
 
 // Bee/fish welcome-screen Doomlings, split into normal + hover states so a

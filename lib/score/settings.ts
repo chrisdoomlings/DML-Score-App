@@ -17,6 +17,8 @@ export const IMAGE_KEYS = [
   "beeHover",
   "fishNormal",
   "fishHover",
+  "trophyBg",
+  "trophyTop",
 ] as const;
 
 export type ImageKey = (typeof IMAGE_KEYS)[number];
@@ -57,6 +59,7 @@ const DEFAULTS = {
 const EMPTY_IMAGES: ImageUrls = {
   worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", bg: "", bgExp: "", logo: "", bgWinner: "",
   beeNormal: "", beeHover: "", fishNormal: "", fishHover: "",
+  trophyBg: "", trophyTop: "",
 };
 
 export async function getSettings(shop: string): Promise<ScoreSettings> {
@@ -81,6 +84,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageBeeHover: string;
       imageFishNormal: string;
       imageFishHover: string;
+      imageTrophyBg: string;
+      imageTrophyTop: string;
       tipText: string;
       homeHeading: string;
       discordUrl: string;
@@ -110,6 +115,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_bee_hover   AS "imageBeeHover",
            image_fish_normal AS "imageFishNormal",
            image_fish_hover  AS "imageFishHover",
+           image_trophy_bg   AS "imageTrophyBg",
+           image_trophy_top  AS "imageTrophyTop",
            tip_text         AS "tipText",
            home_heading     AS "homeHeading",
            discord_url      AS "discordUrl",
@@ -152,6 +159,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
           beeHover: r.imageBeeHover ?? "",
           fishNormal: r.imageFishNormal ?? "",
           fishHover: r.imageFishHover ?? "",
+          trophyBg: r.imageTrophyBg ?? "",
+          trophyTop: r.imageTrophyTop ?? "",
         }
       : EMPTY_IMAGES,
   };
@@ -187,6 +196,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       shop, achievements, guess_enabled, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
+      image_trophy_bg, image_trophy_top,
       tip_text, home_heading, discord_url, logo_width, card_min_height, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
@@ -195,6 +205,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${shop}, ${jsonb(next.achievements)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
+      ${next.images.trophyBg}, ${next.images.trophyTop},
       ${next.tipText}, ${next.homeHeading}, ${next.discordUrl}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
@@ -218,6 +229,8 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_bee_hover   = EXCLUDED.image_bee_hover,
       image_fish_normal = EXCLUDED.image_fish_normal,
       image_fish_hover  = EXCLUDED.image_fish_hover,
+      image_trophy_bg   = EXCLUDED.image_trophy_bg,
+      image_trophy_top  = EXCLUDED.image_trophy_top,
       tip_text         = EXCLUDED.tip_text,
       home_heading     = EXCLUDED.home_heading,
       discord_url      = EXCLUDED.discord_url,
