@@ -1056,11 +1056,12 @@
           '<p class="dmls-trophy-didnot">' + esc(trophySubheading) + "</p>"
         : "") +
       "</div>" +
+      '<div class="dmls-trophy-actions-wrap">' +
       '<div class="dmls-trophy-actions">' +
       '<button type="button" class="dmls-btn dmls-btn-go dmls-trophy-action-btn" id="dmls-trophy-rematch">Rematch!</button>' +
       '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn" id="dmls-trophy-new-players">Or New Players</button>' +
       '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn" id="dmls-trophy-achv">Achievements</button>' +
-      "</div>" +
+      "</div></div>" +
       "</div></div>";
 
     document.getElementById("dmls-trophy-rematch").addEventListener("click", rematch);
@@ -1231,6 +1232,9 @@
       if (typeof c.trophyHeading === "string" && c.trophyHeading) trophyHeading = c.trophyHeading;
       if (typeof c.trophySubheading === "string" && c.trophySubheading) trophySubheading = c.trophySubheading;
       if (typeof c.trophyTagline === "string") trophyTagline = c.trophyTagline;
+      if (typeof c.trophyActionsBg === "string" && c.trophyActionsBg) {
+        modalEl.style.setProperty("--dmls-trophy-actions-bg", c.trophyActionsBg);
+      }
       if (typeof c.logoWidth === "number" && c.logoWidth !== logoWidth) {
         logoWidth = c.logoWidth;
         needsRerender = true;

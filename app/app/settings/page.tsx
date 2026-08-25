@@ -23,6 +23,7 @@ interface Settings {
   trophyHeading: string;
   trophySubheading: string;
   trophyTagline: string;
+  trophyActionsBg: string;
   logoWidth: number;
   cardMinHeight: number;
   winnerImageSize: number;
@@ -570,6 +571,36 @@ export default function SettingsPage() {
                   className="dml-input" type="text" maxLength={60} value={settings.trophySubheading}
                   onChange={(e) => setSettings({ ...settings, trophySubheading: e.target.value })}
                 />
+              </section>
+
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Action buttons area</h2>
+                <p className="dml-card-hint">
+                  Background behind the Rematch!/Or New Players/Achievements buttons, which sit below the
+                  trophy art (revealed on scroll) and don&rsquo;t use its background image. Leave blank for
+                  no color &mdash; the card&rsquo;s own plain background shows through instead.
+                </p>
+                <label className="dml-label">Background color</label>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <input
+                    type="color" value={settings.trophyActionsBg || "#221946"}
+                    onChange={(e) => setSettings({ ...settings, trophyActionsBg: e.target.value })}
+                    style={{ width: 44, height: 36, padding: 2, border: "1px solid #c9cccf", borderRadius: 8, cursor: "pointer", flexShrink: 0 }}
+                  />
+                  <input
+                    className="dml-input" type="text" maxLength={7} placeholder="#221946"
+                    value={settings.trophyActionsBg}
+                    onChange={(e) => setSettings({ ...settings, trophyActionsBg: e.target.value })}
+                  />
+                  {settings.trophyActionsBg && (
+                    <button
+                      type="button" className="dml-btn-ghost dml-btn-sm" style={{ flexShrink: 0 }}
+                      onClick={() => setSettings({ ...settings, trophyActionsBg: "" })}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </section>
 
               <section className="dml-card dml-card-wide">

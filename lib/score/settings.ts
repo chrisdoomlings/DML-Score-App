@@ -42,6 +42,7 @@ export interface ScoreSettings {
   trophyHeading: string; // trophy screen heading — the loser names/"did not" line is always dynamic, this wraps it
   trophySubheading: string; // trophy screen caption shown after the loser names (e.g. "Did Not.")
   trophyTagline: string; // optional second line shown between the loser names and trophySubheading; empty = hidden
+  trophyActionsBg: string; // hex color behind the trophy screen's action buttons; empty = transparent (card's own default background)
 }
 
 const DEFAULTS = {
@@ -54,6 +55,7 @@ const DEFAULTS = {
   trophyHeading: "Won The End Of The World!",
   trophySubheading: "Did Not.",
   trophyTagline: "",
+  trophyActionsBg: "",
   logoWidth: 220,
   cardMinHeight: 560,
   winnerImageSize: 260,
@@ -98,6 +100,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       trophyHeading: string;
       trophySubheading: string;
       trophyTagline: string;
+      trophyActionsBg: string;
       logoWidth: number;
       cardMinHeight: number;
       winnerImageSize: number;
@@ -132,6 +135,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            trophy_heading    AS "trophyHeading",
            trophy_subheading AS "trophySubheading",
            trophy_tagline    AS "trophyTagline",
+           trophy_actions_bg AS "trophyActionsBg",
            logo_width       AS "logoWidth",
            card_min_height  AS "cardMinHeight",
            winner_image_size AS "winnerImageSize",
@@ -152,6 +156,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     trophyHeading: r?.trophyHeading ?? DEFAULTS.trophyHeading,
     trophySubheading: r?.trophySubheading ?? DEFAULTS.trophySubheading,
     trophyTagline: r?.trophyTagline ?? DEFAULTS.trophyTagline,
+    trophyActionsBg: r?.trophyActionsBg ?? DEFAULTS.trophyActionsBg,
     logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
@@ -201,6 +206,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     trophyHeading: typeof s.trophyHeading === "string" ? s.trophyHeading.trim().slice(0, 120) || DEFAULTS.trophyHeading : current.trophyHeading,
     trophySubheading: typeof s.trophySubheading === "string" ? s.trophySubheading.trim().slice(0, 60) || DEFAULTS.trophySubheading : current.trophySubheading,
     trophyTagline: typeof s.trophyTagline === "string" ? s.trophyTagline.trim().slice(0, 120) : current.trophyTagline,
+    trophyActionsBg: typeof s.trophyActionsBg === "string" ? sanitizeHexColor(s.trophyActionsBg) : current.trophyActionsBg,
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
@@ -215,7 +221,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, image_trophy_top,
-      tip_text, home_heading, discord_url, trophy_heading, trophy_subheading, trophy_tagline, logo_width, card_min_height, winner_image_size,
+      tip_text, home_heading, discord_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
     )
@@ -224,7 +230,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${next.images.trophyTop},
-      ${next.tipText}, ${next.homeHeading}, ${next.discordUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.discordUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
     )
@@ -255,6 +261,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       trophy_heading    = EXCLUDED.trophy_heading,
       trophy_subheading = EXCLUDED.trophy_subheading,
       trophy_tagline    = EXCLUDED.trophy_tagline,
+      trophy_actions_bg = EXCLUDED.trophy_actions_bg,
       logo_width       = EXCLUDED.logo_width,
       card_min_height  = EXCLUDED.card_min_height,
       winner_image_size = EXCLUDED.winner_image_size,
@@ -279,6 +286,14 @@ function sanitizeExternalUrl(v: string): string {
     return "";
   }
   return trimmed.slice(0, 300);
+}
+
+/** Trophy action-area background color — a strict #rgb/#rrggbb hex or nothing
+ * (empty = transparent), rejecting anything that isn't a plain color value. */
+function sanitizeHexColor(v: string): string {
+  const trimmed = v.trim();
+  if (!trimmed) return "";
+  return /^#[0-9a-fA-F]{3}$|^#[0-9a-fA-F]{6}$/.test(trimmed) ? trimmed : "";
 }
 
 function clampInt(v: unknown, min: number, max: number): number {

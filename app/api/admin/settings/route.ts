@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       trophyHeading: body.trophyHeading,
       trophySubheading: body.trophySubheading,
       trophyTagline: body.trophyTagline,
+      trophyActionsBg: body.trophyActionsBg,
       logoWidth: body.logoWidth,
       cardMinHeight: body.cardMinHeight,
       winnerImageSize: body.winnerImageSize,

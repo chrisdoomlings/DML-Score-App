@@ -386,16 +386,12 @@
 .dmls-win-cta-secondary { width: 100%; padding: 0.6875em; font-size: 0.875em; background: #221946;}
 
 /* trophy — separate view over the winner screen (Generate Trophy button,
-   see openTrophyModal/renderTrophy in dmls-score.js). Own background art;
-   falls back through the winner screen's background, then the flat brand
-   gradient, same fallback chain every other screen's art follows. */
-.dmls-trophy-scene {
-  position: relative;
-  background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.25), rgba(16, 21, 63, 0.55)),
-    var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
-    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
-}
+   see openTrophyModal/renderTrophy in dmls-score.js). position:relative only
+   here (the share button anchors to it) — the trophy background art itself
+   lives on .dmls-trophy-fill below, so it covers only the trophy art/text,
+   not the action buttons underneath (those sit on .dmls-card's own plain
+   default background, or the admin's custom solid color if set). */
+.dmls-trophy-scene { position: relative; }
 /* Sits directly on .dmls-card (outside .dmls-card-body's scroll region), so
    it stays pinned over the trophy art regardless of scroll position — the
    bottom action row is the only thing meant to require scrolling. Mobile
@@ -445,10 +441,23 @@
 /* Forces the trophy art/text to occupy the full height of .dmls-card-body on
    its own (min-height:100% resolves against .dmls-card-body's flex-computed
    height — same technique as the modal card sizing above), so
-   .dmls-trophy-actions always starts below the first screenful instead of
-   peeking into view before the player scrolls. */
-.dmls-trophy-fill { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
-.dmls-trophy-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 1.25em auto 0; width: 100%; max-width: 280px; }
+   .dmls-trophy-actions-wrap always starts below the first screenful instead
+   of peeking into view before the player scrolls. Owns the trophy art
+   background image itself (moved off .dmls-trophy-scene) so it doesn't
+   bleed into the actions area below. */
+.dmls-trophy-fill {
+  min-height: 100%; display: flex; flex-direction: column; justify-content: center;
+  background-image:
+    linear-gradient(180deg, rgba(16, 21, 63, 0.25), rgba(16, 21, 63, 0.55)),
+    var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
+    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+  background-size: cover; background-position: center;
+}
+/* No background by default (the plain .dmls-card gradient shows through) —
+   --dmls-trophy-actions-bg is set from the admin's "Action buttons area
+   background color" setting when they've chosen one. */
+.dmls-trophy-actions-wrap { background: var(--dmls-trophy-actions-bg, transparent); padding: 1.25em 0 0.125em; }
+.dmls-trophy-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto; width: 100%; max-width: 280px; }
 .dmls-trophy-action-btn { display: block; width: 100%; padding: 0.8125em; font-size: 1em; }
 
 /* widgets */
