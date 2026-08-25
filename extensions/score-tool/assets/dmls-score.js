@@ -31,6 +31,19 @@
   var heading = root.getAttribute("data-heading") || "Ready to see who won the game?";
   var loginUrl = root.getAttribute("data-login-url") || "/account/login";
   var accountUrl = root.getAttribute("data-account-url") || "/account";
+  // Shopify's login route honors ?return_url=<path> and lands the customer
+  // back there post-sign-in — without it they'd land on the generic /account
+  // page instead of back on this page with their in-progress game. Read at
+  // render time (not cached) so it always reflects the current #hash screen.
+  function withReturnUrl(url) {
+    try {
+      var ret = location.pathname + location.search + location.hash;
+      var sep = url.indexOf("?") === -1 ? "?" : "&";
+      return url + sep + "return_url=" + encodeURIComponent(ret);
+    } catch (e) {
+      return url;
+    }
+  }
   var homeTip = ""; // populated from /config; empty = tip bar hidden
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
   var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
@@ -156,6 +169,14 @@
     });
   }
   function total(p) { return (p.we | 0) + (p.fv | 0) + (p.bp | 0) + (p.mp | 0); }
+  // .dmls-scroll-mid reserves right-side padding for its scrollbar (see CSS)
+  // — collapse it back to 0 when the list is short enough that nothing
+  // actually scrolls, so a few names/rows aren't left with dead space on
+  // the right. Call once right after the list's real content is in the DOM.
+  function fitScrollMid(el) {
+    if (!el) return;
+    el.classList.toggle("dmls-scroll-fit", el.scrollHeight <= el.clientHeight + 1);
+  }
   // The display font renders lowercase letters as caps-shaped glyphs, so a
   // name typed lowercase looks fine in the big winner headline but reads
   // inconsistently wherever we show it in the regular UI font — capitalize
@@ -406,16 +427,17 @@
       '<h2 class="dmls-title">Add Names</h2>' +
       (CUSTOMER
         ? '<p class="dmls-sub">Playing as <strong style="color:var(--dmls-green)">' + esc(cap(CUSTOMER.firstName) || "you") + "</strong> — this game will save to your account.</p>"
-        : '<p class="dmls-sub"><a class="dmls-inline-link" href="' + esc(loginUrl) + '">Sign in</a> to keep your game history and earn achievements.</p>') +
+        : '<p class="dmls-sub"><a class="dmls-inline-link" href="' + esc(withReturnUrl(loginUrl)) + '">Sign in</a> to keep your game history and earn achievements.</p>') +
       '<div class="dmls-addrow"><input id="dmls-name" maxlength="30" placeholder="Enter name here…" autocomplete="off"><button type="button" id="dmls-add" class="dmls-addrow-plus" aria-label="Add player">+</button></div>' +
       "</div>" +
-      '<div class="dmls-scroll-mid"><ul class="dmls-chips" id="dmls-chips">' + chips + "</ul></div>" +
+      '<div class="dmls-scroll-mid" id="dmls-chips-scroll"><ul class="dmls-chips" id="dmls-chips">' + chips + "</ul></div>" +
       '<p class="dmls-hint">' + (enough ? "" : "Add at least 2 players") + "</p>" +
       "</div>" +
       '<div class="dmls-nav">' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-back">Back</button>' +
       '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-next"' + (enough ? "" : " disabled") + ">Next</button>" +
       "</div></div>";
+    fitScrollMid(document.getElementById("dmls-chips-scroll"));
 
     var input = document.getElementById("dmls-name");
     function add() {
@@ -481,13 +503,14 @@
       '<h2 class="dmls-title">' + esc(content.heading) + "</h2>" +
       '<p class="dmls-sub">' + esc(content.sub) + "</p>" +
       "</div>" +
-      '<div class="dmls-scroll-mid"><ul class="dmls-scores" id="dmls-rows">' + rows + "</ul></div>" +
+      '<div class="dmls-scroll-mid" id="dmls-rows-scroll"><ul class="dmls-scores" id="dmls-rows">' + rows + "</ul></div>" +
       "</div>" +
       '<div class="dmls-nav">' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-back">Back</button>' +
       (n === 5 ? '<button type="button" class="dmls-btn-link" id="dmls-skip">Skip</button>' : '<span class="dmls-spacer"></span>') +
       '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-next">' + (n === 5 ? "Reveal winner" : "Next") + "</button>" +
       "</div></div>";
+    fitScrollMid(document.getElementById("dmls-rows-scroll"));
 
     var wrap = document.getElementById("dmls-rows");
     wrap.addEventListener("click", function (e) {
@@ -669,10 +692,11 @@
       '<div class="dmls-card dmls-anim-in">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' + headHTML + "</div>" +
-      '<div class="dmls-scroll-mid">' + midHTML + "</div>" +
+      '<div class="dmls-scroll-mid" id="dmls-achv-scroll">' + midHTML + "</div>" +
       "</div>" +
       '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-achv-play">Play Doomlings</button><span class="dmls-spacer"></span></div>' +
       "</div>";
+    fitScrollMid(document.getElementById("dmls-achv-scroll"));
   }
 
   function renderAchvLoading() {
@@ -910,7 +934,7 @@
       loyaltyHTML =
         '<div class="dmls-widget dmls-widget-center"><h3 class="dmls-widget-title">Save this victory</h3>' +
         "<p>Create or Sign In to your free Doomlings account to track your game history and earn achievements.</p>" +
-        '<a class="dmls-btn dmls-btn-ghost" href="' + esc(accountUrl) + '">My Account</a>' +
+        '<a class="dmls-btn dmls-btn-ghost" href="' + esc(withReturnUrl(accountUrl)) + '">My Account</a>' +
         "</div>";
     }
 
