@@ -296,17 +296,6 @@
     return h + "</div>";
   }
 
-  // Placeholder flanking-character slots for the 4 scoring steps — no real
-  // art/admin upload slot yet (future work); scaffolding only. Real images
-  // can be wired in later by setting background-image on the element whose
-  // data-char-slot matches "<stepKey>-left" / "<stepKey>-right".
-  function stepChars(key) {
-    return '<div class="dmls-step-chars">' +
-      '<div class="dmls-step-char dmls-step-char-left" data-char-slot="' + key + '-left"></div>' +
-      '<div class="dmls-step-char dmls-step-char-right" data-char-slot="' + key + '-right"></div>' +
-      "</div>";
-  }
-
   function render() {
     // Used to wrap this in document.startViewTransition() for a soft
     // crossfade between steps. Dropped it — the transition's before/after
@@ -314,6 +303,11 @@
     // (.dmls-scroll-mid/.dmls-card-body), so a scrollbar toggling on/off
     // between screens caused a visible flicker and, intermittently, a
     // stray scrollbar during the ~220ms animation. Plain instant swap.
+    // renderPlayers()/renderStep() also skip .dmls-card's own pop-in
+    // animation deliberately — Back/Next between Add Names and the 4 scoring
+    // steps share the same background art, so animating the whole card on
+    // every click made that shared background look like it was resetting
+    // instead of staying put.
     if (productsEl && state.screen !== 6) productsEl.hidden = true;
     if (state.screen === 0) renderWelcome();
     else if (state.screen === 1) renderPlayers();
@@ -385,7 +379,7 @@
 
   /* --- players --- */
   var justAddedIndex = -1; // marks the newest chip so only it plays the pop-in animation
-  function renderPlayers(quiet) {
+  function renderPlayers() {
     if (CUSTOMER && !state.customerOptedOut && !state.players.some(function (p) { return p.isCustomer; })) {
       state.players.unshift({ name: cap(CUSTOMER.firstName || "Me").slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: true });
     }
@@ -400,7 +394,7 @@
     var enough = state.players.length >= 2;
 
     app.innerHTML =
-      '<div class="dmls-card' + (quiet ? "" : " dmls-anim-in") + '">' +
+      '<div class="dmls-card">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       dots(0) +
@@ -426,7 +420,7 @@
       state.players.push({ name: v.slice(0, 30), we: 0, fv: 0, bp: 0, mp: 0, isCustomer: false });
       justAddedIndex = state.players.length - 1;
       save();
-      renderPlayers(true);
+      renderPlayers();
       // renderPlayers() just replaced the whole card, so `input` above is a
       // detached node — grab the freshly-mounted one and refocus it, or the
       // on-screen keyboard drops after every single name on mobile.
@@ -446,7 +440,7 @@
       // customerOptedOut persists that choice until the player list is reset.
       if (removed && removed.isCustomer) state.customerOptedOut = true;
       save();
-      renderPlayers(true);
+      renderPlayers();
     });
     document.getElementById("dmls-back").addEventListener("click", function () { state.screen = 0; save(); render(); });
     document.getElementById("dmls-next").addEventListener("click", function () {
@@ -473,10 +467,9 @@
     }).join("");
 
     app.innerHTML =
-      '<div class="dmls-card dmls-anim-in' + (st.exp ? " dmls-card-exp" : "") + '">' +
+      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : "") + '">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
-      stepChars(st.key) +
       dots(stepNo) +
       '<h2 class="dmls-title">' + st.title + "</h2>" +
       '<p class="dmls-sub">' + st.sub + "</p>" +

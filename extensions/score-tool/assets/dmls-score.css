@@ -93,7 +93,7 @@
   background-position: center, center, center;
   border: 1px solid var(--dmls-line);
   border-radius: 22px;
-  padding: 1.625em 0;
+  padding: 1.625em;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -136,7 +136,7 @@
    scrolling instead of the whole card body. */
 .dmls-card-body.dmls-split { display: flex; flex-direction: column; overflow: hidden; padding-right: 0; min-height: 0; }
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
-.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0.25em 0.375em; margin: 0 -6px; }
+.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0px 19px 0px 0px;  }
 .dmls-card-body.dmls-split > .dmls-hint { flex: none; }
 /* Custom scrollbar for every .dmls-scroll-mid list (Add Names, scoring
    steps, achievements grid, history list) — thin green thumb instead of the
@@ -225,7 +225,7 @@
    that the buttons weren't matching the mock. Focus-visible ring above and
    the ghost border below are untouched (accessibility/state, not decoration). */
 .dmls-btn-go {
-  background: var(--dmls-green); color: #0d1200; border: none;
+  background: var(--dmls-green); color: #fff; border: none;
   box-shadow: 0 0 18px rgba(128, 210, 53, 0.55);
 }
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
@@ -240,19 +240,26 @@
 .dmls-nav .dmls-spacer { flex: 1; }
 
 /* players — "Add Names" screen */
-.dmls-addrow { display: flex; gap: 10px; max-width: 380px; margin: 22px auto 8px; }
-.dmls-addrow input {
-  flex: 1; min-width: 0; padding: 0.8125em 1em; font-size: 1em;
-  border: 2px solid #9287b0; border-radius: 12px; background: #fff; color: #1a1a2e;
+/* One pill-shaped field — the input has no border/background of its own
+   (transparent, sits inside the pill) and the + button is flush inside the
+   pill's right edge, instead of two separate controls side by side. */
+.dmls-addrow {
+  display: flex; align-items: center; gap: 6px; max-width: 380px; margin: 22px auto 8px;
+  background: #fff; border: 2px solid #9287b0; border-radius: 999px;
+  padding: 5px 5px 5px 1.125em;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.dmls-addrow input:focus { box-shadow: 0 0 0 3px rgba(146, 135, 176, 0.45); border-color: #9287b0; }
+.dmls-addrow:focus-within { box-shadow: 0 0 0 3px rgba(146, 135, 176, 0.45); }
+.dmls-addrow input {
+  flex: 1; min-width: 0; padding: 0.6875em 0; font-size: 1em;
+  border: 0; background: none; color: #1a1a2e;
+}
+.dmls-addrow input:focus { outline: none; }
 .dmls-addrow input::placeholder { color: #8a8aa0; }
 .dmls-addrow-plus {
-  flex: none; width: 46px; height: 46px; border-radius: 50%;
-  background: #4f9317; color: #fff; font-size: 1.5em; font-weight: 800; line-height: 1;
+  flex: none; width: 42px; height: 42px; border-radius: 50%;
+  background: var(--dmls-green); color: #fff; font-size: 1.5em; font-weight: 800; line-height: 1;
   display: flex; align-items: center; justify-content: center; padding: 0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
   transition: background 0.15s ease;
 }
 .dmls-addrow-plus:hover { background: #5cab1d; }
@@ -313,18 +320,6 @@
 }
 .dmls-step input.dmls-neg { color: #c22a1c; }
 
-/* per-step flanking character illustrations — no admin upload slot exists
-   yet for these (future work), so these are positioned, animation-ready
-   placeholders only. Real art can be dropped in later by setting
-   background-image on the .dmls-step-char element that matches the wanted
-   data-char-slot ("we-left", "fv-right", etc.) — the naming convention
-   (<stepKey>-left / <stepKey>-right) is the hook. */
-.dmls-step-chars { display: flex; justify-content: space-between; align-items: flex-start; margin: -6px -2px 2px; pointer-events: none; }
-.dmls-step-char {
-  width: 52px; height: 52px; border-radius: 16px; flex: none;
-  background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2);
-  background-size: cover; background-position: center;
-}
 /* winner */
 .dmls-card.dmls-winner {
   /* Own art direction for the reveal moment — falls back to the standard
@@ -636,14 +631,15 @@ body.dmls-modal-lock { overflow: hidden; }
 }
 #dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; }
 /* Kept fully inside the card (not poking past its edge) so it can never be
-   clipped by the viewport on narrow phones — the primary target device. */
+   clipped by the viewport on narrow phones — the primary target device. A
+   persistent background circle (not just an outline glyph) so it reads the
+   same on every screen regardless of what background art sits behind it. */
 #dmls-modal .dmls-modal-close {
   position: absolute; top: 10px; right: 10px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
-
+  background: rgba(16, 21, 63, 0.55);
   color: #fff; font-size: 2.1875em; line-height: 1;
   display: flex; align-items: center; justify-content: center;
-
 }
 #dmls-modal .dmls-modal-close:hover { background: var(--dmls-coral); }
 #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0; }
