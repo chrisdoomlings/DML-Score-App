@@ -402,7 +402,7 @@
 .dmls-trophy-plate {
   display: inline-block; max-width: 90%;
   background: linear-gradient(180deg, #ffe9a8, var(--dmls-gold));
-  color: #4a3200; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
   font-size: 1.375em; padding: 0.5em 1.25em; border-radius: 10px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
   margin: 0 auto 1.25em;
@@ -415,15 +415,15 @@
   position: absolute; left: 7%; right: 7%; top: 75%; bottom: 3%;
   display: flex; align-items: center; justify-content: center; text-align: center;
   background: none; box-shadow: none; border-radius: 0; max-width: none; margin: 0;
-  padding: 0 0.5em; font-size: clamp(13px, 4.4vw, 21px); line-height: 1.15;
+  padding: 0 0.5em; font-size: 33px; line-height: 1.15;
 }
 .dmls-trophy-heading {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
   font-size: clamp(26px, 8vw, 38px); line-height: 1.15; margin: 0 0 1.25em;
 }
 .dmls-trophy-divider { border: none; border-top: 1px solid var(--dmls-line); width: 80%; margin: 0 auto 1.25em; }
-.dmls-trophy-losers { font-style: italic; font-size: 1.0625em; line-height: 1.5; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
-.dmls-trophy-tagline { font-style: italic; font-size: 0.9375em; line-height: 1.4; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
+.dmls-trophy-losers { display:none;font-style: italic; font-size: 1.0625em; line-height: 1.5; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
+.dmls-trophy-tagline { font-style: italic; font-size: 1.1em; line-height: 1.4; color: var(--dmls-ink-dim); margin: 0 auto; overflow-wrap: anywhere; max-width: 220px; }
 .dmls-trophy-didnot { font-weight: 800; font-size: 1.375em; text-transform: uppercase; margin: 0; }
 
 /* widgets */
@@ -606,10 +606,10 @@ body.dmls-modal-lock { overflow: hidden; }
 #dmls-modal .dmls-modal-close {
   position: absolute; top: 10px; right: 10px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(8, 8, 26, 0.55); border: 1px solid var(--dmls-line);
-  color: #fff; font-size: 1.1875em; line-height: 1;
+  
+  color: #fff; font-size: 2.1875em; line-height: 1;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  
 }
 #dmls-modal .dmls-modal-close:hover { background: var(--dmls-coral); }
 #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0; }

@@ -1015,9 +1015,10 @@
       "&score=" + encodeURIComponent(top) +
       "&date=" + encodeURIComponent(localDateStr());
 
-    // Same .dmls-card/.dmls-card-body/.dmls-nav structure every other screen
-    // uses — gets the fixed height, internal scroll, and pinned-footer-nav
-    // treatment for free instead of reinventing it for one screen.
+    // No pinned .dmls-nav footer here on purpose — Save/Back live inside the
+    // scrollable .dmls-card-body, below the trophy art, so the screen opens
+    // showing only the trophy graphic (clean for a phone screenshot) and the
+    // actions only appear once the player scrolls past it.
     trophyEl.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-trophy-scene">' +
       '<div class="dmls-card-body">' +
@@ -1034,10 +1035,10 @@
           (trophyTagline ? '<p class="dmls-trophy-tagline">' + esc(trophyTagline) + "</p>" : "") +
           '<p class="dmls-trophy-didnot">' + esc(trophySubheading) + "</p>"
         : "") +
+      '<div class="dmls-win-cta-row">' +
+      '<a class="dmls-btn dmls-btn-go dmls-win-cta" href="' + saveUrl + '" target="_blank" rel="noopener">Save</a>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-win-cta-secondary" id="dmls-trophy-back">Back</button>' +
       "</div>" +
-      '<div class="dmls-nav">' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-trophy-back">Back</button>' +
-      '<a class="dmls-btn dmls-btn-go" href="' + saveUrl + '" target="_blank" rel="noopener">Save</a>' +
       "</div></div>";
 
     document.getElementById("dmls-trophy-back").addEventListener("click", closeTrophyModal);
