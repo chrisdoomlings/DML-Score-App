@@ -1021,8 +1021,12 @@
     trophyEl.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-trophy-scene">' +
       '<div class="dmls-card-body">' +
-      (ICONS.trophyTop ? '<img class="dmls-trophy-top" src="' + ICONS.trophyTop + '" alt="" loading="lazy">' : "") +
-      '<p class="dmls-trophy-plate">' + winnerName + "</p>" +
+      (ICONS.trophyTop
+        ? '<div class="dmls-trophy-top-wrap">' +
+          '<img class="dmls-trophy-top" src="' + ICONS.trophyTop + '" alt="" loading="lazy">' +
+          '<p class="dmls-trophy-plate dmls-trophy-plate-overlay">' + winnerName + "</p>" +
+          "</div>"
+        : '<p class="dmls-trophy-plate">' + winnerName + "</p>") +
       '<h2 class="dmls-trophy-heading">' + esc(trophyHeading) + "</h2>" +
       '<hr class="dmls-trophy-divider">' +
       (loserNames

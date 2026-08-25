@@ -395,7 +395,10 @@
     var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
 }
-.dmls-trophy-top { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto 1.125em; }
+.dmls-trophy-top { display: block; width: 100%; height: auto; margin: 0; }
+/* Wraps the trophy art so the name plate can be positioned absolutely over
+   the blank gold box baked into that image, instead of floating below it. */
+.dmls-trophy-top-wrap { position: relative; width: 100%; max-width: 320px; margin: 0 auto 1.125em; }
 .dmls-trophy-plate {
   display: inline-block; max-width: 90%;
   background: linear-gradient(180deg, #ffe9a8, var(--dmls-gold));
@@ -404,6 +407,15 @@
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
   margin: 0 auto 1.25em;
   overflow-wrap: anywhere;
+}
+/* Positioned as a % of .dmls-trophy-top-wrap to line up with the blank box
+   in the default trophy-top artwork — re-tune these if a replacement image
+   (uploaded via Settings) places its box elsewhere. */
+.dmls-trophy-plate-overlay {
+  position: absolute; left: 7%; right: 7%; top: 75%; bottom: 3%;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  background: none; box-shadow: none; border-radius: 0; max-width: none; margin: 0;
+  padding: 0 0.5em; font-size: clamp(13px, 4.4vw, 21px); line-height: 1.15;
 }
 .dmls-trophy-heading {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
