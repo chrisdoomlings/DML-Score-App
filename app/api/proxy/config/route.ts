@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
         discordUrl: settings.discordUrl,
         trophyHeading: settings.trophyHeading,
         trophySubheading: settings.trophySubheading,
+        trophyTagline: settings.trophyTagline,
         logoWidth: settings.logoWidth,
         cardMinHeight: settings.cardMinHeight,
         winnerImageSize: settings.winnerImageSize,

@@ -411,6 +411,7 @@
 }
 .dmls-trophy-divider { border: none; border-top: 1px solid var(--dmls-line); width: 80%; margin: 0 auto 1.25em; }
 .dmls-trophy-losers { font-style: italic; font-size: 1.0625em; line-height: 1.5; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
+.dmls-trophy-tagline { font-style: italic; font-size: 0.9375em; line-height: 1.4; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
 .dmls-trophy-didnot { font-weight: 800; font-size: 1.375em; text-transform: uppercase; margin: 0; }
 
 /* widgets */

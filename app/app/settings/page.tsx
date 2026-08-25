@@ -22,6 +22,7 @@ interface Settings {
   discordUrl: string;
   trophyHeading: string;
   trophySubheading: string;
+  trophyTagline: string;
   logoWidth: number;
   cardMinHeight: number;
   winnerImageSize: number;
@@ -556,6 +557,13 @@ export default function SettingsPage() {
                 <input
                   className="dml-input" type="text" maxLength={120} value={settings.trophyHeading}
                   onChange={(e) => setSettings({ ...settings, trophyHeading: e.target.value })}
+                />
+                <label className="dml-label" style={{ marginTop: 14 }}>
+                  Second line (shown between the other players&rsquo; names and the subheading &mdash; leave blank to hide it)
+                </label>
+                <input
+                  className="dml-input" type="text" maxLength={120} value={settings.trophyTagline}
+                  onChange={(e) => setSettings({ ...settings, trophyTagline: e.target.value })}
                 />
                 <label className="dml-label" style={{ marginTop: 14 }}>Subheading (below the other players&rsquo; names)</label>
                 <input

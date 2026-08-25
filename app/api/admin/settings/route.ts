@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
       discordUrl: body.discordUrl,
       trophyHeading: body.trophyHeading,
       trophySubheading: body.trophySubheading,
+      trophyTagline: body.trophyTagline,
       logoWidth: body.logoWidth,
       cardMinHeight: body.cardMinHeight,
       winnerImageSize: body.winnerImageSize,

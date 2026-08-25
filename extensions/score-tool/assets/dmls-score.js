@@ -35,6 +35,7 @@
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
   var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
   var trophySubheading = "Did Not."; // populated from /config, matches the DB default until it loads
+  var trophyTagline = ""; // populated from /config; optional second line, hidden when empty
   var logoWidth = 220; // px; populated from /config, matches the DB default until it loads
   // Welcome screen character illustration + heading layout — all populated
   // from /config, matching the score_settings DB defaults until it loads.
@@ -1026,6 +1027,7 @@
       '<hr class="dmls-trophy-divider">' +
       (loserNames
         ? '<p class="dmls-trophy-losers">' + loserNames + "</p>" +
+          (trophyTagline ? '<p class="dmls-trophy-tagline">' + esc(trophyTagline) + "</p>" : "") +
           '<p class="dmls-trophy-didnot">' + esc(trophySubheading) + "</p>"
         : "") +
       "</div>" +
@@ -1173,6 +1175,7 @@
       if (typeof c.discordUrl === "string") discordUrl = c.discordUrl;
       if (typeof c.trophyHeading === "string" && c.trophyHeading) trophyHeading = c.trophyHeading;
       if (typeof c.trophySubheading === "string" && c.trophySubheading) trophySubheading = c.trophySubheading;
+      if (typeof c.trophyTagline === "string") trophyTagline = c.trophyTagline;
       if (typeof c.logoWidth === "number" && c.logoWidth !== logoWidth) {
         logoWidth = c.logoWidth;
         needsRerender = true;
