@@ -57,7 +57,7 @@ const DEFAULTS = {
   guessEveryN: 3,
   tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
   homeHeading: "",
-  homeSubheading: "Tally World’s End, face value, and bonus points — we’ll crown the winner.",
+  homeSubheading: "",
   discordUrl: "",
   trophyHeading: "Won The End Of The World!",
   trophySubheading: "Did Not.",

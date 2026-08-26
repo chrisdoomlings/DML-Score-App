@@ -45,7 +45,7 @@
     }
   }
   var homeTip = ""; // populated from /config; empty = tip bar hidden
-  var homeSub = "Tally World’s End, face value, and bonus points — we’ll crown the winner."; // populated from /config, matches the DB default until it loads; empty = hidden
+  var homeSub = ""; // populated from /config; empty = hidden (no hardcoded fallback text)
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
   var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
   var trophySubheading = "Did Not."; // populated from /config, matches the DB default until it loads
