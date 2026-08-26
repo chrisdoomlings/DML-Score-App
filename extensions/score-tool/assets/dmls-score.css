@@ -799,3 +799,6 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
   .dmls-achv-grid { grid-template-columns: repeat(3, 1fr); }
   .dmls-trophy-share { display: none; }
 }
+
+
+#dmls-screen-welcome { padding:0; padding-top:80px;}
