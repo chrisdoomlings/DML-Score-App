@@ -748,6 +748,13 @@ body.dmls-modal-lock { overflow: hidden; }
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
 }
 .dmls-achv-icon-locked {
+  /* Show the real icon (once the admin sets one) dimmed/desaturated rather
+     than hiding it — only tiles with no iconUrl fall back to the empty
+     silhouette below. */
+  opacity: 0.35;
+  filter: grayscale(0.7);
+}
+.dmls-achv-icon-empty {
   background-color: rgba(255, 255, 255, 0.08);
   border: 2px dashed rgba(255, 255, 255, 0.2);
   box-shadow: none;
@@ -778,6 +785,7 @@ body.dmls-modal-lock { overflow: hidden; }
 .dmls-hist-more { color: var(--dmls-ink); font-size: 0.75em; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; flex: none; }
 .dmls-hist-more:hover { color: var(--dmls-ink-dim); }
 .dmls-hist-detail { margin-top: 10px; padding-top: 0.5em; border-top: 1px dashed var(--dmls-line); display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.dmls-hist-detail[hidden] { display: none; }
 .dmls-hist-detail-row { display: flex; justify-content: space-between; gap: 10px; font-size: 0.7813em; color: var(--dmls-ink-dim); }
 .dmls-hist-detail-row b { color: var(--dmls-ink); font-weight: 700; }
 .dmls-hist-empty { font-size: 0.875em; color: var(--dmls-ink-dim); text-align: center; margin-top: 18px; }

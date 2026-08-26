@@ -683,8 +683,9 @@
           '<button type="submit" class="dmls-bday-submit">Save birthday</button>' +
           "</form>"
         : "";
+      var lockedIconStyle = a.iconUrl ? ' style="background-image:url(\'' + a.iconUrl.replace(/'/g, "%27") + '\')"' : "";
       return '<div class="dmls-achv-tile dmls-achv-locked">' +
-        '<div class="dmls-achv-icon dmls-achv-icon-locked" aria-hidden="true"></div>' +
+        '<div class="dmls-achv-icon dmls-achv-icon-locked' + (a.iconUrl ? "" : " dmls-achv-icon-empty") + '"' + lockedIconStyle + ' aria-hidden="true"></div>' +
         '<p class="dmls-achv-name">' + esc(a.name) + "</p>" +
         '<p class="dmls-achv-desc">??????</p>' +
         bday +
@@ -720,12 +721,13 @@
       "<span>" + g.playerCount + " Players</span>" +
       // Per-player breakdown is the only thing this reveals — no point
       // offering it when there's nothing stored to show (e.g. older rows
-      // saved before the players column existed).
-      (players.length
+      // saved before the players column existed), or when there's only one
+      // player, whose score the title line already states in full.
+      (players.length > 1
         ? '<button type="button" class="dmls-hist-more" data-more="' + idx + '">' + (expanded ? "View Less" : "View More") + "</button>"
         : "") +
       "</div>" +
-      (players.length
+      (players.length > 1
         ? '<div class="dmls-hist-detail" id="dmls-hist-detail-' + idx + '"' + (expanded ? "" : " hidden") + ">" + detail + "</div>"
         : "") +
       "</li>";
