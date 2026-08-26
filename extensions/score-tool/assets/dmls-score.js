@@ -45,6 +45,7 @@
     }
   }
   var homeTip = ""; // populated from /config; empty = tip bar hidden
+  var homeSub = "Tally World’s End, face value, and bonus points — we’ll crown the winner."; // populated from /config, matches the DB default until it loads; empty = hidden
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
   var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
   var trophySubheading = "Did Not."; // populated from /config, matches the DB default until it loads
@@ -334,7 +335,7 @@
         : "") +
       "</div>" +
       '<h2 class="dmls-title" style="max-width:' + headingWidth + 'px;font-size:' + headingFontSize + 'px">' + esc(heading) + "</h2>" +
-      '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
+      (homeSub ? '<p class="dmls-sub">' + esc(homeSub) + "</p>" : "") +
       (hasResume ? '<div class="dmls-resume">You have a game in progress. <button type="button" id="dmls-resume">Resume it</button></div>' : "") +
       (CUSTOMER ? '<div class="dmls-welcome-links"><button type="button" class="dmls-btn-link" id="dmls-achv-link">Achievements</button></div>' : "") +
       "</div>" +
@@ -1292,6 +1293,10 @@
       if (images.beeNormal || images.fishNormal) needsRerender = true;
       if (typeof c.homeHeading === "string" && c.homeHeading && c.homeHeading !== heading) {
         heading = c.homeHeading;
+        needsRerender = true;
+      }
+      if (typeof c.homeSubheading === "string" && c.homeSubheading !== homeSub) {
+        homeSub = c.homeSubheading;
         needsRerender = true;
       }
       if (needsRerender && view === "game" && state.screen === 0) render();

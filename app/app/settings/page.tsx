@@ -21,6 +21,7 @@ interface Settings {
   images: Record<string, string>;
   tipText: string;
   homeHeading: string;
+  homeSubheading: string;
   discordUrl: string;
   trophyHeading: string;
   trophySubheading: string;
@@ -470,6 +471,13 @@ export default function SettingsPage() {
                 <input
                   className="dml-input" type="text" maxLength={120} value={settings.homeHeading}
                   onChange={(e) => setSettings({ ...settings, homeHeading: e.target.value })}
+                />
+                <label className="dml-label" style={{ marginTop: 14 }}>
+                  Welcome screen subheading (shown under the heading — leave blank to hide it)
+                </label>
+                <input
+                  className="dml-input" type="text" maxLength={200} value={settings.homeSubheading}
+                  onChange={(e) => setSettings({ ...settings, homeSubheading: e.target.value })}
                 />
                 <label className="dml-label" style={{ marginTop: 14 }}>
                   Tip banner text (shown under the welcome card — leave blank to hide it)

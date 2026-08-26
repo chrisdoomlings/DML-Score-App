@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       images: body.images,
       tipText: body.tipText,
       homeHeading: body.homeHeading,
+      homeSubheading: body.homeSubheading,
       discordUrl: body.discordUrl,
       trophyHeading: body.trophyHeading,
       trophySubheading: body.trophySubheading,

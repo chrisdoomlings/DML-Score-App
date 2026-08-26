@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
         images,
         tipText: settings.tipText,
         homeHeading: settings.homeHeading,
+        homeSubheading: settings.homeSubheading,
         discordUrl: settings.discordUrl,
         trophyHeading: settings.trophyHeading,
         trophySubheading: settings.trophySubheading,

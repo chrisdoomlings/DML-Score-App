@@ -35,6 +35,7 @@ export interface ScoreSettings {
   images: ImageUrls; // empty string per key = use the bundled default asset ("logo" has no default — empty hides it)
   tipText: string; // shown in the home-screen tip bar; empty = hidden
   homeHeading: string; // welcome screen heading; empty = fall back to the theme block's data-heading
+  homeSubheading: string; // welcome screen subheading (under the heading); empty = hidden
   logoWidth: number; // px; applies to the logo on both the home and winner screens
   cardMinHeight: number; // px; floor height for the score card — grows past this if content needs more room
   winnerImageSize: number; // px; max-width of the winner reveal art
@@ -56,6 +57,7 @@ const DEFAULTS = {
   guessEveryN: 3,
   tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
   homeHeading: "",
+  homeSubheading: "Tally World’s End, face value, and bonus points — we’ll crown the winner.",
   discordUrl: "",
   trophyHeading: "Won The End Of The World!",
   trophySubheading: "Did Not.",
@@ -106,6 +108,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       trophyTopImages: unknown;
       tipText: string;
       homeHeading: string;
+      homeSubheading: string;
       discordUrl: string;
       trophyHeading: string;
       trophySubheading: string;
@@ -145,6 +148,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            trophy_top_images AS "trophyTopImages",
            tip_text         AS "tipText",
            home_heading     AS "homeHeading",
+           home_subheading  AS "homeSubheading",
            discord_url      AS "discordUrl",
            trophy_heading    AS "trophyHeading",
            trophy_subheading AS "trophySubheading",
@@ -167,6 +171,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     guessEveryN: r?.guessEveryN ?? DEFAULTS.guessEveryN,
     tipText: r?.tipText ?? DEFAULTS.tipText,
     homeHeading: r?.homeHeading ?? DEFAULTS.homeHeading,
+    homeSubheading: r?.homeSubheading ?? DEFAULTS.homeSubheading,
     discordUrl: r?.discordUrl ?? DEFAULTS.discordUrl,
     trophyHeading: r?.trophyHeading ?? DEFAULTS.trophyHeading,
     trophySubheading: r?.trophySubheading ?? DEFAULTS.trophySubheading,
@@ -223,6 +228,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     images: nextImages,
     tipText: typeof s.tipText === "string" ? s.tipText.trim().slice(0, 280) : current.tipText,
     homeHeading: typeof s.homeHeading === "string" ? s.homeHeading.trim().slice(0, 120) : current.homeHeading,
+    homeSubheading: typeof s.homeSubheading === "string" ? s.homeSubheading.trim().slice(0, 200) : current.homeSubheading,
     discordUrl: typeof s.discordUrl === "string" ? sanitizeExternalUrl(s.discordUrl) : current.discordUrl,
     trophyHeading: typeof s.trophyHeading === "string" ? s.trophyHeading.trim().slice(0, 120) || DEFAULTS.trophyHeading : current.trophyHeading,
     trophySubheading: typeof s.trophySubheading === "string" ? s.trophySubheading.trim().slice(0, 60) || DEFAULTS.trophySubheading : current.trophySubheading,
@@ -250,7 +256,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_bg_we, image_bg_fv, image_bg_bp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, trophy_top_images,
-      tip_text, home_heading, discord_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, winner_image_size,
+      tip_text, home_heading, home_subheading, discord_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
     )
@@ -260,7 +266,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.bgWe}, ${next.images.bgFv}, ${next.images.bgBp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
-      ${next.tipText}, ${next.homeHeading}, ${next.discordUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
     )
@@ -291,6 +297,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       trophy_top_images = EXCLUDED.trophy_top_images,
       tip_text         = EXCLUDED.tip_text,
       home_heading     = EXCLUDED.home_heading,
+      home_subheading  = EXCLUDED.home_subheading,
       discord_url      = EXCLUDED.discord_url,
       trophy_heading    = EXCLUDED.trophy_heading,
       trophy_subheading = EXCLUDED.trophy_subheading,
