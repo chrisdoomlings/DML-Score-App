@@ -450,6 +450,16 @@
   }
 
   /* --- score steps --- */
+  // A leading "(...)" on a step heading (e.g. "(OPTIONAL) EXPANSION POINTS")
+  // renders as its own small tag above the big title instead of being part
+  // of the same oversized display-font line — can't be done from the plain-
+  // text admin heading field alone, has to be a structural split here.
+  function stepHeadingHTML(heading) {
+    var m = /^\(([^)]+)\)\s*/.exec(heading);
+    if (!m) return esc(heading);
+    return '<span class="dmls-title-tag">' + esc(m[1]) + '</span>' + esc(heading.slice(m[0].length));
+  }
+
   function renderStep(n) {
     var st = STEPS[n];
     var stepNo = n - 1;
@@ -471,7 +481,7 @@
       '<div class="dmls-card-head">' +
       dots(stepNo) +
       '<p class="dmls-eyebrow">Step ' + stepNo + " of 4</p>" +
-      '<h2 class="dmls-title">' + esc(content.heading) + "</h2>" +
+      '<h2 class="dmls-title">' + stepHeadingHTML(content.heading) + "</h2>" +
       '<p class="dmls-sub">' + esc(content.sub) + "</p>" +
       "</div>" +
       '<div class="dmls-scroll-mid" id="dmls-rows-scroll"><ul class="dmls-scores" id="dmls-rows">' + rows + "</ul></div>" +

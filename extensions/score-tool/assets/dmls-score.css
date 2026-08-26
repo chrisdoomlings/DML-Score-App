@@ -212,6 +212,20 @@
   margin: 8px auto 6px; padding-top:0.9375em;
   max-width: 100%;
 }
+/* A leading "(...)" tag split out of a step heading (see stepHeadingHTML in
+   dmls-score.js) — sized/positioned as its own small line, in the same
+   plain sans-serif as .dmls-eyebrow rather than the oversized display font,
+   and scaled in em so it stays proportional at every clamp() breakpoint. */
+.dmls-title-tag {
+  display: block;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.34em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dmls-gold);
+  margin-bottom: 2px;
+}
 .dmls-sub {
   color: var(--dmls-ink-dim); font-size: 0.9375em; line-height: 1.5;
   max-width: 40ch; margin: 0 auto 10px; padding-bottom: 10px;
