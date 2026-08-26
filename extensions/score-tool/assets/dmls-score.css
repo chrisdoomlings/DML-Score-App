@@ -577,7 +577,7 @@
    !important) would otherwise beat this rule, silently capping/squeezing the
    illustration and breaking the bleed/centering below. */
 .dmls-welcome-hero { position: relative; }
-.dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; }
+.dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; padding-top: 115px;z-index: 2; position: relative; }
 
 /* Absolutely positioned over the hero image's top corners — not a row
    below it — so it reads as part of the illustration and doesn't add
@@ -596,7 +596,7 @@
   background-image: var(--dmls-char-normal, none);
 }
 .dmls-char-fish {
-  width: 76px; height: 76px; background-repeat: no-repeat; background-position: center; background-size: contain;
+  width: 130px; height: 130px; background-repeat: no-repeat; background-position: center; background-size: contain;
   background-image: var(--dmls-char-normal, none);
 }
 .dmls-char-bee:hover, .dmls-char-bee.dmls-char-touch { background-image: var(--dmls-char-hover, var(--dmls-char-normal, none)); }
@@ -810,3 +810,4 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 
 
 #dmls-screen-welcome { padding:0; padding-top:80px;}
+.dmls-sub {display:none;}
