@@ -478,8 +478,8 @@
       "</div>" +
       '<div class="dmls-nav">' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-back">Back</button>' +
-      (n === 5 ? '<button type="button" class="dmls-btn-link" id="dmls-skip">Skip</button>' : '<span class="dmls-spacer"></span>') +
-      '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-next">' + (n === 5 ? "Reveal winner" : "Next") + "</button>" +
+      '<span class="dmls-spacer"></span>' +
+      '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-next">Next</button>' +
       "</div></div>";
     fitScrollMid(document.getElementById("dmls-rows-scroll"));
 
@@ -507,19 +507,12 @@
       inp.classList.toggle("dmls-neg", v < 0);
       save();
     });
-    // n === 5 (Meaning of Life / expansion) keeps its two extra footer
-    // actions exactly as before — only the header copy changed this pass.
     document.getElementById("dmls-back").addEventListener("click", function () { state.screen = n - 1; save(); render(); });
     document.getElementById("dmls-next").addEventListener("click", function () {
       if (n === 5) { finishGame(); return; }
       state.screen = n + 1;
       save();
       render();
-    });
-    var sk = document.getElementById("dmls-skip");
-    if (sk) sk.addEventListener("click", function () {
-      state.players.forEach(function (p) { p.mp = 0; });
-      finishGame();
     });
   }
 

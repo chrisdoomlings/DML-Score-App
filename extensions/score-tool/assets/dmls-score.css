@@ -810,4 +810,5 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 
 
 #dmls-screen-welcome { padding:0; padding-top:80px; padding-bottom: 40px;}
-.dmls-sub {display:none;}
+/* .dmls-sub {display:none;} */
+.dmls-welcome-links{display:none;}
