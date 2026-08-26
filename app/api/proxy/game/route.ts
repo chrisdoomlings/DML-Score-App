@@ -17,15 +17,6 @@ function sanitizeLocalDate(v: unknown): string | null {
   return typeof v === "string" && LOCAL_DATE_RE.test(v) ? v : null;
 }
 
-/** Transient — used only to evaluate the Gen Con achievement, never persisted. */
-function sanitizeGeo(lat: unknown, lng: unknown): { lat: number; lng: number } | null {
-  const la = Number(lat);
-  const lo = Number(lng);
-  if (!Number.isFinite(la) || !Number.isFinite(lo)) return null;
-  if (la < -90 || la > 90 || lo < -180 || lo > 180) return null;
-  return { lat: la, lng: lo };
-}
-
 /** POST /apps/score/game — save a completed game. Guests allowed (no achievements). */
 export async function POST(req: NextRequest) {
   const params = getVerifiedProxyParams(req.nextUrl.searchParams, process.env.SHOPIFY_API_SECRET!);
@@ -50,15 +41,13 @@ export async function POST(req: NextRequest) {
 
     const deviceType = sanitizeDeviceType(body.deviceType);
     const playedAtLocalDate = sanitizeLocalDate(body.playedAtLocalDate);
-    const geo = sanitizeGeo(body.lat, body.lng);
 
     const { game, achievementsUnlocked, guessOffered, gamesPlayed } = await saveGame(
       shop,
       customerId,
       players,
       deviceType,
-      playedAtLocalDate,
-      geo
+      playedAtLocalDate
     );
 
     return NextResponse.json(

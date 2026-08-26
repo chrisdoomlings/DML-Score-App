@@ -68,10 +68,12 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   `supabase/migrations/010_achievements.sql`). No point values are tracked anywhere;
   `drop_of_life_50_plus` and every other old milestone rule went with it — there is no
   equivalent achievement today, that decision would need to be made fresh if revisited.
-- Achievements: `lib/score/achievements.ts`, 21 fixed `AchievementKey`s (20 original +
-  `gencon`, added Aug 2026 — venue/date-window geofence around Indianapolis during Gen
-  Con week, opt-in browser geolocation only prompted during that ~4-day window, lat/lng
-  never persisted). Only
+- Achievements: `lib/score/achievements.ts`, 21 fixed `AchievementKey`s. A Gen Con
+  geofence achievement (venue/date-window around Indianapolis, browser geolocation)
+  was tried and then removed (Aug 2026) — swapped back out for the originally-planned
+  `st_patricks` ("Pot 'O Gold", Mar 17 local date), which is a plain date check like
+  christmas/valentines/halloween. No geolocation code remains anywhere in the app;
+  don't reintroduce it without asking. Only
   `enabled`/`name`/`description`/`iconUrl` are admin-configurable (`score_settings.achievements`
   JSONB merged over `DEFAULT_ACHIEVEMENTS` via `mergeAchievementConfig`) — trigger
   thresholds/conditions are NOT configurable, they're fixed in code. `name` is always
