@@ -265,10 +265,10 @@
     if (modalDeepLinked) {
       state.screen = 0;
       view = "game";
+      try { history.replaceState({}, "", location.pathname + location.search); } catch (e) { /* ignore */ }
     }
     modalDeepLinked = false;
     hideModal();
-    try { history.replaceState({}, "", location.pathname + location.search); } catch (e) { /* ignore */ }
   }
   document.getElementById("dmls-modal-close").addEventListener("click", closeModal);
   document.getElementById("dmls-modal-backdrop").addEventListener("click", closeModal);
