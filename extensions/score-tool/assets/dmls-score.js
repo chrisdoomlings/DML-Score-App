@@ -207,6 +207,7 @@
     modalOpen = true;
     modalEl.classList.add("dmls-modal-open");
     modalEl.setAttribute("aria-hidden", "false");
+    document.documentElement.classList.add("dmls-modal-lock");
     document.body.classList.add("dmls-modal-lock");
     var closeBtn = document.getElementById("dmls-modal-close");
     if (closeBtn) closeBtn.focus();
@@ -215,6 +216,7 @@
     modalOpen = false;
     modalEl.classList.remove("dmls-modal-open");
     modalEl.setAttribute("aria-hidden", "true");
+    document.documentElement.classList.remove("dmls-modal-lock");
     document.body.classList.remove("dmls-modal-lock");
     var launchBtn = document.getElementById("dmls-launch");
     if (launchBtn) launchBtn.focus();

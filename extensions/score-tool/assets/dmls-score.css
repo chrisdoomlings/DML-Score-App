@@ -629,9 +629,11 @@
    (.dmls-card, .dmls-btn, .dmls-title, etc.) are reused unprefixed exactly
    as they were when they lived inside #dmls-root, since they were already
    bare/unprefixed class selectors. */
-/* Applied to <body> while the modal is open, to stop the storefront page
-   behind it from scrolling. */
-body.dmls-modal-lock { overflow: hidden; }
+/* Applied to <html> and <body> while the modal is open, to stop the
+   storefront page behind it from scrolling. Both are locked, not just
+   body — themes that make <html> (not <body>) the actual scrolling box
+   would otherwise still show the outer page scrollbar behind the modal. */
+html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 
 #dmls-modal {
   position: fixed; inset: 0; z-index: 10000; display: none;
