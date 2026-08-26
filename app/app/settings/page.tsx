@@ -516,7 +516,7 @@ export default function SettingsPage() {
                     >
                       {settings.homeHeading || "Ready to see who won the game?"}
                     </h3>
-                    <p className="dml-preview-sub">Tally World&rsquo;s End, face value, and bonus points — we&rsquo;ll crown the winner.</p>
+                    {settings.homeSubheading && <p className="dml-preview-sub">{settings.homeSubheading}</p>}
                     <span className="dml-preview-btn">Start scoring</span>
                   </div>
                   <p className="dml-preview-caption">Live preview &mdash; approximates the real welcome screen.</p>

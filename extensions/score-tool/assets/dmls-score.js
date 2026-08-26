@@ -318,7 +318,7 @@
     var hasBee = !!images.beeNormal;
     var hasFish = !!images.fishNormal;
     app.innerHTML =
-      '<div class="dmls-card dmls-anim-in">' +
+      '<div class="dmls-card dmls-anim-in" id="dmls-screen-welcome">' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
       // Bee/fish overlay the top corners of the hero image (like the
@@ -391,7 +391,7 @@
     var enough = state.players.length >= 2;
 
     app.innerHTML =
-      '<div class="dmls-card">' +
+      '<div class="dmls-card" id="dmls-screen-players">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       dots(0) +
@@ -466,7 +466,7 @@
     }).join("");
 
     app.innerHTML =
-      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '">' +
+      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '" id="dmls-screen-step-' + st.key + '">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       dots(stepNo) +
@@ -532,7 +532,7 @@
     // slow (>3s) falls back to the local reveal exactly as before.
     var revealed = false;
     app.innerHTML =
-      '<div class="dmls-card dmls-anim-in dmls-counting">' +
+      '<div class="dmls-card dmls-anim-in dmls-counting" id="dmls-screen-counting">' +
       '<h2 class="dmls-title">Adding up the doom…</h2>' +
       '<div class="dmls-count-dots" aria-hidden="true"><i></i><i></i><i></i></div>' +
       "</div>";
@@ -580,7 +580,7 @@
     }).join("");
 
     app.innerHTML =
-      '<div class="dmls-card dmls-anim-in dmls-guess">' +
+      '<div class="dmls-card dmls-anim-in dmls-guess" id="dmls-screen-guess">' +
       '<div class="dmls-card-body">' +
       '<p class="dmls-eyebrow">Mini-game · too close to call!</p>' +
       '<h2 class="dmls-title">GUESS WHO WON?</h2>' +
@@ -643,9 +643,9 @@
       });
   }
 
-  function achvChrome(bodyHTML) {
+  function achvChrome(bodyHTML, screenId) {
     achvEl.innerHTML =
-      '<div class="dmls-card dmls-anim-in">' +
+      '<div class="dmls-card dmls-anim-in" id="' + screenId + '">' +
       '<div class="dmls-card-body">' + bodyHTML + "</div>" +
       "</div>";
   }
@@ -654,9 +654,9 @@
   // .dmls-nav (a flex:none sibling of .dmls-card-body, outside its scroll
   // region) so it stays visible regardless of how long the achievement grid
   // or history list gets.
-  function achvChromeSplit(headHTML, midHTML) {
+  function achvChromeSplit(headHTML, midHTML, screenId) {
     achvEl.innerHTML =
-      '<div class="dmls-card dmls-anim-in">' +
+      '<div class="dmls-card dmls-anim-in" id="' + screenId + '">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' + headHTML + "</div>" +
       '<div class="dmls-scroll-mid" id="dmls-achv-scroll">' + midHTML + "</div>" +
@@ -670,7 +670,8 @@
     achvChrome(
       '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">Achievements</h2>' +
-      '<p class="dmls-sub">Loading…</p>'
+      '<p class="dmls-sub">Loading…</p>',
+      "dmls-screen-achv-loading"
     );
   }
   function renderAchvError() {
@@ -678,7 +679,8 @@
       '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">Achievements</h2>' +
       '<p class="dmls-sub">Couldn’t load your achievements right now — check your connection and try again.</p>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-achv-retry">Retry</button>'
+      '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-achv-retry">Retry</button>',
+      "dmls-screen-achv-error"
     );
     var retry = document.getElementById("dmls-achv-retry");
     if (retry) retry.addEventListener("click", function () { openAchievementsModal(false); });
@@ -759,7 +761,8 @@
       '<button type="button" class="dmls-achv-tab" data-tab="history" role="tab">HISTORY</button>' +
       "</div>",
       '<div id="dmls-achv-panel-achv">' + achvGrid + "</div>" +
-      '<div id="dmls-achv-panel-history" hidden>' + histList + "</div>"
+      '<div id="dmls-achv-panel-history" hidden>' + histList + "</div>",
+      "dmls-screen-achievements"
     );
 
     applyAchvTab();
@@ -908,7 +911,7 @@
     }
 
     app.innerHTML =
-      '<div class="dmls-card dmls-anim-in dmls-winner">' +
+      '<div class="dmls-card dmls-anim-in dmls-winner" id="dmls-screen-winner">' +
       '<div class="dmls-card-body">' +
       '<div class="dmls-win-main">' +
       logoHTML("dmls-win-logo") +
@@ -1047,7 +1050,7 @@
     // The share icon sits outside .dmls-card-body so it stays pinned over
     // the art instead of scrolling away with it.
     trophyEl.innerHTML =
-      '<div class="dmls-card dmls-anim-in dmls-trophy-scene">' +
+      '<div class="dmls-card dmls-anim-in dmls-trophy-scene" id="dmls-screen-trophy">' +
       '<button type="button" class="dmls-trophy-share" id="dmls-trophy-share" aria-label="Share trophy image">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>' +
       "</button>" +
