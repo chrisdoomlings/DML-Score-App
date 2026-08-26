@@ -256,17 +256,15 @@
     var launchBtn = document.getElementById("dmls-launch");
     if (launchBtn) launchBtn.focus();
   }
-  // X button / Escape: if this modal instance was opened by landing directly
-  // on a URL hash (no prior in-app click), there's no sensible "resume where
-  // you were" state to fall back to visually, so reset to the welcome screen
-  // and clear the hash. Otherwise just hide — state.players/localStorage are
-  // untouched, so the resume banner still offers to pick this game back up.
+  // X button / Escape: just hide. Never discard state.screen/state.players
+  // here — a deep-linked open (e.g. a refresh mid-game re-landed on
+  // "#players") can carry just as much real in-progress data as one opened
+  // from the launcher, so resetting to the welcome screen on close used to
+  // silently strand that data behind a "Resume it" banner the player could
+  // easily miss — and tapping "Start scoring" from there wipes it for good.
+  // Leaving state/hash untouched means close/reopen and close/refresh both
+  // land the player back exactly where they left off.
   function closeModal() {
-    if (modalDeepLinked) {
-      state.screen = 0;
-      view = "game";
-      try { history.replaceState({}, "", location.pathname + location.search); } catch (e) { /* ignore */ }
-    }
     modalDeepLinked = false;
     hideModal();
   }
@@ -1252,6 +1250,15 @@
       if (images.bgWinner) modalEl.style.setProperty("--dmls-bg-winner-url", 'url("' + images.bgWinner + '")');
       if (images.trophyBg) modalEl.style.setProperty("--dmls-bg-trophy-url", 'url("' + images.trophyBg + '")');
       if (images.bg) root.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")'); // launcher card reuses the same bg
+      // A CSS background-image isn't actually fetched until its class lands
+      // on a DOM node — each step only renders when the player reaches it,
+      // so without this the request for e.g. bgFv doesn't start until the
+      // moment "Next" is clicked, and fast clicking through steps outruns
+      // the download. Warm the browser's cache for all of them right away,
+      // while the player is still on Welcome/Add Names.
+      [images.bg, images.bgExp, images.bgWe, images.bgFv, images.bgBp, images.bgWinner, images.trophyBg].forEach(function (url) {
+        if (url) new Image().src = url;
+      });
       if (typeof c.cardMinHeight === "number") modalEl.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge
