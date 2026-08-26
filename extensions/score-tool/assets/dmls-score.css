@@ -584,9 +584,18 @@
    `img { max-width: 100% !important }` responsive-image reset, which (being
    !important) would otherwise beat this rule, silently capping/squeezing the
    illustration and breaking the bleed/centering below. */
+.dmls-welcome-hero { position: relative; }
 .dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; }
 
-.dmls-welcome-chars { display: flex; justify-content: center; align-items: flex-end; gap: 28px; margin: 4px 0 10px; min-height: 64px; }
+/* Absolutely positioned over the hero image's top corners — not a row
+   below it — so it reads as part of the illustration and doesn't add
+   extra scroll height under the fixed-height welcome card. */
+.dmls-welcome-chars {
+  position: absolute; top: 6%; left: 0; right: 0;
+  display: flex; justify-content: space-between; padding: 0 6%;
+  pointer-events: none;
+}
+.dmls-welcome-chars .dmls-char { pointer-events: auto; }
 .dmls-char {
   width: 76px; height: 76px; background-repeat: no-repeat; background-position: center; background-size: contain;
   background-image: var(--dmls-char-normal, none);

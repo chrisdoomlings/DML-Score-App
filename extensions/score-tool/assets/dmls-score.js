@@ -320,6 +320,11 @@
       '<div class="dmls-card dmls-anim-in">' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
+      // Bee/fish overlay the top corners of the hero image (like the
+      // creatures already baked into that artwork) instead of sitting in
+      // their own row below it — that row used to push the heading down
+      // far enough to need a scroll on shorter screens.
+      '<div class="dmls-welcome-hero">' +
       (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" loading="lazy">' : "") +
       ((hasBee || hasFish)
         ? '<div class="dmls-welcome-chars" aria-hidden="true">' +
@@ -327,6 +332,7 @@
           (hasFish ? '<div class="dmls-char dmls-char-fish" id="dmls-char-fish"' + charStyle(images.fishNormal, images.fishHover) + '></div>' : "") +
           "</div>"
         : "") +
+      "</div>" +
       '<h2 class="dmls-title" style="max-width:' + headingWidth + 'px;font-size:' + headingFontSize + 'px">' + esc(heading) + "</h2>" +
       '<p class="dmls-sub">Tally World’s End, face value, and bonus points — we’ll crown the winner.</p>' +
       (hasResume ? '<div class="dmls-resume">You have a game in progress. <button type="button" id="dmls-resume">Resume it</button></div>' : "") +
