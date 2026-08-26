@@ -98,7 +98,7 @@ export const DEFAULT_ACHIEVEMENTS: AchievementConfig = {
   },
   score_50_plus: {
     enabled: true,
-    name: "Need new name",
+    name: "Get That Bread",
     description: "Any player scores more than 50 points in a game.",
     iconUrl: null,
   },
