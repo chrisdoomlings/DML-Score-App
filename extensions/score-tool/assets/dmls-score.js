@@ -329,8 +329,8 @@
       (ICONS.characters ? '<img class="dmls-welcome-characters" src="' + ICONS.characters + '" alt="" loading="lazy">' : "") +
       ((hasBee || hasFish)
         ? '<div class="dmls-welcome-chars" aria-hidden="true">' +
-          (hasBee ? '<div class="dmls-char dmls-char-bee" id="dmls-char-bee"' + charStyle(images.beeNormal, images.beeHover) + '></div>' : "") +
-          (hasFish ? '<div class="dmls-char dmls-char-fish" id="dmls-char-fish"' + charStyle(images.fishNormal, images.fishHover) + '></div>' : "") +
+          (hasBee ? '<div class="dmls-char-bee" id="dmls-char-bee"' + charStyle(images.beeNormal, images.beeHover) + '></div>' : "") +
+          (hasFish ? '<div class="dmls-char-fish" id="dmls-char-fish"' + charStyle(images.fishNormal, images.fishHover) + '></div>' : "") +
           "</div>"
         : "") +
       "</div>" +

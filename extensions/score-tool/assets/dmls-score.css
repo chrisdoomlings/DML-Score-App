@@ -587,12 +587,20 @@
   display: flex; justify-content: space-between; padding: 0 6%;
   pointer-events: none;
 }
-.dmls-welcome-chars .dmls-char { pointer-events: auto; }
-.dmls-char {
+.dmls-welcome-chars .dmls-char-bee, .dmls-welcome-chars .dmls-char-fish { pointer-events: auto; }
+/* Bee and fish are two independent classes (not a shared base + modifier)
+   so each one's size/position/background can be tuned on its own without
+   touching the other. */
+.dmls-char-bee {
   width: 76px; height: 76px; background-repeat: no-repeat; background-position: center; background-size: contain;
   background-image: var(--dmls-char-normal, none);
 }
-.dmls-char:hover, .dmls-char.dmls-char-touch { background-image: var(--dmls-char-hover, var(--dmls-char-normal, none)); }
+.dmls-char-fish {
+  width: 76px; height: 76px; background-repeat: no-repeat; background-position: center; background-size: contain;
+  background-image: var(--dmls-char-normal, none);
+}
+.dmls-char-bee:hover, .dmls-char-bee.dmls-char-touch { background-image: var(--dmls-char-hover, var(--dmls-char-normal, none)); }
+.dmls-char-fish:hover, .dmls-char-fish.dmls-char-touch { background-image: var(--dmls-char-hover, var(--dmls-char-normal, none)); }
 @media (prefers-reduced-motion: no-preference) {
   .dmls-char-bee { animation: dmls-char-pop-in 0.4s ease-out both, dmls-bob-bee 1.8s ease-in-out 0.4s infinite; }
   .dmls-char-fish { animation: dmls-char-pop-in 0.4s ease-out 0.15s both, dmls-bob-fish 3.2s ease-in-out 0.55s infinite; }
