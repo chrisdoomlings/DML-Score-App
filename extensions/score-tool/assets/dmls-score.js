@@ -259,30 +259,18 @@
     { key: "bp", min: 0 },
     { key: "mp", min: 0, exp: true },
   ];
-  // Admin-editable heading/description per step (Settings → Steps), matches
-  // lib/score/steps.ts's DEFAULT_STEPS until /config overrides it — see the
-  // c.steps merge below. Escaped on render like every other admin text field.
+  // Admin-editable heading/description per step (Settings → Steps). No copy
+  // is duplicated here — lib/score/steps.ts's DEFAULT_STEPS is the single
+  // source of truth (both the DB default and what admin edits build on);
+  // this just starts empty and is filled in by the c.steps merge below once
+  // /config resolves, which happens at boot, well before a player can reach
+  // a step screen (requires opening the modal, starting a game, and adding
+  // players first). Escaped on render like every other admin text field.
   var stepContent = {
-    we: {
-      preHeading: "RESOLVE",
-      heading: "WORLD'S END EFFECTS",
-      sub: "First, play World's End ➹ effects on traits in turn order. Then follow ONLY the gold text on the 3rd catastrophe, and enter any +/- points below.",
-    },
-    fv: {
-      preHeading: "",
-      heading: "TALLY FACE VALUE TOTALS",
-      sub: "Add up the face value points for each player. Ignore bonus points with ⊕ & 💧 symbols for now.",
-    },
-    bp: {
-      preHeading: "",
-      heading: "ENTER ALL BONUS POINTS",
-      sub: "Tally up all bonus points. Look for the Drop of Life 💧 symbol on the bottom right of each card.",
-    },
-    mp: {
-      preHeading: "OPTIONAL",
-      heading: "EXPANSION POINTS",
-      sub: "Add all extra points for Suppressed Traits, Trinkets, Meaning of Life, and Class Bonuses.",
-    },
+    we: { preHeading: "", heading: "", sub: "" },
+    fv: { preHeading: "", heading: "", sub: "" },
+    bp: { preHeading: "", heading: "", sub: "" },
+    mp: { preHeading: "", heading: "", sub: "" },
   };
 
   function dots(n) {

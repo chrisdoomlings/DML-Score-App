@@ -161,21 +161,21 @@
    "main screens" background when a step has none of its own set. */
 .dmls-card-step-we {
   background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
+    
     var(--dmls-bg-we-url, var(--dmls-bg-url, none)),
-    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+    
 }
 .dmls-card-step-fv {
   background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
+    
     var(--dmls-bg-fv-url, var(--dmls-bg-url, none)),
-    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+    
 }
 .dmls-card-step-bp {
   background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
+    
     var(--dmls-bg-bp-url, var(--dmls-bg-url, none)),
-    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
+    
 }
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
