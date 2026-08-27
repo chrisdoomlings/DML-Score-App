@@ -501,32 +501,6 @@ export default function SettingsPage() {
                   than the card itself &mdash; it bleeds off both edges symmetrically and gets cropped there, it
                   never stretches the card.
                 </p>
-                <div className="dml-preview-frame">
-                  <div
-                    className="dml-preview-card"
-                    style={settings.images.bg ? {
-                      backgroundImage: `linear-gradient(180deg, rgba(16,21,63,0.45), rgba(16,21,63,0.72)), url(${settings.images.bg})`,
-                    } : undefined}
-                  >
-                    {settings.images.logo && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img className="dml-preview-logo" src={settings.images.logo} alt="" style={{ width: settings.logoWidth }} />
-                    )}
-                    {settings.images.characters && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img className="dml-preview-characters" src={settings.images.characters} alt="" />
-                    )}
-                    <h3
-                      className="dml-preview-title"
-                      style={{ maxWidth: settings.headingWidth, fontSize: settings.headingFontSize }}
-                    >
-                      {settings.homeHeading || "Ready to see who won the game?"}
-                    </h3>
-                    {settings.homeSubheading && <p className="dml-preview-sub">{settings.homeSubheading}</p>}
-                    <span className="dml-preview-btn">Start scoring</span>
-                  </div>
-                  <p className="dml-preview-caption">Live preview &mdash; approximates the real welcome screen.</p>
-                </div>
                 <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
                   <div>
                     <label className="dml-label">Character illustration width (px, unused — storefront is full-bleed)</label>
