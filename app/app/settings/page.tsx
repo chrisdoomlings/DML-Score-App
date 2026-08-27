@@ -255,15 +255,21 @@ export default function SettingsPage() {
   if (loadError) return <CenteredMessage>Couldn&rsquo;t load: {loadError}</CenteredMessage>;
   if (!settings) return <CenteredMessage>Loading…</CenteredMessage>;
 
-  function imageGrid(fields: { key: string; label: string }[]) {
+  function imageGrid(fields: { key: string; label: string; fallbackSrc?: string }[]) {
     return (
       <div className="dml-image-grid">
-        {fields.map(({ key, label: fieldLabel }) => (
+        {fields.map(({ key, label: fieldLabel, fallbackSrc }) => (
           <div className="dml-image-tile" key={key}>
             <div className="dml-image-thumb">
               {settings!.images[key] ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={settings!.images[key]} alt="" />
+              ) : fallbackSrc ? (
+                // No image of its own — shows the shared background it
+                // actually falls back to on the storefront, not a blank box,
+                // so this preview matches what players will really see.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={fallbackSrc} alt="" style={{ opacity: 0.6 }} />
               ) : (
                 <span className="dml-image-placeholder">Default</span>
               )}
@@ -608,7 +614,7 @@ export default function SettingsPage() {
                       />
                       <label className="dml-label" style={{ marginTop: 14 }}>Background image</label>
                       {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-                      {imageGrid([{ key: s.imageKey, label: s.label + " background" }])}
+                      {imageGrid([{ key: s.imageKey, label: s.label + " background", fallbackSrc: settings.images.bg }])}
                     </div>
                   );
                 })}

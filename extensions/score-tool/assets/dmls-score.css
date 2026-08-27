@@ -150,18 +150,22 @@
   -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
 }
-/* expansion-points step gets its own art (client spec, May 2026) */
+/* Each step's own background image (client spec, May 2026) layers over the
+   shared "main scoring screens" background instead of just swapping it out
+   — the shared image is always the base layer, so a step with none of its
+   own simply shows the shared one underneath (matches the dimmed preview
+   in Settings → Steps). */
 .dmls-card-exp {
-  background-image: var(--dmls-bg-exp-url, none);
+  background-image: var(--dmls-bg-exp-url, none), var(--dmls-bg-url, none);
 }
 .dmls-card-step-we {
-  background-image: var(--dmls-bg-we-url, var(--dmls-bg-url, none));
+  background-image: var(--dmls-bg-we-url, none), var(--dmls-bg-url, none);
 }
 .dmls-card-step-fv {
-  background-image: var(--dmls-bg-fv-url, var(--dmls-bg-url, none));
+  background-image: var(--dmls-bg-fv-url, none), var(--dmls-bg-url, none);
 }
 .dmls-card-step-bp {
-  background-image: var(--dmls-bg-bp-url, var(--dmls-bg-url, none));
+  background-image: var(--dmls-bg-bp-url, none), var(--dmls-bg-url, none);
 }
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
