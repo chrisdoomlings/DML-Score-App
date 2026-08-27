@@ -167,6 +167,18 @@
 .dmls-card-step-bp {
   background-image: var(--dmls-bg-bp-url, none), var(--dmls-bg-url, none);
 }
+/* Sizing for that shared second layer only — a class of its own since a
+   single element's background-size/position can't be scoped to one layer;
+   this is added alongside .dmls-card-exp/.dmls-card-step-* wherever the
+   two-layer background above is used. Unlike the step's own image (full
+   "cover"), the shared image doesn't fill the card — it's a flat band
+   pinned to the top, stretched to the card's width, roughly 1/6 of its
+   height, not repeated below. */
+.dmls-card-shared-bg {
+  background-size: cover, 100% 16.6667%;
+  background-position: center, top center;
+  background-repeat: no-repeat, no-repeat;
+}
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
    it centered regardless of that value; max-width is just an overflow guard. */

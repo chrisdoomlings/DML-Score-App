@@ -465,7 +465,7 @@
     }).join("");
 
     app.innerHTML =
-      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '" id="dmls-screen-step-' + st.key + '">' +
+      '<div class="dmls-card dmls-card-shared-bg' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '" id="dmls-screen-step-' + st.key + '">' +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       dots(stepNo) +
