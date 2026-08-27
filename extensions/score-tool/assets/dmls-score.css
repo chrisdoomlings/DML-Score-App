@@ -81,33 +81,16 @@
 .dmls-launcher-sub { font-size: 0.8125em; color: var(--dmls-ink-dim); }
 
 .dmls-card {
-  /* Solid safety-net paint, not an image layer — background-color always
-     sits beneath every background-image layer, so however many image
-     layers a subclass (.dmls-card-exp/.dmls-card-step-*) overrides this
-     with, the card is never transparent even when none of those layers
-     resolve to an actual image (both step + shared vars unset). Without
-     this, an all-"none" background-image lets the storefront page behind
-     the modal show through the card. */
   background-color: var(--dmls-panel);
   background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
     var(--dmls-bg-url, none);
   background-size: cover, cover;
   background-position: center, center;
-  border: 1px solid var(--dmls-line);
   border-radius: 22px;
   padding: 1.625em;
   text-align: center;
   position: relative;
   overflow: hidden;
-  /* Every screen (welcome, players, the four score steps, guess, winner)
-     shares this one floor height — admin-configurable via the "Card minimum
-     height" setting, --dmls-card-min-height (falls back to the DB default of
-     560px if the /config fetch hasn't landed yet). Every screen now also
-     gets a matching *ceiling*: #dmls-modal .dmls-modal-card is a fixed 90vh
-     and #dmls-app/#dmls-achv/.dmls-card all inherit height:100% from it (see
-     that rule), so every screen is the same fixed size and content that
-     overflows scrolls internally instead of resizing the modal. */
   min-height: var(--dmls-card-min-height, 560px);
   display: flex;
   flex-direction: column;
@@ -173,11 +156,12 @@
    element's background-size/position can't be scoped to one layer. The
    character image (layer 1, on top) isn't stretched to "cover" like a
    photo — it's fit to the card's width with its own height preserved (an
-   illustration, not a crop-to-fill background), pinned to the top. The
+   illustration, not a crop-to-fill background), pinned near the top (offset
+   down slightly so it doesn't sit flush against the card's top edge). The
    shared background (layer 2, underneath) fills the whole card as normal. */
 .dmls-card-shared-bg {
   background-size: 100% auto, cover;
-  background-position: top center, center;
+  background-position: top 30px center, center;
   background-repeat: no-repeat, no-repeat;
 }
 

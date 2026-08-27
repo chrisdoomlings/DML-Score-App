@@ -82,6 +82,7 @@
     customerOptedOut: false, // true once the customer removes their own chip — see renderPlayers()
   };
   var serverConfig = null; // {loggedIn, images, ...} from /config
+  var configFailed = false; // true once loadConfig() has exhausted its retry — see renderStepPending()
   var lastResult = null;   // response from POST /game
   var guessResult = null;  // {correct, winnerNames, topScore} from POST /guess
   var saveFailed = false;  // true once /game has definitively failed (not just still in flight)
@@ -294,8 +295,32 @@
     if (productsEl && state.screen !== 6) productsEl.hidden = true;
     if (state.screen === 0) renderWelcome();
     else if (state.screen === 1) renderPlayers();
-    else if (state.screen >= 2 && state.screen <= 5) renderStep(state.screen);
+    else if (state.screen >= 2 && state.screen <= 5) {
+      // stepContent (heading/preHeading/description) is only ever populated
+      // by /config — nothing hardcoded to fall back to (see stepContent
+      // above) — so on a slow connection this can be reached before it's
+      // resolved. Show a loading placeholder instead of blank text; the
+      // /config handler calls render() again once it lands.
+      if (serverConfig) renderStep(state.screen);
+      else renderStepPending();
+    }
     else renderWinner();
+  }
+  function renderStepPending() {
+    app.innerHTML =
+      '<div class="dmls-card dmls-anim-in" id="dmls-screen-step-pending">' +
+      '<div class="dmls-card-body">' +
+      (configFailed
+        ? '<p class="dmls-sub">Couldn’t load this screen — check your connection and try again.</p>' +
+          '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-step-retry">Retry</button>'
+        : '<p class="dmls-sub">Loading…</p>') +
+      "</div></div>";
+    var retry = document.getElementById("dmls-step-retry");
+    if (retry) retry.addEventListener("click", function () {
+      configFailed = false;
+      render();
+      loadConfig(true);
+    });
   }
 
   /* --- welcome --- */
@@ -1200,7 +1225,14 @@
     else { showModal(); render(); }
   }
 
-  apiGet("/config")
+  // Step headings/descriptions (stepContent) start empty and are only ever
+  // filled in by this response (see stepContent above) — so unlike other
+  // fields, a step screen has nothing sensible to show at all until this
+  // resolves. loadConfig() is retried once on failure; either way, if a
+  // step screen is waiting (render() showed renderStepPending() instead of
+  // rendering blank), it calls render() again once this settles.
+  function loadConfig(retryOnFail) {
+    return apiGet("/config")
     .then(function (c) {
       if (!c || c.error) return;
       serverConfig = c;
@@ -1296,6 +1328,18 @@
         needsRerender = true;
       }
       if (needsRerender && view === "game" && state.screen === 0) render();
+      // If a step screen is mid-render waiting on this (see render() below),
+      // finish the job now that stepContent is actually populated.
+      if (state.screen >= 2 && state.screen <= 5) render();
     })
-    .catch(function () { /* tool works without config */ });
+    .catch(function () {
+      if (retryOnFail) return loadConfig(false);
+      // Both attempts failed — everything else on the tool works fine
+      // without config, but a step screen has nothing to show, so flag it
+      // so render() can offer a retry instead of leaving "Loading…" forever.
+      configFailed = true;
+      if (state.screen >= 2 && state.screen <= 5) render();
+    });
+  }
+  loadConfig(true);
 })();
