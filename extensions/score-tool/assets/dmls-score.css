@@ -152,30 +152,16 @@
 }
 /* expansion-points step gets its own art (client spec, May 2026) */
 .dmls-card-exp {
-  background-image:
-  
-    var(--dmls-bg-exp-url, none)}
-
-/* The other 3 steps can each get their own background too (Settings →
-   Steps) — same tint as the default .dmls-card, falling back to the shared
-   "main screens" background when a step has none of its own set. */
+  background-image: var(--dmls-bg-exp-url, none);
+}
 .dmls-card-step-we {
-  background-image:
-    
-    var(--dmls-bg-we-url, var(--dmls-bg-url, none)),
-    
+  background-image: var(--dmls-bg-we-url, var(--dmls-bg-url, none));
 }
 .dmls-card-step-fv {
-  background-image:
-    
-    var(--dmls-bg-fv-url, var(--dmls-bg-url, none)),
-    
+  background-image: var(--dmls-bg-fv-url, var(--dmls-bg-url, none));
 }
 .dmls-card-step-bp {
-  background-image:
-    
-    var(--dmls-bg-bp-url, var(--dmls-bg-url, none)),
-    
+  background-image: var(--dmls-bg-bp-url, var(--dmls-bg-url, none));
 }
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
@@ -833,3 +819,4 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 #dmls-screen-welcome { padding:0; padding-top:80px; padding-bottom: 40px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
+#dmls-screen-winner { padding-top: 45px;}
