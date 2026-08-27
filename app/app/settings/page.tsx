@@ -73,6 +73,7 @@ const WELCOME_IMAGE_FIELDS: { key: string; label: string }[] = [
 const WINNER_IMAGE_FIELDS: { key: string; label: string }[] = [
   { key: "winner", label: "Winner reveal art" },
   { key: "bgWinner", label: "Background (winner reveal screen)" },
+  { key: "winnerFooter", label: "Bottom banner image (shown at the very bottom of the winner screen — leave blank to hide it)" },
 ];
 
 const TROPHY_IMAGE_FIELDS: { key: string; label: string }[] = [

@@ -20,7 +20,7 @@
   --dmls-panel: #3d266b;
   --dmls-panel-2: #3d266b;
   --dmls-ink: #ffffff;
-  --dmls-ink-dim: #38909e;
+  --dmls-ink-dim: #9287b0;
   --dmls-ink-faint: #8a90c9;
   --dmls-green: #17c94b;
   --dmls-gold: #ffd54a;
@@ -101,8 +101,8 @@
   overflow-x: hidden;
   padding-right: 0.125em; /* keeps the scrollbar (where visible) off the text */
   scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12);
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+  /* -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%); */
 }
 .dmls-card-body::-webkit-scrollbar { width: 5px; }
 .dmls-card-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
@@ -399,7 +399,7 @@
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
 .dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
-.dmls-win-trophy { display: block;  margin: 20px auto 0; padding: 0.8125em 1.625em; font-size: 1.375em; background: #221946;}
+.dmls-win-trophy { display: block; width: 100%; max-width: 280px; margin: 20px auto 0; padding: 0.8125em 1.625em; font-size: 1.375em; background: #221946;}
 
 .dmls-win-cta-row { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 14px auto 0; width: 100%; max-width: 280px; }
 .dmls-win-cta { display: block; width: 100%; padding: 1em; font-size: 1.0625em; }
@@ -428,6 +428,12 @@
 .dmls-trophy-share:hover { background: rgba(16, 21, 63, 0.75); }
 .dmls-trophy-share:active { transform: scale(0.94); }
 .dmls-trophy-share svg { width: 1.125em; height: 1.125em; display: block; }
+/* Fetching the trophy image + handing it to the native share sheet can take
+   a beat with no browser chrome of its own to show progress — spin the icon
+   so the tap doesn't read as unresponsive while that's in flight. */
+.dmls-trophy-share:disabled { cursor: default; opacity: 0.8; }
+.dmls-trophy-share-loading svg { animation: dmls-spin 0.8s linear infinite; }
+@keyframes dmls-spin { to { transform: rotate(360deg); } }
 .dmls-trophy-top { display: block; width: 100%; height: auto; margin: 0; }
 /* Wraps the trophy art so the name plate can be positioned absolutely over
    the blank gold box baked into that image, instead of floating below it. */
@@ -445,7 +451,7 @@
    in the default trophy-top artwork — re-tune these if a replacement image
    (uploaded via Settings) places its box elsewhere. */
 .dmls-trophy-plate-overlay {
-  position: absolute; left: 7%; right: 7%; top: 75%; bottom: 3%;
+  position: absolute; left: 7%; right: 7%; top: 70%; bottom: 3%;
   display: flex; align-items: center; justify-content: center; text-align: center;
   background: none; box-shadow: none; border-radius: 0; max-width: none; margin: 0;
   padding: 0 0.5em; font-size: 33px; line-height: 1.15;
@@ -457,21 +463,15 @@
 .dmls-trophy-divider { border: none; border-top: 1px solid var(--dmls-line); width: 80%; margin: 0 auto 1.25em; }
 .dmls-trophy-losers { display:none;font-style: italic; font-size: 1.0625em; line-height: 1.5; color: var(--dmls-ink-dim); margin: 0 0 0.375em; overflow-wrap: anywhere; }
 .dmls-trophy-tagline { font-style: italic; font-size: 1.1em; line-height: 1.4; color: var(--dmls-ink-dim); margin: 0 auto; overflow-wrap: anywhere; max-width: 220px; }
-.dmls-trophy-didnot { font-weight: 800; font-size: 1.375em; text-transform: uppercase; margin: 0; }
-/* Forces the trophy art/text to occupy the full height of .dmls-card-body on
-   its own (min-height:100% resolves against .dmls-card-body's flex-computed
-   height — same technique as the modal card sizing above), so
-   .dmls-trophy-actions-wrap always starts below the first screenful instead
-   of peeking into view before the player scrolls. Owns the trophy art
-   background image itself (moved off .dmls-trophy-scene) so it doesn't
-   bleed into the actions area below. */
+.dmls-trophy-didnot { font-family: "DMLS Catastrophe", "Segoe UI", cursive;font-weight: 800; font-size: 1.375em; text-transform: uppercase; margin: 0; }
+
 .dmls-trophy-fill {
-  min-height: 100%; display: flex; flex-direction: column; justify-content: center;
+  display: flex; flex-direction: column; justify-content: center; padding: 30px 0;
   background-image:
     linear-gradient(180deg, rgba(16, 21, 63, 0.25), rgba(16, 21, 63, 0.55)),
     var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
-  background-size: cover; background-position: center;
+  background-size: cover; background-position: center; border-radius: 16px;
 }
 /* No background by default (the plain .dmls-card gradient shows through) —
    --dmls-trophy-actions-bg is set from the admin's "Action buttons area
@@ -482,6 +482,11 @@
 
 /* widgets */
 .dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 1.5em; }
+/* Optional admin-uploaded banner pinned to the very bottom of the winner
+   screen (Settings → Winner screen → "Bottom banner image"), below every
+   other winner-screen content including the widgets above. Full card width,
+   natural aspect ratio — not cropped like the winner reveal art. */
+.dmls-win-footer-img { display: block; width: 100%; height: auto; margin: 20px 0 0; }
 .dmls-widget {
   background: rgba(0, 0, 0, 0.24); border: 1px solid var(--dmls-line);
   border-radius: 16px; padding: 1.125em;
@@ -495,7 +500,8 @@
     font-weight: 700;
     text-align: center;
 }
-.dmls-widget p { font-size: 0.9063em; color: var(--dmls-ink-dim); line-height: 1.55; margin: 0; }
+.dmls-widget p {  color: white; line-height: 1.55; margin: 0;"DMLS Catastrophe", "Segoe UI", cursive }
+.dmls-widget.pdmls-win-stat-num{ font-size: 6em;}
 .dmls-widget p strong { color: var(--dmls-ink); }
 .dmls-widget .dmls-btn { margin-top: 12px; width: 100%; padding: 0.6875em; text-decoration: none; }
 /* winner-screen Discord banner — overrides the plain dark .dmls-widget look

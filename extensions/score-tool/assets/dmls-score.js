@@ -961,6 +961,11 @@
       '<button type="button" class="dmls-btn dmls-btn-ghost dmls-win-cta-secondary" data-new-players>Or New Players</button>' +
       "</div></div>" +
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
+      // Settings → Winner screen → "Bottom banner image" — an optional
+      // admin-uploaded image pinned to the very bottom of the screen, below
+      // everything else (achievements/loyalty widget, product recs). Empty
+      // = hidden, same convention as every other optional image.
+      (ICONS.winnerFooter ? '<img class="dmls-win-footer-img" src="' + ICONS.winnerFooter + '" alt="" loading="lazy">' : "") +
       "</div></div>";
 
     // Move Liquid-rendered products into the widgets column and show them
@@ -1105,12 +1110,26 @@
   // on mobile — can share straight to Messages/Instagram/etc); falls back to
   // sharing just the URL, then to opening it in a new tab (desktop, or any
   // browser without the Web Share API) where a long-press/right-click saves it.
+  // The fetch-the-PNG-then-hand-it-to-share-sheet path has no browser chrome
+  // of its own to show progress, so it can take a visible beat with the
+  // button doing nothing — spin the icon for the duration so it doesn't
+  // read as stuck.
   function shareTrophyImage(url) {
     if (!navigator.share) { window.open(url, "_blank", "noopener"); return; }
+    var btn = document.getElementById("dmls-trophy-share");
+    function setLoading(on) {
+      if (!btn) return;
+      btn.classList.toggle("dmls-trophy-share-loading", on);
+      btn.disabled = on;
+    }
     if (!navigator.canShare) {
-      navigator.share({ url: url, title: "Doomlings Trophy" }).catch(function () {});
+      setLoading(true);
+      navigator.share({ url: url, title: "Doomlings Trophy" })
+        .catch(function () {})
+        .then(function () { setLoading(false); });
       return;
     }
+    setLoading(true);
     fetch(url)
       .then(function (r) { return r.blob(); })
       .then(function (blob) {
@@ -1123,7 +1142,8 @@
       .catch(function (err) {
         if (err && err.name === "AbortError") return; // user dismissed the share sheet
         window.open(url, "_blank", "noopener");
-      });
+      })
+      .then(function () { setLoading(false); });
   }
 
   function winnerClicks(e) {

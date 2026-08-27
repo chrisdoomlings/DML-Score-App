@@ -10,6 +10,7 @@ export const IMAGE_KEYS = [
   "suppress",
   "characters",
   "winner",
+  "winnerFooter",
   "bg",
   "bgExp",
   "bgWe",
@@ -72,7 +73,7 @@ const DEFAULTS = {
 };
 
 const EMPTY_IMAGES: ImageUrls = {
-  worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", bg: "", bgExp: "", logo: "", bgWinner: "",
+  worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", winnerFooter: "", bg: "", bgExp: "", logo: "", bgWinner: "",
   bgWe: "", bgFv: "", bgBp: "",
   beeNormal: "", beeHover: "", fishNormal: "", fishHover: "",
   trophyBg: "",
@@ -93,6 +94,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageSuppress: string;
       imageCharacters: string;
       imageWinner: string;
+      imageWinnerFooter: string;
       imageBg: string;
       imageBgExp: string;
       imageBgWe: string;
@@ -133,6 +135,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_suppress   AS "imageSuppress",
            image_characters AS "imageCharacters",
            image_winner     AS "imageWinner",
+           image_winner_footer AS "imageWinnerFooter",
            image_bg         AS "imageBg",
            image_bg_exp     AS "imageBgExp",
            image_bg_we      AS "imageBgWe",
@@ -194,6 +197,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
           suppress: r.imageSuppress ?? "",
           characters: r.imageCharacters ?? "",
           winner: r.imageWinner ?? "",
+          winnerFooter: r.imageWinnerFooter ?? "",
           bg: r.imageBg ?? "",
           bgExp: r.imageBgExp ?? "",
           bgWe: r.imageBgWe ?? "",
@@ -252,7 +256,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
   await db`
     INSERT INTO score_settings (
       shop, achievements, steps, guess_enabled, guess_gap_max, guess_every_n,
-      image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_bg, image_bg_exp,
+      image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_winner_footer, image_bg, image_bg_exp,
       image_bg_we, image_bg_fv, image_bg_bp,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, trophy_top_images,
@@ -262,7 +266,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     )
     VALUES (
       ${shop}, ${jsonb(next.achievements)}, ${jsonb(next.steps)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
-      ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.bg}, ${next.images.bgExp},
+      ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.winnerFooter}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.bgWe}, ${next.images.bgFv}, ${next.images.bgBp},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
@@ -282,6 +286,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_suppress   = EXCLUDED.image_suppress,
       image_characters = EXCLUDED.image_characters,
       image_winner     = EXCLUDED.image_winner,
+      image_winner_footer = EXCLUDED.image_winner_footer,
       image_bg         = EXCLUDED.image_bg,
       image_bg_exp     = EXCLUDED.image_bg_exp,
       image_bg_we      = EXCLUDED.image_bg_we,
