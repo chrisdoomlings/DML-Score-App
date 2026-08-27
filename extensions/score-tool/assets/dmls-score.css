@@ -153,10 +153,9 @@
 /* expansion-points step gets its own art (client spec, May 2026) */
 .dmls-card-exp {
   background-image:
-    linear-gradient(180deg, rgba(4, 24, 18, 0.45), rgba(4, 24, 18, 0.72)),
-    var(--dmls-bg-exp-url, none),
-    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
-}
+  
+    var(--dmls-bg-exp-url, none)}
+
 /* The other 3 steps can each get their own background too (Settings →
    Steps) — same tint as the default .dmls-card, falling back to the shared
    "main screens" background when a step has none of its own set. */
@@ -205,12 +204,13 @@
   color: var(--dmls-gold); margin: 10px 0 6px; font-weight: 600;
 }
 .dmls-title {
-  font-family: "DMLS Catastrophe", "Segoe UI", cursive;
-  font-size: clamp(32px, 8vw, 48px);
-  line-height: 1.12;
-  font-weight: 400;
-  margin: 8px auto 6px; padding-top:0.9375em;
-  max-width: 100%;
+    font-family: "DMLS Catastrophe", "Segoe UI", cursive;
+    font-size: 44px;
+    line-height: 1.12;
+    font-weight: 400;
+    margin: 8px auto 6px;
+    padding-top: 20px;
+    max-width: 100%;
 }
 /* A leading "(...)" tag split out of a step heading (see stepHeadingHTML in
    dmls-score.js) — sized/positioned as its own small line, in the same
@@ -219,18 +219,18 @@
 .dmls-title-tag {
   display: block;
   font-family: "Segoe UI", sans-serif;
-  font-size: 0.34em;
+  font-size: 0.45em;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--dmls-gold);
+  color: white;
   margin-bottom: 2px;
 }
 .dmls-sub {
   color: var(--dmls-ink-dim); font-size: 0.9375em; line-height: 1.5;
-  max-width: 40ch; margin: 0 auto 10px; padding-bottom: 10px;
+  max-width: 40ch; margin: 0 auto 10px; padding-bottom: 20px;
 }
-.dmls-sub i { color: var(--dmls-ink); font-style: italic; }
+.dmls-sub i { color: white; font-style: italic; }
 .dmls-inline-link { color: var(--dmls-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
 
 .dmls-dots { display: flex; gap: 7px; justify-content: center; margin: 16px 0 4px; }
