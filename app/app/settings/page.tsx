@@ -255,13 +255,25 @@ export default function SettingsPage() {
   if (loadError) return <CenteredMessage>Couldn&rsquo;t load: {loadError}</CenteredMessage>;
   if (!settings) return <CenteredMessage>Loading…</CenteredMessage>;
 
-  function imageGrid(fields: { key: string; label: string; fallbackSrc?: string }[]) {
+  function imageGrid(fields: { key: string; label: string; fallbackSrc?: string; wide?: boolean }[]) {
     return (
       <div className="dml-image-grid">
-        {fields.map(({ key, label: fieldLabel, fallbackSrc }) => (
+        {fields.map(({ key, label: fieldLabel, fallbackSrc, wide }) => (
           <div className="dml-image-tile" key={key}>
-            <div className="dml-image-thumb">
-              {settings!.images[key] ? (
+            <div
+              className={"dml-image-thumb" + (wide ? " dml-image-thumb-wide" : "")}
+              style={wide && fallbackSrc ? { backgroundImage: `url(${fallbackSrc})` } : undefined}
+            >
+              {wide ? (
+                // Overlay preview: shared background fills the wide frame
+                // (set as the CSS background above), the character image (if
+                // any) sits on top of it at its own aspect ratio — matching
+                // how the storefront actually layers the two.
+                settings!.images[key] && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={settings!.images[key]} alt="" className="dml-image-overlay-img" />
+                )
+              ) : settings!.images[key] ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={settings!.images[key]} alt="" />
               ) : fallbackSrc ? (
@@ -553,8 +565,8 @@ export default function SettingsPage() {
               <section className="dml-card dml-card-wide">
                 <h2 className="dml-card-title">Scoring steps</h2>
                 <p className="dml-card-hint">
-                  Heading, description, and background for each of the 4 scoring screens. A step with no
-                  background of its own falls back to the shared one set on the General tab.
+                  Heading, description, and an optional character image for each of the 4 scoring screens. All 4
+                  share one background (set on the General tab) — the character image, if set, layers on top of it.
                 </p>
                 <div className="dml-subtabs" style={{ padding: 0, margin: "0 0 18px" }}>
                   {STEP_META.map((s) => (
@@ -586,9 +598,11 @@ export default function SettingsPage() {
                         className="dml-textarea" maxLength={300} rows={3} value={step.sub}
                         onChange={(e) => patchStep(s.key, { sub: e.target.value })}
                       />
-                      <label className="dml-label" style={{ marginTop: 14 }}>Background image</label>
+                      <label className="dml-label" style={{ marginTop: 14 }}>
+                        Character image (optional — layers on top of the shared background above, not a replacement for it)
+                      </label>
                       {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-                      {imageGrid([{ key: s.imageKey, label: s.label + " background", fallbackSrc: settings.images.bg }])}
+                      {imageGrid([{ key: s.imageKey, label: s.label + " character", fallbackSrc: settings.images.bg, wide: true }])}
                     </div>
                   );
                 })}

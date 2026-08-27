@@ -113,10 +113,17 @@ export function GlobalStyle() {
       .dml-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
       .dml-image-tile { display: flex; flex-direction: column; gap: 8px; }
       .dml-image-thumb {
-        width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden;
+        width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden; position: relative;
         background: #f6f6f7; border: 1px solid #e1e3e5; display: flex; align-items: center; justify-content: center;
       }
       .dml-image-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      /* Wide/horizontal variant for the per-step character image — it's an
+         overlay on top of the shared background, not a standalone photo, so
+         the preview shows the shared bg filling this wider frame with the
+         character image (if set) composited over it, width-fit with its own
+         aspect ratio preserved (not stretched/cropped like a cover photo). */
+      .dml-image-thumb-wide { aspect-ratio: 3 / 1; background-size: cover; background-position: center; background-repeat: no-repeat; }
+      .dml-image-thumb-wide .dml-image-overlay-img { position: absolute; top: 0; left: 0; width: 100%; height: auto; object-fit: contain; }
       /* Clickable "add another" tile for open-ended image pools (e.g. the
          trophy design pool) — dashed border instead of a solid thumb frame
          so it reads as an action, not a filled-in image slot. */

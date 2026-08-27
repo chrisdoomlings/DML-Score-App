@@ -17,8 +17,8 @@
 #dmls-root,
 #dmls-modal {
   --dmls-night: #10153f;
-  --dmls-panel: #232b7a;
-  --dmls-panel-2: #2a3182;
+  --dmls-panel: #3d266b;
+  --dmls-panel-2: #3d266b;
   --dmls-ink: #ffffff;
   --dmls-ink-dim: #38909e;
   --dmls-ink-faint: #8a90c9;
@@ -153,11 +153,10 @@
   -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
 }
-/* Each step's own background image (client spec, May 2026) layers over the
-   shared "main scoring screens" background instead of just swapping it out
-   — the shared image is always the base layer, so a step with none of its
-   own simply shows the shared one underneath (matches the dimmed preview
-   in Settings → Steps). */
+/* Each step's optional character image (client spec, May 2026; Settings →
+   Steps → "Character image") layers ON TOP of the shared "main scoring
+   screens" background — it's a decoration, not a replacement background,
+   so all 4 steps still show the one shared photo underneath at all times. */
 .dmls-card-exp {
   background-image: var(--dmls-bg-exp-url, none), var(--dmls-bg-url, none);
 }
@@ -170,16 +169,15 @@
 .dmls-card-step-bp {
   background-image: var(--dmls-bg-bp-url, none), var(--dmls-bg-url, none);
 }
-/* Sizing for that shared second layer only — a class of its own since a
-   single element's background-size/position can't be scoped to one layer;
-   this is added alongside .dmls-card-exp/.dmls-card-step-* wherever the
-   two-layer background above is used. Unlike the step's own image (full
-   "cover"), the shared image doesn't fill the card — it's a flat band
-   pinned to the top, stretched to the card's width, roughly 1/6 of its
-   height, not repeated below. */
+/* Sizing for the two layers above — a class of its own since a single
+   element's background-size/position can't be scoped to one layer. The
+   character image (layer 1, on top) isn't stretched to "cover" like a
+   photo — it's fit to the card's width with its own height preserved (an
+   illustration, not a crop-to-fill background), pinned to the top. The
+   shared background (layer 2, underneath) fills the whole card as normal. */
 .dmls-card-shared-bg {
-  background-size: cover, 100% 16.6667%;
-  background-position: center, top center;
+  background-size: 100% auto, cover;
+  background-position: top center, center;
   background-repeat: no-repeat, no-repeat;
 }
 
