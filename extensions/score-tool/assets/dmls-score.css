@@ -20,12 +20,12 @@
   --dmls-panel: #232b7a;
   --dmls-panel-2: #2a3182;
   --dmls-ink: #ffffff;
-  --dmls-ink-dim: #b8bde4;
+  --dmls-ink-dim: #38909e;
   --dmls-ink-faint: #8a90c9;
   --dmls-green: #17c94b;
   --dmls-gold: #ffd54a;
   --dmls-coral: #ff6a5c;
-  --dmls-line: rgba(255, 255, 255, 0.14);
+  --dmls-line: #38909e;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--dmls-ink);
   /* Fluid base size — every font-size in this file below is in em, so it
@@ -54,7 +54,7 @@
 }
 :where(#dmls-root, #dmls-modal) button:focus-visible,
 :where(#dmls-root, #dmls-modal) input:focus-visible,
-:where(#dmls-root, #dmls-modal) a:focus-visible { outline: 3px solid var(--dmls-gold); outline-offset: 2px; }
+:where(#dmls-root, #dmls-modal) a:focus-visible { outline: 0 solid var(--dmls-gold); outline-offset: 2px; }
 :where(#dmls-root, #dmls-modal) ul { list-style: none; margin: 0; padding: 0; }
 :where(#dmls-root, #dmls-modal) a { color: inherit; }
 
@@ -227,7 +227,7 @@
   margin-bottom: 2px;
 }
 .dmls-sub {
-  color: var(--dmls-ink-dim); font-size: 0.9375em; line-height: 1.5;
+  color: white; font-size: 0.9375em; line-height: 1.5;
   max-width: 40ch; margin: 0 auto 10px; padding-bottom: 20px;
 }
 .dmls-sub i { color: white; font-style: italic; }
@@ -243,10 +243,17 @@
    (padding/font-size) still varies via modifier classes where a screen's
    hero CTA is meant to read bigger (.dmls-win-cta and friends). */
 .dmls-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 0.8125em 1.625em; border-radius: 999px; font-weight: 800; font-size: 1em;
-  text-transform: uppercase; letter-spacing: 0.02em;
-  transition: transform 0.12s ease;
+  display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0.5em 1.5em;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 1.5em;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    transition: transform 0.12s ease;
 }
 .dmls-btn:active:not(:disabled) { transform: scale(0.97); }
 /* Bright green glowing pill CTA, matching the reference mocks (Play

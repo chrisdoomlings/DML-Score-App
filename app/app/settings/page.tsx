@@ -591,7 +591,12 @@ export default function SettingsPage() {
                   const step = settings.steps[s.key] ?? DEFAULT_STEPS[s.key];
                   return (
                     <div key={s.key}>
-                      <label className="dml-label">Heading</label>
+                      <label className="dml-label">Pre-heading (optional, small tag shown above the heading)</label>
+                      <input
+                        className="dml-input" type="text" maxLength={30} value={step.preHeading}
+                        onChange={(e) => patchStep(s.key, { preHeading: e.target.value })}
+                      />
+                      <label className="dml-label" style={{ marginTop: 14 }}>Heading</label>
                       <input
                         className="dml-input" type="text" maxLength={80} value={step.heading}
                         onChange={(e) => patchStep(s.key, { heading: e.target.value })}

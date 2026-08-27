@@ -264,19 +264,23 @@
   // c.steps merge below. Escaped on render like every other admin text field.
   var stepContent = {
     we: {
-      heading: "RESOLVE WORLD'S END EFFECTS",
+      preHeading: "RESOLVE",
+      heading: "WORLD'S END EFFECTS",
       sub: "First, play World's End ➹ effects on traits in turn order. Then follow ONLY the gold text on the 3rd catastrophe, and enter any +/- points below.",
     },
     fv: {
+      preHeading: "",
       heading: "TALLY FACE VALUE TOTALS",
       sub: "Add up the face value points for each player. Ignore bonus points with ⊕ & 💧 symbols for now.",
     },
     bp: {
+      preHeading: "",
       heading: "ENTER ALL BONUS POINTS",
       sub: "Tally up all bonus points. Look for the Drop of Life 💧 symbol on the bottom right of each card.",
     },
     mp: {
-      heading: "(OPTIONAL) EXPANSION POINTS",
+      preHeading: "OPTIONAL",
+      heading: "EXPANSION POINTS",
       sub: "Add all extra points for Suppressed Traits, Trinkets, Meaning of Life, and Class Bonuses.",
     },
   };
@@ -450,14 +454,11 @@
   }
 
   /* --- score steps --- */
-  // A leading "(...)" on a step heading (e.g. "(OPTIONAL) EXPANSION POINTS")
-  // renders as its own small tag above the big title instead of being part
-  // of the same oversized display-font line — can't be done from the plain-
-  // text admin heading field alone, has to be a structural split here.
-  function stepHeadingHTML(heading) {
-    var m = /^\(([^)]+)\)\s*/.exec(heading);
-    if (!m) return esc(heading);
-    return '<span class="dmls-title-tag">' + esc(m[1]) + '</span>' + esc(heading.slice(m[0].length));
+  // Admin-editable small tag (Settings → Steps → "Pre-heading") rendered
+  // above the big display-font heading — e.g. "RESOLVE" over "WORLD'S END
+  // EFFECTS", or "OPTIONAL" over "EXPANSION POINTS". Empty = no tag line.
+  function stepHeadingHTML(content) {
+    return (content.preHeading ? '<span class="dmls-title-tag">' + esc(content.preHeading) + "</span>" : "") + esc(content.heading);
   }
 
   function renderStep(n) {
@@ -481,7 +482,7 @@
       '<div class="dmls-card-head">' +
       dots(stepNo) +
       '<p class="dmls-eyebrow">Step ' + stepNo + " of 4</p>" +
-      '<h2 class="dmls-title">' + stepHeadingHTML(content.heading) + "</h2>" +
+      '<h2 class="dmls-title">' + stepHeadingHTML(content) + "</h2>" +
       '<p class="dmls-sub">' + esc(content.sub) + "</p>" +
       "</div>" +
       '<div class="dmls-scroll-mid" id="dmls-rows-scroll"><ul class="dmls-scores" id="dmls-rows">' + rows + "</ul></div>" +
@@ -1268,6 +1269,7 @@
         for (var stepKey in stepContent) {
           var sc = c.steps[stepKey];
           if (!sc) continue;
+          if (typeof sc.preHeading === "string") stepContent[stepKey].preHeading = sc.preHeading;
           if (typeof sc.heading === "string" && sc.heading) stepContent[stepKey].heading = sc.heading;
           if (typeof sc.sub === "string" && sc.sub) stepContent[stepKey].sub = sc.sub;
         }
