@@ -223,12 +223,6 @@
 .dmls-dots { display: flex; gap: 7px; justify-content: center; margin: 16px 0 4px; }
 .dmls-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); }
 .dmls-dots i.dmls-on { background: var(--dmls-green); }
-
-/* buttons — one shared shape/weight/case for every .dmls-btn across every
-   screen (Back/Next, Play Doomlings, Rematch!, Start scoring, etc.), so
-   nothing needs a per-screen radius/case override anymore; only size
-   (padding/font-size) still varies via modifier classes where a screen's
-   hero CTA is meant to read bigger (.dmls-win-cta and friends). */
 .dmls-btn {
   display: inline-flex;
     align-items: center;
@@ -243,11 +237,6 @@
     transition: transform 0.12s ease;
 }
 .dmls-btn:active:not(:disabled) { transform: scale(0.97); }
-/* Bright green glowing pill CTA, matching the reference mocks (Play
-   Doomlings, Rematch!, Start scoring) — supersedes the earlier flat dark-navy
-   "client reference design" this class used, per explicit client feedback
-   that the buttons weren't matching the mock. Focus-visible ring above and
-   the ghost border below are untouched (accessibility/state, not decoration). */
 .dmls-btn-go {
   background: var(--dmls-green); color: #fff; border: none;
   box-shadow: 0 0 18px rgba(128, 210, 53, 0.55);
@@ -263,10 +252,7 @@
 .dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: none; margin-top: 16px; }
 .dmls-nav .dmls-spacer { flex: 1; }
 
-/* players — "Add Names" screen */
-/* One pill-shaped field — the input has no border/background of its own
-   (transparent, sits inside the pill) and the + button is flush inside the
-   pill's right edge, instead of two separate controls side by side. */
+
 .dmls-addrow {
   display: flex; align-items: center; gap: 6px; max-width: 380px; margin: 22px auto 8px;
   background: #fff; border: 2px solid #9287b0; border-radius: 999px;
@@ -290,9 +276,7 @@
 .dmls-addrow-plus:active { background: #427e12; }
 .dmls-hint { font-size: 0.7813em; color: var(--dmls-ink-faint); margin-top: 10px; text-align: center; }
 
-/* Full-width centered pills, restyled from the old compact left-aligned
-   chip list per the client mock — one pill per row instead of a wrapping
-   flex row. */
+
 .dmls-chips { display: flex; flex-direction: column; gap: 9px; width: 100%; max-width: 420px; margin: 16px auto 2px; }
 .dmls-pill {
   position: relative; display: flex; align-items: center; justify-content: center;
@@ -344,15 +328,7 @@
 }
 .dmls-step input.dmls-neg { color: #c22a1c; }
 
-/* winner */
-/* .dmls-card.dmls-winner {
-  background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.3), rgba(16, 21, 63, 0.5)),
-    var(--dmls-bg-winner-url, var(--dmls-bg-url, none)),
-    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
-} */
-/* No card padding on the winner screen only — lets .dmls-win-art bleed edge
-   to edge instead of being inset by the default .dmls-card padding. */
+
 .dmls-card.dmls-winner { padding: 0; }
 .dmls-win-logo { display: block; height: auto; max-width: 80%; margin: 0 auto 10px; }
 .dmls-win-eyebrow {
@@ -366,10 +342,7 @@
   overflow-wrap: anywhere;
 }
 .dmls-win-points { font-size: 1.375em; color: white; margin: 0 0 4px; }
-/* Name + points overlaid on the character art (see renderWinner()) — full
-   card width, no size cap, with a caption positioned over the top of the
-   image. Strong text-shadow instead of a background scrim keeps it legible
-   over arbitrary admin-uploaded artwork without covering the art itself. */
+
 .dmls-win-art-wrap { position: relative; margin: 14px 0 4px; }
 .dmls-win-art {
   display: block; width: 100%; height: auto;
@@ -384,10 +357,7 @@
 .dmls-win-art-caption .dmls-win-points {
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.5);
 }
-/* every player's score — matches the reference exactly: no divider lines
-   between rows and no gold pick-out for the winner, every row reads the
-   same plain white/bold style (the hero name above already spotlights the
-   winner, this table doesn't need to repeat that). */
+
 .dmls-win-scores { width: 100%;  margin: 18px auto 0; padding: 0 1.875em; }
 .dmls-win-score-row {
   display: flex; justify-content: space-between; gap: 12px;
@@ -405,19 +375,9 @@
 .dmls-win-cta { display: block; width: 100%; padding: 1em; font-size: 1.0625em; }
 .dmls-win-cta-secondary { width: 100%; padding: 0.6875em; font-size: 0.875em; background: #221946;}
 
-/* trophy — separate view over the winner screen (Generate Trophy button,
-   see openTrophyModal/renderTrophy in dmls-score.js). position:relative only
-   here (the share button anchors to it) — the trophy background art itself
-   lives on .dmls-trophy-fill below, so it covers only the trophy art/text,
-   not the action buttons underneath (those sit on .dmls-card's own plain
-   default background, or the admin's custom solid color if set). */
+
 .dmls-trophy-scene { position: relative; }
-/* Sits directly on .dmls-card (outside .dmls-card-body's scroll region), so
-   it stays pinned over the trophy art regardless of scroll position — the
-   bottom action row is the only thing meant to require scrolling. Mobile
-   share sheets are the whole point of this button (see shareTrophyImage),
-   so it's hidden on desktop instead of falling back to the new-tab/save
-   behavior there. */
+
 .dmls-trophy-share {
   position: absolute; top: 50%; right: 0.75em; transform: translateY(-50%); z-index: 2;
   width: 2.25em; height: 2.25em; padding: 0; border-radius: 50%;
@@ -428,15 +388,12 @@
 .dmls-trophy-share:hover { background: rgba(16, 21, 63, 0.75); }
 .dmls-trophy-share:active { transform: scale(0.94); }
 .dmls-trophy-share svg { width: 1.125em; height: 1.125em; display: block; }
-/* Fetching the trophy image + handing it to the native share sheet can take
-   a beat with no browser chrome of its own to show progress — spin the icon
-   so the tap doesn't read as unresponsive while that's in flight. */
+
 .dmls-trophy-share:disabled { cursor: default; opacity: 0.8; }
 .dmls-trophy-share-loading svg { animation: dmls-spin 0.8s linear infinite; }
 @keyframes dmls-spin { to { transform: rotate(360deg); } }
 .dmls-trophy-top { display: block; width: 100%; height: auto; margin: 0; }
-/* Wraps the trophy art so the name plate can be positioned absolutely over
-   the blank gold box baked into that image, instead of floating below it. */
+
 .dmls-trophy-top-wrap { position: relative; width: 100%; max-width: 320px; margin: 0 auto 1.125em; }
 .dmls-trophy-plate {
   display: inline-block; max-width: 90%;
@@ -447,9 +404,7 @@
   margin: 0 auto 1.25em;
   overflow-wrap: anywhere;
 }
-/* Positioned as a % of .dmls-trophy-top-wrap to line up with the blank box
-   in the default trophy-top artwork — re-tune these if a replacement image
-   (uploaded via Settings) places its box elsewhere. */
+
 .dmls-trophy-plate-overlay {
   position: absolute; left: 7%; right: 7%; top: 70%; bottom: 3%;
   display: flex; align-items: center; justify-content: center; text-align: center;
@@ -473,19 +428,14 @@
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
   background-size: cover; background-position: center; border-radius: 16px;
 }
-/* No background by default (the plain .dmls-card gradient shows through) —
-   --dmls-trophy-actions-bg is set from the admin's "Action buttons area
-   background color" setting when they've chosen one. */
+
 .dmls-trophy-actions-wrap { background: var(--dmls-trophy-actions-bg, transparent); padding: 1.25em 0 0.125em; }
 .dmls-trophy-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto; width: 100%; max-width: 280px; }
 .dmls-trophy-action-btn { display: block; width: 100%; padding: 0.8125em; font-size: 1em; }
 
-/* widgets */
+
 .dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 1.5em; }
-/* Optional admin-uploaded banner pinned to the very bottom of the winner
-   screen (Settings → Winner screen → "Bottom banner image"), below every
-   other winner-screen content including the widgets above. Full card width,
-   natural aspect ratio — not cropped like the winner reveal art. */
+
 .dmls-win-footer-img { display: block; width: 100%; height: auto; margin: 20px 0 0; }
 .dmls-widget {
   background: rgba(0, 0, 0, 0.24); border: 1px solid var(--dmls-line);
@@ -504,9 +454,6 @@
 .dmls-widget.pdmls-win-stat-num{ font-size: 6em;}
 .dmls-widget p strong { color: var(--dmls-ink); }
 .dmls-widget .dmls-btn { margin-top: 12px; width: 100%; padding: 0.6875em; text-decoration: none; }
-/* winner-screen Discord banner — overrides the plain dark .dmls-widget look
-   with a bright brand-gradient badge; no dedicated art asset for this yet,
-   so the gradient + emoji is the placeholder. */
 .dmls-discord-banner {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   background: linear-gradient(120deg, var(--dmls-coral), var(--dmls-gold) 50%, var(--dmls-green));
@@ -514,9 +461,6 @@
 }
 .dmls-discord-icon { font-size: 1.375em; line-height: 1; }
 .dmls-discord-text { font-weight: 800; font-size: 0.9375em; text-transform: uppercase; letter-spacing: 0.03em; color: #10153f; }
-
-/* winner-screen "games played" / "new achievement" widget variants — both
-   centered, unlike the left-aligned default .dmls-widget content. */
 .dmls-widget-center { text-align: center; }
 .dmls-widget-center .dmls-widget-title { text-align: center; }
 .dmls-win-stat-num { font-size: 2.75em; font-weight: 800; line-height: 1; color: #fff; margin: 0 0 4px; }
@@ -572,24 +516,6 @@
 }
 .dmls-resume button { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; color: var(--dmls-gold); }
 
-/* welcome-screen bee/fish characters — separate, independently animated
-   elements (not one flat composite image) so each can bob at its own speed
-   and swap to a distinct hover-state image. Sourced from admin-uploaded
-   images.beeNormal/beeHover/fishNormal/fishHover (via CSS custom properties
-   set from JS once /config resolves); an empty slot just stays hidden. */
-/* Admin-uploaded hero illustration (images.characters) shown above the welcome
-   heading — a single static image, distinct from the animated bee/fish pair
-   above. Hidden entirely when unset. Width is CSS-driven (not the admin's
-   "Character illustration width" px setting — that field stays in Settings
-   but no longer affects this image) so it always fills the card's content
-   width and bleeds a fixed amount past the card's own edge on every screen
-   size, not just at one fixed px. .dmls-card clips via overflow:hidden (see
-   above), so the bleed reads as the illustration being symmetrically cut off
-   by the card edge instead of squeezed to fit inside it. */
-/* !important throughout: many theme stylesheets ship a global
-   `img { max-width: 100% !important }` responsive-image reset, which (being
-   !important) would otherwise beat this rule, silently capping/squeezing the
-   illustration and breaking the bleed/centering below. */
 .dmls-welcome-hero { position: relative; }
 .dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; padding-top: 115px;z-index: 2; position: relative; }
 
@@ -823,7 +749,9 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 }
 
 
-#dmls-screen-welcome { padding:0; padding-top:80px; padding-bottom: 40px;}
+#dmls-screen-welcome { padding:0; padding-top:50px; padding-bottom: 40px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
 #dmls-screen-winner { padding-top: 45px;}
+
+#dmls-screen-welcome .dmls-sub{ display:none;}
