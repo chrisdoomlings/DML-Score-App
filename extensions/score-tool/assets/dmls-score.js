@@ -29,16 +29,22 @@
   }
 
   var heading = root.getAttribute("data-heading") || "Ready to see who won the game?";
-  var loginUrl = root.getAttribute("data-login-url") || "/account/login";
-  // Shopify's login route honors ?return_url=<path> and lands the customer
-  // back there post-sign-in — without it they'd land on the generic /account
-  // page instead of back on this page with their in-progress game. Read at
+  // Deliberately NOT routes.account_login_url (typically /account/login) —
+  // confirmed by testing that on Shopify's New Customer Accounts (the
+  // system this shop is on; Legacy accounts were retired store-wide in Feb
+  // 2026), that route's own hosted redirect drops any return_url/return_to
+  // query param and always lands the customer on /account regardless. This
+  // literal path is New Customer Accounts' documented redirect-aware login
+  // entry point instead (shopify.dev/docs/storefronts/themes/sign-in).
+  var loginUrl = "/customer_authentication/login";
+  // New Customer Accounts' return_to only supports a relative path (no
+  // scheme/host) — pathname+search+hash already satisfies that. Read at
   // render time (not cached) so it always reflects the current #hash screen.
   function withReturnUrl(url) {
     try {
       var ret = location.pathname + location.search + location.hash;
       var sep = url.indexOf("?") === -1 ? "?" : "&";
-      return url + sep + "return_url=" + encodeURIComponent(ret);
+      return url + sep + "return_to=" + encodeURIComponent(ret);
     } catch (e) {
       return url;
     }
@@ -937,17 +943,12 @@
           "<p>Saving your game…</p></div>";
       }
     } else {
-      // Single "My Account" CTA per the mock, linking to the LOGIN route
-      // (not routes.account_url) — it presents its own "Sign in / Create
+      // Single "My Account" CTA per the mock, linking to the login route
+      // (see loginUrl above) — it presents its own "Sign in / Create
       // account" choice, so one button still covers both "never signed up"
       // and "has an account, just isn't signed in right now" without us
       // having to tell those two apart (we can't — both look like "no
-      // session"). This has to be account_login_url specifically: on New
-      // Customer Accounts, routes.account_url's own auth-gate redirect to the
-      // hosted login doesn't carry return_url through, so confirmed-tested
-      // clicks landed on the bare /account page instead of back here.
-      // account_login_url + return_url is Shopify's documented pattern for
-      // getting back to the original page under both old and new accounts.
+      // session").
       loyaltyHTML =
         '<div class="dmls-widget dmls-widget-center"><h3 class="dmls-widget-title">Save this victory</h3>' +
         "<p>Create or Sign In to your free Doomlings account to track your game history and earn achievements.</p>" +
