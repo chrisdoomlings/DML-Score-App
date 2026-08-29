@@ -42,7 +42,7 @@ interface LibraryImage {
   uploadedAt: string;
 }
 
-type Tab = "general" | "welcome" | "steps" | "winner" | "trophy";
+type Tab = "general" | "welcome" | "steps" | "winner" | "trophy" | "achievements";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "general", label: "General" },
@@ -50,6 +50,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "steps", label: "Steps" },
   { key: "winner", label: "Winner" },
   { key: "trophy", label: "Trophy" },
+  { key: "achievements", label: "Achievements" },
 ];
 
 // One image field per step, keyed to its score_settings.images slot —
@@ -390,76 +391,6 @@ export default function SettingsPage() {
               </section>
 
               <section className="dml-card dml-card-wide">
-                <h2 className="dml-card-title">Achievements</h2>
-                <p className="dml-card-hint">
-                  21 fixed achievement triggers. Toggle which are active and customize the name, icon, and
-                  description &mdash; description is an admin-only reminder of the trigger condition, players
-                  never see it (names/icons stay hidden until unlocked).
-                </p>
-                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-                <div className="dml-achv-list">
-                  {ACHIEVEMENT_KEYS.map((key) => {
-                    const achv = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
-                    const uploadId = `achv:${key}`;
-                    return (
-                      <div className="dml-achv-row" key={key}>
-                        <input
-                          type="checkbox" checked={achv.enabled}
-                          onChange={(e) => patchAchievement(key, { enabled: e.target.checked })}
-                        />
-                        <div className="dml-achv-icon">
-                          <div className="dml-achv-icon-thumb">
-                            {achv.iconUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={achv.iconUrl} alt="" />
-                            ) : (
-                              <span className="dml-image-placeholder">?</span>
-                            )}
-                          </div>
-                          <div className="dml-achv-icon-actions">
-                            <label className="dml-btn-secondary dml-btn-sm">
-                              {uploading === uploadId ? "…" : "Upload"}
-                              <input
-                                type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
-                                disabled={uploading !== null}
-                                onChange={(e) => {
-                                  const f = e.target.files?.[0];
-                                  if (f) uploadAchievementIcon(key, f);
-                                  e.target.value = "";
-                                }}
-                              />
-                            </label>
-                            <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(`achv:${key}`)}>
-                              Browse
-                            </button>
-                            {achv.iconUrl && (
-                              <button
-                                type="button" className="dml-btn-ghost dml-btn-sm"
-                                onClick={() => clearAchievementIcon(key)}
-                              >
-                                Reset
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        <div className="dml-achv-fields">
-                          <span className="dml-achv-key">{key}</span>
-                          <input
-                            className="dml-input" type="text" maxLength={60} value={achv.name}
-                            onChange={(e) => patchAchievement(key, { name: e.target.value })}
-                          />
-                          <textarea
-                            className="dml-textarea" maxLength={200} rows={2} value={achv.description}
-                            onChange={(e) => patchAchievement(key, { description: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-
-              <section className="dml-card dml-card-wide">
                 <h2 className="dml-card-title">Shared images</h2>
                 <p className="dml-card-hint">
                   Assets used across more than one screen, rather than scoped to a single tab. The logo appears
@@ -754,6 +685,80 @@ export default function SettingsPage() {
                       </button>
                     </div>
                   </div>
+                </div>
+              </section>
+            </>
+          )}
+
+          {tab === "achievements" && (
+            <>
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Achievements</h2>
+                <p className="dml-card-hint">
+                  21 fixed achievement triggers. Toggle which are active and customize the name, icon, and
+                  description &mdash; description is an admin-only reminder of the trigger condition, players
+                  never see it (names/icons stay hidden until unlocked).
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                <div className="dml-achv-list">
+                  {ACHIEVEMENT_KEYS.map((key) => {
+                    const achv = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
+                    const uploadId = `achv:${key}`;
+                    return (
+                      <div className="dml-achv-row" key={key}>
+                        <input
+                          type="checkbox" checked={achv.enabled}
+                          onChange={(e) => patchAchievement(key, { enabled: e.target.checked })}
+                        />
+                        <div className="dml-achv-icon">
+                          <div className="dml-achv-icon-thumb">
+                            {achv.iconUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={achv.iconUrl} alt="" />
+                            ) : (
+                              <span className="dml-image-placeholder">?</span>
+                            )}
+                          </div>
+                          <div className="dml-achv-icon-actions">
+                            <label className="dml-btn-secondary dml-btn-sm">
+                              {uploading === uploadId ? "…" : "Upload"}
+                              <input
+                                type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                                disabled={uploading !== null}
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f) uploadAchievementIcon(key, f);
+                                  e.target.value = "";
+                                }}
+                              />
+                            </label>
+                            <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(`achv:${key}`)}>
+                              Browse
+                            </button>
+                            {achv.iconUrl && (
+                              <button
+                                type="button" className="dml-btn-ghost dml-btn-sm"
+                                onClick={() => clearAchievementIcon(key)}
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="dml-achv-fields">
+                          <span className="dml-achv-key">{key}</span>
+                          <input
+                            className="dml-input" type="text" maxLength={60} value={achv.name}
+                            onChange={(e) => patchAchievement(key, { name: e.target.value })}
+                          />
+                          <textarea
+                            className="dml-textarea" maxLength={200} rows={2} value={achv.description}
+                            onChange={(e) => patchAchievement(key, { description: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             </>
