@@ -169,12 +169,23 @@
   function apiGet(path) {
     return fetch(PROXY + path, { headers: { Accept: "application/json" } }).then(function (r) { return r.json(); });
   }
+  // Without this, a request that never resolves (server hang, cold-start
+  // stall) leaves callers waiting on their promise forever — e.g. the winner
+  // screen's "Saving your game…" placeholder (see renderWinner()), which only
+  // gets corrected inside this call's own .then/.catch, has no other trigger
+  // to fall back to "couldn't save" if the response just never arrives.
   function apiPost(path, body) {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
     return fetch(PROXY + path, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(body),
-    }).then(function (r) { return r.json(); });
+      signal: ctrl ? ctrl.signal : undefined,
+    }).then(
+      function (r) { clearTimeout(timer); return r.json(); },
+      function (err) { clearTimeout(timer); throw err; }
+    );
   }
 
   /* ---------------------------------------------------------------------
