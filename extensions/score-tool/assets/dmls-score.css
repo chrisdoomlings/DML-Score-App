@@ -338,7 +338,7 @@
 }
 .dmls-win-name {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
-  font-size: clamp(44px, 15vw, 68px); line-height: 1.05; 
+  font-size: clamp(44px, 15vw, 68px); line-height: 1.05;     padding-top: 63px;
   overflow-wrap: anywhere;
 }
 .dmls-win-points { font-size: 1.375em; color: white;     margin: 0;
@@ -362,19 +362,23 @@
 .dmls-win-scores { width: 100%;  margin: 18px auto 0; padding: 0 1.875em; }
 .dmls-win-score-row {
   display: flex; justify-content: space-between; gap: 12px;
-  padding: 0.5em 0.25em;
+
   font-size: 1.5em;
 }
-.dmls-win-score-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; font-family: "DMLS Catastrophe", "Segoe UI", cursive; }
+.dmls-win-score-name { font-size: 30px;
+    line-height: 30px;font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; font-family: "DMLS Catastrophe", "Segoe UI", cursive; }
 .dmls-win-score-pts { font-weight: 700; }
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
 .dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
-.dmls-win-trophy { display: block; width: 100%; max-width: 280px; margin: 20px auto 0; font-size: 1.375em; background: #221946;}
+.dmls-win-trophy { display: block; width: 100%; max-width: 280px; margin: 0 auto; font-size: 1.375em; background: #221946;margin-top: 30px;}
 
 .dmls-win-cta-row { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 14px auto 0; width: 100%; max-width: 280px; }
 .dmls-win-cta { display: block; width: 100%; padding: .7em; font-size: 1.0625em; }
-.dmls-win-cta-secondary { width: 100%; padding: 0.6875em; font-size: 0.875em; background: #221946;}
+.dmls-win-cta-secondary {     width: 100%;
+    padding: 8px;
+    font-size: 17px;
+    background: #221946;}
 
 
 .dmls-trophy-scene { position: relative; }
@@ -753,6 +757,7 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 #dmls-screen-welcome { padding:0; padding-top:50px; padding-bottom: 40px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
+.dmls-prod-note{display:none;}
 #dmls-screen-winner { padding-top: 45px;}
 
 #dmls-screen-welcome .dmls-sub{ display:none;}

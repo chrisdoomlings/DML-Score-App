@@ -961,11 +961,6 @@
       '<button type="button" class="dmls-btn dmls-btn-ghost dmls-win-cta-secondary" data-new-players>Or New Players</button>' +
       "</div></div>" +
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
-      // Settings → Winner screen → "Bottom banner image" — an optional
-      // admin-uploaded image pinned to the very bottom of the screen, below
-      // everything else (achievements/loyalty widget, product recs). Empty
-      // = hidden, same convention as every other optional image.
-      (ICONS.winnerFooter ? '<img class="dmls-win-footer-img" src="' + ICONS.winnerFooter + '" alt="" loading="lazy">' : "") +
       "</div></div>";
 
     // Move Liquid-rendered products into the widgets column and show them
@@ -983,6 +978,20 @@
         '<a class="dmls-widget dmls-discord-banner" href="' + esc(discordUrl) + '" target="_blank" rel="noopener noreferrer">' +
         '<span class="dmls-discord-icon" aria-hidden="true">💬</span>' +
         '<span class="dmls-discord-text">Join us on Discord</span></a>'
+      );
+    }
+    // Settings → Winner screen → "Bottom banner image" — an optional
+    // admin-uploaded image pinned to the very bottom of the widgets column,
+    // below everything else (achievements/loyalty widget, product recs,
+    // Discord banner). Appended last, inside #dmls-widgets, rather than
+    // baked into the initial innerHTML string above, since products/Discord
+    // are also added to this div after the fact — baking it in earlier would
+    // put it above them instead of below. Empty = hidden, same convention as
+    // every other optional image.
+    if (ICONS.winnerFooter && widgets) {
+      widgets.insertAdjacentHTML(
+        "beforeend",
+        '<img class="dmls-win-footer-img" src="' + ICONS.winnerFooter + '" alt="" loading="lazy">'
       );
     }
 
