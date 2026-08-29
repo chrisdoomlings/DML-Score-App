@@ -578,11 +578,13 @@
       .then(function (res) {
         if (!res || !res.saved) {
           saveFailed = true;
+          save(); // persist the real outcome — see note below
           if (revealed) { renderWinner(); return; } // late failure: correct the message on screen
           clearTimeout(fallback); revealed = true; renderWinner();
           return;
         }
         lastResult = res;
+        save(); // persist the real outcome — see note below
         if (revealed) { renderWinner(); return; } // arrived after fallback: refresh stats only
         clearTimeout(fallback);
         revealed = true;
@@ -591,6 +593,14 @@
       })
       .catch(function () {
         saveFailed = true;
+        // The save() at the top of finishGame() snapshots lastResult/saveFailed
+        // as they were BEFORE this request settled (null/false) — that's the
+        // only localStorage write on this path unless we save() again here.
+        // Without it, reloading the page (or landing back on the winner
+        // screen via the hash-restore below) reads that stale "still in
+        // flight" snapshot forever and shows "Saving your game…" even though
+        // the game actually saved (or definitively failed) long ago.
+        save();
         if (revealed) { renderWinner(); return; } // late failure: correct the message on screen
         clearTimeout(fallback); revealed = true; renderWinner();
       });
