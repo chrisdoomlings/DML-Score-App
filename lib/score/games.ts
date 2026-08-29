@@ -174,6 +174,19 @@ export async function saveGame(
   };
 }
 
+/** Total games logged under this customer_id — a real COUNT, unlike saveGame()'s
+ *  returned `gamesPlayed` which is only ever accurate for a game that was itself
+ *  saved while the customer was authenticated. A game saved as a guest (no
+ *  customer_id) that the player later views after logging in has no such count
+ *  to fall back on — the client re-fetches this to replace the resulting "—". */
+export async function getCustomerGamesPlayedCount(shop: string, customerId: string): Promise<number> {
+  const db = getDb();
+  const rows = await db<{ n: number }[]>`
+    SELECT COUNT(*)::int AS n FROM score_games WHERE shop = ${shop} AND customer_id = ${customerId}
+  `;
+  return rows[0]?.n ?? 0;
+}
+
 /** Merges settings config with this customer's unlock rows — enabled achievements only. */
 export async function getCustomerAchievements(shop: string, customerId: string): Promise<AchievementStatus[]> {
   const db = getDb();

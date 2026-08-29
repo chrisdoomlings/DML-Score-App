@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedProxyParams } from "@/lib/utils/appProxy";
-import { getCustomerAchievements, getCustomerHistory } from "@/lib/score/games";
+import { getCustomerAchievements, getCustomerHistory, getCustomerGamesPlayedCount } from "@/lib/score/games";
 import { getCustomerBirthday } from "@/lib/score/achievements";
 import { getDb } from "@/lib/supabase/client";
 
@@ -22,10 +22,11 @@ export async function GET(req: NextRequest) {
 
   try {
     const db = getDb();
-    const [achievements, recentGames, birthday] = await Promise.all([
+    const [achievements, recentGames, birthday, gamesPlayed] = await Promise.all([
       getCustomerAchievements(shop, customerId),
       getCustomerHistory(shop, customerId),
       getCustomerBirthday(db, shop, customerId),
+      getCustomerGamesPlayedCount(shop, customerId),
     ]);
 
     return NextResponse.json(
@@ -33,6 +34,7 @@ export async function GET(req: NextRequest) {
         authenticated: true,
         achievements,
         recentGames,
+        gamesPlayed,
         profile: { hasBirthday: Boolean(birthday) },
       },
       { headers: HEADERS }

@@ -93,6 +93,7 @@
   var lastResult = null;   // response from POST /game
   var guessResult = null;  // {correct, winnerNames, topScore} from POST /guess
   var saveFailed = false;  // true once /game has definitively failed (not just still in flight)
+  var gamesPlayedRefreshing = false; // guards the "guest-saved game, now logged in" re-fetch in renderWinner() — see there
 
   var saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch (e) { /* ignore */ }
@@ -932,6 +933,28 @@
             '<h3 class="dmls-widget-title">Games Played</h3>' +
             guessLine +
             '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
+          // gamesPlayed is only ever null here when this exact game was saved
+          // as a guest (no customer_id) — e.g. the player finished the game,
+          // THEN logged in via "My Account" and landed back on this screen.
+          // saveGame() never computed a count for a customerId-less save, so
+          // there's nothing to show but "—" until we go get the real number
+          // from the account that's authenticated now. Guarded so a re-render
+          // (e.g. the /config-driven one) can't fire a second overlapping
+          // fetch, and mutating lastResult.gamesPlayed directly means once it
+          // lands, this branch just renders the real number on its own.
+          if (lastResult.gamesPlayed == null && !gamesPlayedRefreshing) {
+            gamesPlayedRefreshing = true;
+            apiGet("/achievements")
+              .then(function (r) {
+                if (r && r.authenticated && typeof r.gamesPlayed === "number" && lastResult) {
+                  lastResult.gamesPlayed = r.gamesPlayed;
+                  save();
+                  renderWinner();
+                }
+              })
+              .catch(function () {})
+              .then(function () { gamesPlayedRefreshing = false; });
+          }
         }
       } else if (saveFailed) {
         loyaltyHTML =
