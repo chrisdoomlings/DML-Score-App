@@ -171,7 +171,7 @@ export async function GET(req: NextRequest) {
                     fontFamily: "DMLS Catastrophe",
                     fontSize: 52,
                     fontWeight: 400,
-                    color: "#4a3200",
+                    color: "#ffffff",
                     textTransform: "uppercase",
                     letterSpacing: 2,
                   }}
