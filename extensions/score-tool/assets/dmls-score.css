@@ -242,7 +242,9 @@
   box-shadow: 0 0 18px rgba(128, 210, 53, 0.55);
 }
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
-.dmls-btn-ghost { border: 2px solid var(--dmls-line); color: var(--dmls-ink-dim); }
+.dmls-btn-ghost { border: 0;
+    color: #231a47;
+    background: #9287b0; }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 0.875em; text-decoration: underline; text-underline-offset: 3px; background: none; border: none; }
@@ -388,10 +390,12 @@
     margin-top: 20px;
     box-shadow: 0 0 8px rgba(0, 255, 60, 0.55), 0 0 18px rgba(0, 255, 60, 0.25), 0 0 32px rgba(0, 255, 60, 0.25), 0 0 20px rgba(0, 255, 60, 0.25);
     margin-bottom: 10px;}
-.dmls-win-cta-secondary {     width: 100%;
+.dmls-win-cta-secondary {  width: 100%;
     padding: 6px;
     font-size: 24px;
-    background: #221946;}
+    background: #221946;
+    color: #9287b0;
+    border: solid 2px #9287b0;}
 
 
 .dmls-trophy-scene { position: relative; }
@@ -469,7 +473,7 @@
     text-align: center;
     font-family: "DMLS Catastrophe", "Segoe UI", cursive;
 }
-.dmls-widget p {  color: white; line-height: 1.55; margin: 0;font-family: "DMLS Catastrophe", "Segoe UI", cursive }
+.dmls-widget p {  color: white; line-height: 1.55; margin: 0;}
 .dmls-widget.pdmls-win-stat-num{ font-size: 6em;}
 .dmls-widget p strong { color: var(--dmls-ink); }
 .dmls-widget .dmls-btn { margin-top: 12px; width: 100%; padding: 3px; text-decoration: none; }

@@ -1163,6 +1163,15 @@
       return;
     }
     setLoading(true);
+    // Opened synchronously, inside the click's user-activation window — the
+    // fetch() below is awaited before navigator.share() runs, and by the time
+    // that resolves the browser can consider the activation expired, silently
+    // blocking a window.open() called from inside the .catch as a non-gesture
+    // popup (and separately, navigator.share() itself can reject with
+    // NotAllowedError for the same reason). Pre-opening this blank tab now —
+    // then either closing it (share succeeded) or pointing it at the image
+    // (fallback needed) — keeps the fallback from silently doing nothing.
+    var fallbackWin = window.open("", "_blank", "noopener");
     fetch(url)
       .then(function (r) { return r.blob(); })
       .then(function (blob) {
@@ -1172,9 +1181,11 @@
         }
         return navigator.share({ url: url, title: "Doomlings Trophy" });
       })
+      .then(function () { if (fallbackWin) fallbackWin.close(); })
       .catch(function (err) {
-        if (err && err.name === "AbortError") return; // user dismissed the share sheet
-        window.open(url, "_blank", "noopener");
+        if (err && err.name === "AbortError") { if (fallbackWin) fallbackWin.close(); return; } // user dismissed the share sheet
+        if (fallbackWin) fallbackWin.location = url;
+        else window.open(url, "_blank", "noopener");
       })
       .then(function () { setLoading(false); });
   }
