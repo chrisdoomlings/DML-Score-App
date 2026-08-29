@@ -159,7 +159,10 @@ export async function GET(req: NextRequest) {
                   position: "absolute",
                   left: "8%",
                   right: "8%",
-                  top: "74%",
+                  // Was top: 74% (639px of the 864px-tall image area) — moved
+                  // down ~20px per feedback, expressed in px instead of %
+                  // since that's what was actually asked for.
+                  top: "659px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -169,7 +172,7 @@ export async function GET(req: NextRequest) {
                   style={{
                     display: "flex",
                     fontFamily: "DMLS Catastrophe",
-                    fontSize: 52,
+                    fontSize: 78, // was 52 — 50% bigger per feedback
                     fontWeight: 400,
                     color: "#ffffff",
                     textTransform: "uppercase",
