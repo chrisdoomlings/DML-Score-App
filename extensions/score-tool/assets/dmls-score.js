@@ -30,7 +30,6 @@
 
   var heading = root.getAttribute("data-heading") || "Ready to see who won the game?";
   var loginUrl = root.getAttribute("data-login-url") || "/account/login";
-  var accountUrl = root.getAttribute("data-account-url") || "/account";
   // Shopify's login route honors ?return_url=<path> and lands the customer
   // back there post-sign-in — without it they'd land on the generic /account
   // page instead of back on this page with their in-progress game. Read at
@@ -938,15 +937,21 @@
           "<p>Saving your game…</p></div>";
       }
     } else {
-      // Single "My Account" CTA per the mock — routes.account_url already
-      // sends an unauthenticated visitor to login (which itself links to
-      // registration), so one button covers both "never signed up" and
-      // "has an account, just isn't signed in right now" without us having
-      // to tell those two apart (we can't — both look like "no session").
+      // Single "My Account" CTA per the mock, linking to the LOGIN route
+      // (not routes.account_url) — it presents its own "Sign in / Create
+      // account" choice, so one button still covers both "never signed up"
+      // and "has an account, just isn't signed in right now" without us
+      // having to tell those two apart (we can't — both look like "no
+      // session"). This has to be account_login_url specifically: on New
+      // Customer Accounts, routes.account_url's own auth-gate redirect to the
+      // hosted login doesn't carry return_url through, so confirmed-tested
+      // clicks landed on the bare /account page instead of back here.
+      // account_login_url + return_url is Shopify's documented pattern for
+      // getting back to the original page under both old and new accounts.
       loyaltyHTML =
         '<div class="dmls-widget dmls-widget-center"><h3 class="dmls-widget-title">Save this victory</h3>' +
         "<p>Create or Sign In to your free Doomlings account to track your game history and earn achievements.</p>" +
-        '<a class="dmls-btn dmls-btn-ghost" href="' + esc(withReturnUrl(accountUrl)) + '">My Account</a>' +
+        '<a class="dmls-btn dmls-btn-ghost" href="' + esc(withReturnUrl(loginUrl)) + '">My Account</a>' +
         "</div>";
     }
 
