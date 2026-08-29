@@ -62,11 +62,11 @@ const STEP_META: { key: StepKey; label: string; imageKey: string }[] = [
 ];
 
 const GENERAL_IMAGE_FIELDS: { key: string; label: string }[] = [
+  { key: "logo", label: "Logo (shown on both the welcome screen and the winner reveal screen)" },
   { key: "bg", label: "Background (main screens, used as the fallback for any step with no image of its own)" },
 ];
 
 const WELCOME_IMAGE_FIELDS: { key: string; label: string }[] = [
-  { key: "logo", label: "Home screen logo" },
   { key: "characters", label: "Home screen character illustration" },
 ];
 
@@ -460,10 +460,12 @@ export default function SettingsPage() {
               </section>
 
               <section className="dml-card dml-card-wide">
-                <h2 className="dml-card-title">Shared background images</h2>
+                <h2 className="dml-card-title">Shared images</h2>
                 <p className="dml-card-hint">
-                  Used across the main scoring screens (not the welcome, winner, or trophy screens &mdash;
-                  those have their own tabs). Leave blank to use the built-in default.
+                  Assets used across more than one screen, rather than scoped to a single tab. The logo appears
+                  on both the welcome and winner screens (width is set on the Welcome tab); the background is the
+                  fallback for the main scoring screens when a step has no image of its own. Leave either blank to
+                  use the built-in default.
                 </p>
                 {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
                 {imageGrid(GENERAL_IMAGE_FIELDS)}

@@ -1347,7 +1347,13 @@
         homeSub = c.homeSubheading;
         needsRerender = true;
       }
-      if (needsRerender && view === "game" && state.screen === 0) render();
+      // Also covers screen 6 (winner) — logoHTML() reads ICONS.logo, which (unlike
+      // ICONS.winner, baked into the page at boot) only arrives via this /config
+      // response; a fast click-through can reach the winner screen before it lands,
+      // and unlike the step screens below, renderWinner() has no pending-state gate
+      // to fall back on, so without this it would paint once with no logo and stay
+      // that way even after config shows up.
+      if (needsRerender && view === "game" && (state.screen === 0 || state.screen === 6)) render();
       // If a step screen is mid-render waiting on this (see render() below),
       // finish the job now that stepContent is actually populated.
       if (state.screen >= 2 && state.screen <= 5) render();
