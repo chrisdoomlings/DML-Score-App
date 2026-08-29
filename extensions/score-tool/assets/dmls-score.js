@@ -48,6 +48,7 @@
   var homeSub = ""; // populated from /config; empty = hidden (no hardcoded fallback text)
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
   var winnerFooterUrl = ""; // populated from /config; empty = bottom banner image (ICONS.winnerFooter) renders non-clickable
+  var trophyBgUrl = ""; // populated from /config: trophyBg || bgWinner || bg — passed to the shared trophy image so it matches the on-screen background
   var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
   var trophySubheading = "Did Not."; // populated from /config, matches the DB default until it loads
   var trophyTagline = ""; // populated from /config; optional second line, hidden when empty
@@ -1090,6 +1091,7 @@
       "&score=" + encodeURIComponent(top) +
       "&date=" + encodeURIComponent(localDateStr()) +
       "&top=" + encodeURIComponent(trophyTopUrl) +
+      "&bg=" + encodeURIComponent(trophyBgUrl) +
       "&heading=" + encodeURIComponent(trophyHeading) +
       "&sub=" + encodeURIComponent(trophySubheading) +
       "&tagline=" + encodeURIComponent(trophyTagline) +
@@ -1363,6 +1365,11 @@
       if (images.bgWinner) modalEl.style.setProperty("--dmls-bg-winner-url", 'url("' + images.bgWinner + '")');
       if (images.trophyBg) modalEl.style.setProperty("--dmls-bg-trophy-url", 'url("' + images.trophyBg + '")');
       if (images.bg) root.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")'); // launcher card reuses the same bg
+      // Same fallback chain as .dmls-trophy-fill's CSS custom-property chain
+      // above (trophyBg → bgWinner → bg) — kept as a plain var, not just CSS,
+      // because renderTrophy() needs the actual resolved URL string to pass
+      // through to the shared-image route (which can't read our CSS).
+      trophyBgUrl = images.trophyBg || images.bgWinner || images.bg || "";
       // A CSS background-image isn't actually fetched until its class lands
       // on a DOM node — each step only renders when the player reaches it,
       // so without this the request for e.g. bgFv doesn't start until the

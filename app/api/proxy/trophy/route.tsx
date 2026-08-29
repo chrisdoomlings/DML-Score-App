@@ -26,6 +26,25 @@ async function getDisplayFont(): Promise<Buffer> {
   return displayFont;
 }
 
+// Regular body font for everything that ISN'T the display font (loser names,
+// tagline, the score/date footer). Registering `fonts` at all replaces
+// ImageResponse's own built-in default — without a second font here, every
+// text node falls back to DMLS Catastrophe regardless of its own fontFamily,
+// including ones with no requested family at all. That font is decorative
+// and missing full digit/punctuation coverage, which is why the score number
+// and the date's day/year silently vanished (satori has nothing to render
+// them with) while the letters around them still showed. Same file next/og
+// itself uses as its own default (@vercel/og ships it for exactly this
+// purpose) — copied into our own assets so it's a normal tracked project
+// file instead of a runtime read into node_modules internals.
+let bodyFont: Buffer | null = null;
+async function getBodyFont(): Promise<Buffer> {
+  if (!bodyFont) {
+    bodyFont = await readFile(path.join(process.cwd(), "lib/score/assets/geist-regular.ttf"));
+  }
+  return bodyFont;
+}
+
 // Portrait, phone-screenshot-shaped — this is meant to be shared to a story/
 // chat the same way a player would screenshot the in-app trophy screen, not
 // a landscape link-preview card.
@@ -88,6 +107,7 @@ export async function GET(req: NextRequest) {
   const score = sanitizeScore(sp.get("score"));
   const dateLabel = sanitizeDateLabel(sp.get("date"));
   const topImage = sanitizeImageParam(sp.get("top"));
+  const bgImage = sanitizeImageParam(sp.get("bg"));
   const heading = sanitizeText(sp.get("heading"), 80) || "Won The End Of The World!";
   const subheading = sanitizeText(sp.get("sub"), 60) || "Did Not.";
   const tagline = sanitizeText(sp.get("tagline"), 120);
@@ -103,8 +123,16 @@ export async function GET(req: NextRequest) {
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#10153f",
-          backgroundImage: "linear-gradient(180deg, #2a3182 0%, #10153f 100%)",
-          fontFamily: "sans-serif",
+          // Mirrors .dmls-trophy-fill on-screen: the shop's configured trophy
+          // background (falls back to the winner/main background — see the
+          // `bg` param built client-side) under the same dark overlay
+          // gradient, or the plain gradient alone when nothing's configured.
+          backgroundImage: bgImage
+            ? 'linear-gradient(180deg, rgba(16,21,63,0.35), rgba(16,21,63,0.65)), url("' + bgImage + '")'
+            : "linear-gradient(180deg, #2a3182 0%, #10153f 100%)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          fontFamily: "Geist",
         }}
       >
         <div
@@ -247,7 +275,10 @@ export async function GET(req: NextRequest) {
       width: WIDTH,
       height: HEIGHT,
       headers: { "Cache-Control": "public, max-age=86400" },
-      fonts: [{ name: "DMLS Catastrophe", data: await getDisplayFont(), style: "normal", weight: 400 }],
+      fonts: [
+        { name: "DMLS Catastrophe", data: await getDisplayFont(), style: "normal", weight: 400 },
+        { name: "Geist", data: await getBodyFont(), style: "normal", weight: 400 },
+      ],
     }
   );
 }
