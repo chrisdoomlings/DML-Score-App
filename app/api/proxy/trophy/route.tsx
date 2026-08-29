@@ -1,3 +1,5 @@
+import { readFile } from "fs/promises";
+import path from "path";
 import { NextRequest } from "next/server";
 import { ImageResponse } from "next/og";
 import { getVerifiedProxyParams } from "@/lib/utils/appProxy";
@@ -8,6 +10,21 @@ import { rateLimit } from "@/lib/utils/rateLimit";
 // every other proxy route stays on nodejs.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Same display font used on-screen for the trophy plate/heading/subheading
+// (see @font-face in dmls-score.css) — without loading it here, ImageResponse
+// falls back to a generic sans-serif and the shared PNG looks nothing like
+// what the player actually saw. Extracted once from that CSS file's embedded
+// base64 into lib/score/assets/dmls-catastrophe.woff (see git history for the
+// extraction) — cached at module scope so it's read from disk once per
+// server instance, not on every request.
+let displayFont: Buffer | null = null;
+async function getDisplayFont(): Promise<Buffer> {
+  if (!displayFont) {
+    displayFont = await readFile(path.join(process.cwd(), "lib/score/assets/dmls-catastrophe.woff"));
+  }
+  return displayFont;
+}
 
 // Portrait, phone-screenshot-shaped — this is meant to be shared to a story/
 // chat the same way a player would screenshot the in-app trophy screen, not
@@ -123,8 +140,9 @@ export async function GET(req: NextRequest) {
                 <div
                   style={{
                     display: "flex",
+                    fontFamily: "DMLS Catastrophe",
                     fontSize: 52,
-                    fontWeight: 800,
+                    fontWeight: 400,
                     color: "#4a3200",
                     textTransform: "uppercase",
                     letterSpacing: 2,
@@ -138,8 +156,9 @@ export async function GET(req: NextRequest) {
             <div
               style={{
                 display: "flex",
+                fontFamily: "DMLS Catastrophe",
                 fontSize: 64,
-                fontWeight: 800,
+                fontWeight: 400,
                 color: "#4a3200",
                 textTransform: "uppercase",
                 background: "linear-gradient(180deg, #ffe9a8, #ffd54a)",
@@ -155,8 +174,9 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               display: "flex",
+              fontFamily: "DMLS Catastrophe",
               fontSize: 56,
-              fontWeight: 800,
+              fontWeight: 400,
               color: "#ffffff",
               marginTop: 48,
               maxWidth: 820,
@@ -205,8 +225,9 @@ export async function GET(req: NextRequest) {
             <div
               style={{
                 display: "flex",
+                fontFamily: "DMLS Catastrophe",
                 fontSize: 44,
-                fontWeight: 800,
+                fontWeight: 400,
                 color: "#ffffff",
                 textTransform: "uppercase",
                 marginTop: 16,
@@ -226,6 +247,7 @@ export async function GET(req: NextRequest) {
       width: WIDTH,
       height: HEIGHT,
       headers: { "Cache-Control": "public, max-age=86400" },
+      fonts: [{ name: "DMLS Catastrophe", data: await getDisplayFont(), style: "normal", weight: 400 }],
     }
   );
 }

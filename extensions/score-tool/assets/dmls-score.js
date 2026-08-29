@@ -1095,6 +1095,20 @@
       "&tagline=" + encodeURIComponent(trophyTagline) +
       "&losers=" + encodeURIComponent(loserNamesRaw);
 
+    // Kicked off immediately, as soon as this screen renders, rather than
+    // waiting for a Share/Download click — the image is generated server-side
+    // (next/og) and can take a visible beat, so starting it now means it's
+    // usually already cached (route sets a 24h Cache-Control) by the time the
+    // player actually taps one of the buttons below. Both handlers await this
+    // same promise instead of firing their own fetch, so there's only ever
+    // one request per visit to this screen.
+    var trophyImageReady = false;
+    var trophyImageBlob = fetch(shareImageUrl).then(function (r) {
+      if (!r.ok) throw new Error("trophy image " + r.status);
+      return r.blob();
+    });
+    trophyImageBlob.then(function () { trophyImageReady = true; }, function () {});
+
     // No pinned .dmls-nav footer here on purpose — the action row lives
     // inside the scrollable .dmls-card-body, below the trophy art, so the
     // screen opens showing only the trophy graphic (clean for a phone
@@ -1106,9 +1120,14 @@
     // the art instead of scrolling away with it.
     trophyEl.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-trophy-scene" id="dmls-screen-trophy">' +
+      '<div class="dmls-trophy-float-actions">' +
       '<button type="button" class="dmls-trophy-share" id="dmls-trophy-share" aria-label="Share trophy image">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>' +
       "</button>" +
+      '<button type="button" class="dmls-trophy-download" id="dmls-trophy-download" aria-label="Download trophy image">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>' +
+      "</button>" +
+      "</div>" +
       '<div class="dmls-card-body">' +
       '<div class="dmls-trophy-fill">' +
       (trophyTopUrl
@@ -1136,18 +1155,23 @@
     document.getElementById("dmls-trophy-rematch").addEventListener("click", rematch);
     document.getElementById("dmls-trophy-new-players").addEventListener("click", newPlayers);
     document.getElementById("dmls-trophy-achv").addEventListener("click", function () { openAchievementsModal(false); });
-    document.getElementById("dmls-trophy-share").addEventListener("click", function () { shareTrophyImage(shareImageUrl); });
+    document.getElementById("dmls-trophy-share").addEventListener("click", function () {
+      shareTrophyImage(shareImageUrl, trophyImageBlob, trophyImageReady);
+    });
+    document.getElementById("dmls-trophy-download").addEventListener("click", function () {
+      downloadTrophyImage(trophyImageBlob, trophyImageReady);
+    });
   }
 
   // Prefers the native share sheet with the actual PNG attached (works well
   // on mobile — can share straight to Messages/Instagram/etc); falls back to
   // sharing just the URL, then to opening it in a new tab (desktop, or any
   // browser without the Web Share API) where a long-press/right-click saves it.
-  // The fetch-the-PNG-then-hand-it-to-share-sheet path has no browser chrome
-  // of its own to show progress, so it can take a visible beat with the
-  // button doing nothing — spin the icon for the duration so it doesn't
-  // read as stuck.
-  function shareTrophyImage(url) {
+  // blobPromise is the single fetch kicked off in renderTrophy() as soon as
+  // this screen opened — reused here instead of fetching the image again —
+  // and wasReady says whether it had already resolved by click time, so a toast
+  // only appears for the (usually rare) case the generation is still running.
+  function shareTrophyImage(url, blobPromise, wasReady) {
     if (!navigator.share) { window.open(url, "_blank", "noopener"); return; }
     var btn = document.getElementById("dmls-trophy-share");
     function setLoading(on) {
@@ -1155,6 +1179,7 @@
       btn.classList.toggle("dmls-trophy-share-loading", on);
       btn.disabled = on;
     }
+    if (!wasReady) toast("Generating trophy image…");
     if (!navigator.canShare) {
       setLoading(true);
       navigator.share({ url: url, title: "Doomlings Trophy" })
@@ -1164,16 +1189,15 @@
     }
     setLoading(true);
     // Opened synchronously, inside the click's user-activation window — the
-    // fetch() below is awaited before navigator.share() runs, and by the time
-    // that resolves the browser can consider the activation expired, silently
-    // blocking a window.open() called from inside the .catch as a non-gesture
-    // popup (and separately, navigator.share() itself can reject with
-    // NotAllowedError for the same reason). Pre-opening this blank tab now —
-    // then either closing it (share succeeded) or pointing it at the image
-    // (fallback needed) — keeps the fallback from silently doing nothing.
+    // blobPromise below is awaited before navigator.share() runs, and by the
+    // time that resolves the browser can consider the activation expired,
+    // silently blocking a window.open() called from inside the .catch as a
+    // non-gesture popup (and separately, navigator.share() itself can reject
+    // with NotAllowedError for the same reason). Pre-opening this blank tab
+    // now — then either closing it (share succeeded) or pointing it at the
+    // image (fallback needed) — keeps the fallback from silently doing nothing.
     var fallbackWin = window.open("", "_blank", "noopener");
-    fetch(url)
-      .then(function (r) { return r.blob(); })
+    blobPromise
       .then(function (blob) {
         var file = new File([blob], "doomlings-trophy.png", { type: "image/png" });
         if (navigator.canShare({ files: [file] })) {
@@ -1187,6 +1211,34 @@
         if (fallbackWin) fallbackWin.location = url;
         else window.open(url, "_blank", "noopener");
       })
+      .then(function () { setLoading(false); });
+  }
+
+  // Explicit "save this file" action, separate from Share — a browser-triggered
+  // download via a temporary <a download> always saves the PNG regardless of
+  // whether the OS has any share targets configured (the gap the "export
+  // button not working" reports on desktop kept running into).
+  function downloadTrophyImage(blobPromise, wasReady) {
+    var btn = document.getElementById("dmls-trophy-download");
+    function setLoading(on) {
+      if (!btn) return;
+      btn.classList.toggle("dmls-trophy-download-loading", on);
+      btn.disabled = on;
+    }
+    if (!wasReady) toast("Generating trophy image…");
+    setLoading(true);
+    blobPromise
+      .then(function (blob) {
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = "doomlings-trophy.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+      })
+      .catch(function () { toast("Couldn’t generate the image — check your connection."); })
       .then(function () { setLoading(false); });
   }
 

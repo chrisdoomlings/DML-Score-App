@@ -400,19 +400,24 @@
 
 .dmls-trophy-scene { position: relative; }
 
-.dmls-trophy-share {
+/* Wrapper positions the Share/Download pair as a unit — was a single
+   position:absolute button before a second (Download) action was added. */
+.dmls-trophy-float-actions {
   position: absolute; top: 50%; right: 0.75em; transform: translateY(-50%); z-index: 2;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dmls-trophy-share, .dmls-trophy-download {
   width: 2.25em; height: 2.25em; padding: 0; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: rgba(16, 21, 63, 0.55); border: 1px solid var(--dmls-line); color: var(--dmls-ink);
   cursor: pointer;
 }
-.dmls-trophy-share:hover { background: rgba(16, 21, 63, 0.75); }
-.dmls-trophy-share:active { transform: scale(0.94); }
-.dmls-trophy-share svg { width: 1.125em; height: 1.125em; display: block; }
+.dmls-trophy-share:hover, .dmls-trophy-download:hover { background: rgba(16, 21, 63, 0.75); }
+.dmls-trophy-share:active, .dmls-trophy-download:active { transform: scale(0.94); }
+.dmls-trophy-share svg, .dmls-trophy-download svg { width: 1.125em; height: 1.125em; display: block; }
 
-.dmls-trophy-share:disabled { cursor: default; opacity: 0.8; }
-.dmls-trophy-share-loading svg { animation: dmls-spin 0.8s linear infinite; }
+.dmls-trophy-share:disabled, .dmls-trophy-download:disabled { cursor: default; opacity: 0.8; }
+.dmls-trophy-share-loading svg, .dmls-trophy-download-loading svg { animation: dmls-spin 0.8s linear infinite; }
 @keyframes dmls-spin { to { transform: rotate(360deg); } }
 .dmls-trophy-top { display: block; width: 100%; height: auto; margin: 0; }
 
