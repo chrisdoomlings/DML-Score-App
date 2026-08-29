@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
         homeHeading: settings.homeHeading,
         homeSubheading: settings.homeSubheading,
         discordUrl: settings.discordUrl,
+        winnerFooterUrl: settings.winnerFooterUrl,
         trophyHeading: settings.trophyHeading,
         trophySubheading: settings.trophySubheading,
         trophyTagline: settings.trophyTagline,

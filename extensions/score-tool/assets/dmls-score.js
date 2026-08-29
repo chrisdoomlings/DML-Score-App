@@ -47,6 +47,7 @@
   var homeTip = ""; // populated from /config; empty = tip bar hidden
   var homeSub = ""; // populated from /config; empty = hidden (no hardcoded fallback text)
   var discordUrl = ""; // populated from /config; empty = winner-screen Discord banner hidden
+  var winnerFooterUrl = ""; // populated from /config; empty = bottom banner image (ICONS.winnerFooter) renders non-clickable
   var trophyHeading = "Won The End Of The World!"; // populated from /config, matches the DB default until it loads
   var trophySubheading = "Did Not."; // populated from /config, matches the DB default until it loads
   var trophyTagline = ""; // populated from /config; optional second line, hidden when empty
@@ -1001,18 +1002,20 @@
         '<span class="dmls-discord-text">Join us on Discord</span></a>'
       );
     }
-    // Settings → Winner screen → "Bottom banner image" — an optional
-    // admin-uploaded image pinned to the very bottom of the widgets column,
-    // below everything else (achievements/loyalty widget, product recs,
-    // Discord banner). Appended last, inside #dmls-widgets, rather than
-    // baked into the initial innerHTML string above, since products/Discord
-    // are also added to this div after the fact — baking it in earlier would
-    // put it above them instead of below. Empty = hidden, same convention as
-    // every other optional image.
+    // Settings → Winner screen → "Bottom banner image" (+ optional click-through
+    // link) — pinned to the very bottom of the widgets column, below everything
+    // else (achievements/loyalty widget, product recs, Discord banner). Appended
+    // last, inside #dmls-widgets, rather than baked into the initial innerHTML
+    // string above, since products/Discord are also added to this div after the
+    // fact — baking it in earlier would put it above them instead of below.
+    // Empty image = hidden; empty link = plain non-clickable <img>.
     if (ICONS.winnerFooter && widgets) {
+      var footerImgHTML = '<img class="dmls-win-footer-img" src="' + ICONS.winnerFooter + '" alt="" loading="lazy">';
       widgets.insertAdjacentHTML(
         "beforeend",
-        '<img class="dmls-win-footer-img" src="' + ICONS.winnerFooter + '" alt="" loading="lazy">'
+        winnerFooterUrl
+          ? '<a href="' + esc(winnerFooterUrl) + '" target="_blank" rel="noopener noreferrer">' + footerImgHTML + "</a>"
+          : footerImgHTML
       );
     }
 
@@ -1329,6 +1332,7 @@
       // so there's nothing here to usefully re-render anyway. By the time a
       // game finishes, /config has long since resolved at boot.
       if (typeof c.discordUrl === "string") discordUrl = c.discordUrl;
+      if (typeof c.winnerFooterUrl === "string") winnerFooterUrl = c.winnerFooterUrl;
       if (typeof c.trophyHeading === "string" && c.trophyHeading) trophyHeading = c.trophyHeading;
       if (typeof c.trophySubheading === "string" && c.trophySubheading) trophySubheading = c.trophySubheading;
       if (typeof c.trophyTagline === "string") trophyTagline = c.trophyTagline;

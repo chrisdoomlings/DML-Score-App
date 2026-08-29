@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       homeHeading: body.homeHeading,
       homeSubheading: body.homeSubheading,
       discordUrl: body.discordUrl,
+      winnerFooterUrl: body.winnerFooterUrl,
       trophyHeading: body.trophyHeading,
       trophySubheading: body.trophySubheading,
       trophyTagline: body.trophyTagline,

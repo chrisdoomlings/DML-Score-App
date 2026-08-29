@@ -23,6 +23,7 @@ interface Settings {
   homeHeading: string;
   homeSubheading: string;
   discordUrl: string;
+  winnerFooterUrl: string;
   trophyHeading: string;
   trophySubheading: string;
   trophyTagline: string;
@@ -574,6 +575,15 @@ export default function SettingsPage() {
                 </p>
                 {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
                 {imageGrid(WINNER_IMAGE_FIELDS)}
+                <label className="dml-label" style={{ marginTop: 14 }}>
+                  Bottom banner link (where the bottom banner image sends players when tapped &mdash; leave
+                  blank to leave the image non-clickable)
+                </label>
+                <input
+                  className="dml-input" type="url" maxLength={300} placeholder="https://…"
+                  value={settings.winnerFooterUrl}
+                  onChange={(e) => setSettings({ ...settings, winnerFooterUrl: e.target.value })}
+                />
               </section>
             </>
           )}
