@@ -160,9 +160,10 @@ export async function GET(req: NextRequest) {
                   left: "8%",
                   right: "8%",
                   // Was top: 74% (639px of the 864px-tall image area) — moved
-                  // down ~20px per feedback, expressed in px instead of %
-                  // since that's what was actually asked for.
-                  top: "659px",
+                  // down ~40px total per feedback (two +20px nudges),
+                  // expressed in px instead of % since that's what was
+                  // actually asked for.
+                  top: "679px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -206,7 +207,7 @@ export async function GET(req: NextRequest) {
             style={{
               display: "flex",
               fontFamily: "DMLS Catastrophe",
-              fontSize: 56,
+              fontSize: 78, // was 56 — ~40% bigger per feedback
               fontWeight: 400,
               color: "#ffffff",
               marginTop: 48,
@@ -268,7 +269,7 @@ export async function GET(req: NextRequest) {
             </div>
           ) : null}
 
-          <div style={{ display: "flex", fontSize: 28, color: "#8a90c9", marginTop: "auto" }}>
+          <div style={{ display: "flex", fontSize: 42, color: "#8a90c9", marginTop: "auto", paddingTop: 30 }}>
             {score + " points · " + dateLabel}
           </div>
         </div>
