@@ -114,7 +114,7 @@
    scrolling instead of the whole card body. */
 .dmls-card-body.dmls-split { display: flex; flex-direction: column; overflow: hidden; padding-right: 0; min-height: 0; }
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
-.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0px 19px 0px 0px;  }
+.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 30px 19px 0px 0px;  }
 /* fitScrollMid() in dmls-score.js adds this once it measures that the list
    doesn't actually overflow — no scrollbar, so no need to reserve room for one. */
 .dmls-card-body.dmls-split > .dmls-scroll-mid.dmls-scroll-fit { padding-right: 0; }
@@ -132,10 +132,10 @@
    everywhere. Always-on rather than JS-toggled on actual overflow, which is
    a simplification: it dims the last item's bottom edge slightly even on
    short lists that don't need to scroll. */
-.dmls-scroll-mid {
+/* .dmls-scroll-mid {
   -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
-}
+} */
 /* Each step's optional character image (client spec, May 2026; Settings →
    Steps → "Character image") layers ON TOP of the shared "main scoring
    screens" background — it's a decoration, not a replacement background,
@@ -650,6 +650,16 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 /* Descendant, not direct-child — .dmls-card sits inside #dmls-app or #dmls-achv,
    both children of .dmls-modal-body. */
 #dmls-modal .dmls-modal-body .dmls-card { margin: 0; }
+/* Phones rotated to landscape have very little vertical space — .dmls-modal-card
+   stays a fixed height:90vh (see above), but on a short viewport that can be
+   well under .dmls-card's 560px min-height floor, which pushed the card's top
+   and bottom (close button, nav) off-screen. Drop the floor once space is
+   tight so .dmls-card shrinks to fit height:100% of the modal card instead;
+   .dmls-card-body / .dmls-scroll-mid already scroll their own content, so
+   nothing is lost, it just scrolls sooner. */
+@media (max-height: 600px) {
+  .dmls-card { min-height: 0; }
+}
 @media (prefers-reduced-motion: no-preference) {
   #dmls-modal.dmls-modal-open .dmls-modal-card { animation: dmls-modal-pop 0.22s ease; }
   @keyframes dmls-modal-pop {

@@ -502,9 +502,9 @@
       return "<li>" +
         '<span class="dmls-nm">' + esc(p.name) + "</span>" +
         '<span class="dmls-step">' +
-        '<button type="button" data-d="-1" data-i="' + i + '" aria-label="Decrease ' + esc(p.name) + '">−</button>' +
+        '<button type="button" tabindex="-1" data-d="-1" data-i="' + i + '" aria-label="Decrease ' + esc(p.name) + '">−</button>' +
         '<input data-i="' + i + '" inputmode="numeric" value="' + v + '" class="' + (v < 0 ? "dmls-neg" : "") + '" aria-label="' + esc(p.name) + ' points">' +
-        '<button type="button" data-d="1" data-i="' + i + '" aria-label="Increase ' + esc(p.name) + '">+</button>' +
+        '<button type="button" tabindex="-1" data-d="1" data-i="' + i + '" aria-label="Increase ' + esc(p.name) + '">+</button>' +
         "</span></li>";
     }).join("");
 
