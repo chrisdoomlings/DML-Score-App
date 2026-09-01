@@ -247,7 +247,6 @@
 }
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
 .dmls-btn-ghost { border: 0;color: #231a47;background: #9287b0; }
-#dmls-screen-step-mp .dmls-btn-ghost { border: 0;color: #231a47;background: #9287b0; }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 0.875em; text-decoration: underline; text-underline-offset: 3px; background: none; border: none; }
