@@ -132,6 +132,11 @@
     }
     var s = screenForHash(h);
     if (s === null) { closeModal(); return; }
+    // Browser back/forward (or a mobile swipe-back gesture) between two step
+    // screens — same left/right treatment as the in-app Back/Next buttons.
+    if (s >= 2 && s <= 5 && state.screen >= 2 && state.screen <= 5) {
+      stepNavDirection = s > state.screen ? "next" : "back";
+    }
     state.screen = s;
     view = "game";
     showModal();
@@ -279,6 +284,15 @@
     { key: "bp", min: 0 },
     { key: "mp", min: 0, exp: true },
   ];
+  // Per-step character image lives at serverConfig.images[CHAR_IMAGE_KEY[key]]
+  // — "mp" (Expansion Points) keeps its original "bgExp" slot name from
+  // before the other 3 steps got their own (see 019_step_content.sql).
+  var CHAR_IMAGE_KEY = { we: "bgWe", fv: "bgFv", bp: "bgBp", mp: "bgExp" };
+  // Sole purpose: tell renderStep() which way to slide the character image
+  // in — set right before render() by whichever Back/Next handler is
+  // moving into a step screen, read once and cleared so an unrelated
+  // re-render (e.g. a live config reload) never replays the animation.
+  var stepNavDirection = null;
   // Admin-editable heading/description per step (Settings → Steps). No copy
   // is duplicated here — lib/score/steps.ts's DEFAULT_STEPS is the single
   // source of truth (both the DB default and what admin edits build on);
@@ -479,6 +493,7 @@
     document.getElementById("dmls-back").addEventListener("click", function () { state.screen = 0; save(); render(); });
     document.getElementById("dmls-next").addEventListener("click", function () {
       if (state.players.length < 2) { toast("Add at least 2 players"); return; }
+      stepNavDirection = "next";
       state.screen = 2;
       save();
       render();
@@ -508,8 +523,21 @@
         "</span></li>";
     }).join("");
 
+    // Character image slides in from the right on Next, from the left on
+    // Back — direction was set by whichever handler kicked off this
+    // navigation (see stepNavDirection above); any other trigger (e.g. a
+    // live config reload re-rendering the same step) leaves it null, so
+    // the image just appears with no animation instead of replaying one.
+    var charUrl = (serverConfig && serverConfig.images && serverConfig.images[CHAR_IMAGE_KEY[st.key]]) || "";
+    var charAnimClass = stepNavDirection === "next" ? " dmls-char-in-right" : stepNavDirection === "back" ? " dmls-char-in-left" : "";
+    stepNavDirection = null;
+    var charHTML = charUrl
+      ? '<img class="dmls-card-character' + charAnimClass + '" src="' + charUrl.replace(/"/g, "%22") + '" alt="" loading="lazy">'
+      : "";
+
     app.innerHTML =
-      '<div class="dmls-card dmls-card-shared-bg' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '" id="dmls-screen-step-' + st.key + '">' +
+      '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '" id="dmls-screen-step-' + st.key + '">' +
+      charHTML +
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       dots(stepNo) +
@@ -549,9 +577,10 @@
       inp.classList.toggle("dmls-neg", v < 0);
       save();
     });
-    document.getElementById("dmls-back").addEventListener("click", function () { state.screen = n - 1; save(); render(); });
+    document.getElementById("dmls-back").addEventListener("click", function () { stepNavDirection = "back"; state.screen = n - 1; save(); render(); });
     document.getElementById("dmls-next").addEventListener("click", function () {
       if (n === 5) { finishGame(); return; }
+      stepNavDirection = "next";
       state.screen = n + 1;
       save();
       render();
@@ -1065,6 +1094,7 @@
     state.players.forEach(function (p) { p.we = 0; p.fv = 0; p.bp = 0; p.mp = 0; });
     lastResult = null;
     guessResult = null;
+    stepNavDirection = "next";
     state.screen = 2;
     save();
     view = "game";
@@ -1386,10 +1416,10 @@
       // Backgrounds are pure CSS (custom properties) — safe to apply any time,
       // no re-render needed, the browser repaints whatever's on screen.
       if (images.bg) modalEl.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")');
-      if (images.bgExp) modalEl.style.setProperty("--dmls-bg-exp-url", 'url("' + images.bgExp + '")');
-      if (images.bgWe) modalEl.style.setProperty("--dmls-bg-we-url", 'url("' + images.bgWe + '")');
-      if (images.bgFv) modalEl.style.setProperty("--dmls-bg-fv-url", 'url("' + images.bgFv + '")');
-      if (images.bgBp) modalEl.style.setProperty("--dmls-bg-bp-url", 'url("' + images.bgBp + '")');
+      // bgExp/bgWe/bgFv/bgBp (the per-step CHARACTER image) are no longer
+      // CSS custom properties — renderStep() reads them straight off
+      // serverConfig.images and renders a real <img> so it can be animated
+      // in; only the background layers stay pure-CSS here.
       if (images.bgWeCustom) modalEl.style.setProperty("--dmls-bg-we-custom-url", 'url("' + images.bgWeCustom + '")');
       if (images.bgFvCustom) modalEl.style.setProperty("--dmls-bg-fv-custom-url", 'url("' + images.bgFvCustom + '")');
       if (images.bgBpCustom) modalEl.style.setProperty("--dmls-bg-bp-custom-url", 'url("' + images.bgBpCustom + '")');
