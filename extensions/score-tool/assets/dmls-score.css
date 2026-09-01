@@ -246,8 +246,9 @@
   box-shadow: 0 0 18px rgba(128, 210, 53, 0.55);
 }
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
-.dmls-btn-ghost { border: solid 1px #231a47;color: #231a47; }
-#dmls-screen-step-mp .dmls-btn-ghost { border: solid 1px #38909e;color: #38909e;background: #9287b0; }
+.dmls-btn-ghost { border: solid 1px #9287b0;
+    color: #9287b0;}
+#dmls-screen-step-mp .dmls-btn-ghost { border: solid 1px #38909e;color: #38909e; }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 0.875em; text-decoration: underline; text-underline-offset: 3px; background: none; border: none; }
