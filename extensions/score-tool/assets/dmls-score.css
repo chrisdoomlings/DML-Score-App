@@ -87,7 +87,7 @@
   background-size: cover, cover;
   background-position: center, center;
   border-radius: 22px;
-  padding: 1.625em;
+  padding: 0px 20px 20px 20px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -114,7 +114,7 @@
    scrolling instead of the whole card body. */
 .dmls-card-body.dmls-split { display: flex; flex-direction: column; overflow: hidden; padding-right: 0; min-height: 0; }
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
-.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 30px 19px 0px 0px;  }
+.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0px 19px 0px 0px;  }
 /* fitScrollMid() in dmls-score.js adds this once it measures that the list
    doesn't actually overflow — no scrollbar, so no need to reserve room for one. */
 .dmls-card-body.dmls-split > .dmls-scroll-mid.dmls-scroll-fit { padding-right: 0; }
@@ -201,7 +201,7 @@
     font-weight: 400;
     margin: 8px auto 6px;
     padding-top: 20px;
-    max-width: 100%;
+    max-width: 250px;
 }
 /* A leading "(...)" tag split out of a step heading (see stepHeadingHTML in
    dmls-score.js) — sized/positioned as its own small line, in the same
@@ -225,14 +225,14 @@
 .dmls-inline-link { color: var(--dmls-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
 
 .dmls-dots { display: flex; gap: 7px; justify-content: center; margin: 16px 0 4px; }
-.dmls-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); }
+.dmls-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.22);margin-bottom:15px; }
 .dmls-dots i.dmls-on { background: var(--dmls-green); }
 .dmls-btn {
   display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 0.5em 1.5em;
+    padding: 0.2em 1.5em;
     border-radius: 999px;
     font-weight: 500;
     font-size: 1.5em;
@@ -806,4 +806,3 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 
 #dmls-screen-welcome .dmls-sub{ display:none;}
 
-.dmls-sub { display: none;}

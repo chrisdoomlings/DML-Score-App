@@ -114,6 +114,7 @@ export default function SettingsPage() {
   const [library, setLibrary] = useState<LibraryImage[] | null>(null);
   const [libraryLoading, setLibraryLoading] = useState(false);
   const [libraryErr, setLibraryErr] = useState("");
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
 
   useEffect(() => {
     authedFetch("/api/admin/settings").then(async (r) => {
@@ -246,6 +247,26 @@ export default function SettingsPage() {
         if (d?.images) setLibrary(d.images);
         else setLibraryErr(d?.error ?? "Couldn’t load your uploaded images.");
       }).catch((e) => { setLibraryLoading(false); setLibraryErr(String(e?.message ?? e)); });
+    }
+  }
+
+  async function deleteLibraryImage(imgKey: string) {
+    if (!window.confirm("Delete this image permanently? This can't be undone — if it's currently in use anywhere, that spot will start showing broken.")) {
+      return;
+    }
+    setDeletingKey(imgKey);
+    setLibraryErr("");
+    const res = await authedFetch("/api/admin/images", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: imgKey }),
+    });
+    const d = await res.json().catch(() => null);
+    setDeletingKey(null);
+    if (d?.ok) {
+      setLibrary((prev) => (prev ? prev.filter((img) => img.key !== imgKey) : prev));
+    } else {
+      setLibraryErr(d?.error ?? "Delete failed.");
     }
   }
 
@@ -834,7 +855,7 @@ export default function SettingsPage() {
           <div className="dml-picker-card" onClick={(e) => e.stopPropagation()}>
             <div className="dml-picker-head">
               <span>Choose an existing image</span>
-              <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => setPickerFor(null)}>Close</button>
+              <button type="button" className="dml-btn-ghost dml-btn-sm" style={{ flex: "none" }} onClick={() => setPickerFor(null)}>Close</button>
             </div>
             {libraryLoading && <p className="dml-empty">Loading your uploads…</p>}
             {libraryErr && <p className="dml-msg-err">{libraryErr}</p>}
@@ -844,13 +865,22 @@ export default function SettingsPage() {
             {!libraryLoading && library && library.length > 0 && (
               <div className="dml-picker-grid">
                 {library.map((img) => (
-                  <button
-                    type="button" key={img.key} className="dml-picker-thumb"
-                    onClick={() => selectFromLibrary(img.url)}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.url} alt="" />
-                  </button>
+                  <div className="dml-picker-item" key={img.key}>
+                    <button
+                      type="button" className="dml-picker-thumb"
+                      onClick={() => selectFromLibrary(img.url)}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.url} alt="" />
+                    </button>
+                    <button
+                      type="button" className="dml-picker-delete" title="Delete image"
+                      disabled={deletingKey === img.key}
+                      onClick={(e) => { e.stopPropagation(); deleteLibraryImage(img.key); }}
+                    >
+                      {deletingKey === img.key ? "…" : "×"}
+                    </button>
+                  </div>
                 ))}
               </div>
             )}

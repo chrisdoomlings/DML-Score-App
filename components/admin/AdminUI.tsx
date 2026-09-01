@@ -174,12 +174,22 @@ export function GlobalStyle() {
         font-size: 14px; font-weight: 700; color: #202223; margin-bottom: 14px;
       }
       .dml-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+      .dml-picker-item { position: relative; aspect-ratio: 1; }
       .dml-picker-thumb {
-        aspect-ratio: 1; border-radius: 8px; overflow: hidden; padding: 0; cursor: pointer;
+        width: 100%; height: 100%; border-radius: 8px; overflow: hidden; padding: 0; cursor: pointer;
         background: #f6f6f7; border: 1px solid #e1e3e5; transition: border-color 0.15s;
       }
       .dml-picker-thumb:hover { border-color: #008060; }
       .dml-picker-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .dml-picker-delete {
+        position: absolute; top: 4px; right: 4px; z-index: 1;
+        width: 22px; height: 22px; border-radius: 50%;
+        background: rgba(32, 34, 35, 0.75); color: #fff; border: 0;
+        font-size: 14px; line-height: 1; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .dml-picker-delete:hover { background: #d72c0d; }
+      .dml-picker-delete:disabled { opacity: 0.6; cursor: default; }
 
       /* Rough visual approximation of the storefront's .dmls-card (dark
          gradient panel, rounded, clips overflow) — not pixel-identical to

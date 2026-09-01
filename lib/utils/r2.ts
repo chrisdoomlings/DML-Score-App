@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 function getClient(): S3Client {
   const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID;
@@ -41,6 +41,12 @@ export async function uploadToR2(
   );
 
   return `${publicUrl}/${key}`;
+}
+
+export async function deleteFromR2(key: string): Promise<void> {
+  const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME || "dml-score";
+  const client = getClient();
+  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 }
 
 /** Every image ever uploaded for this shop, newest first — powers the "pick an existing image" browser. */
