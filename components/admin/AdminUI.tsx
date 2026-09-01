@@ -190,10 +190,19 @@ export function GlobalStyle() {
       }
       .dml-picker-delete:hover { background: #d72c0d; }
       .dml-picker-delete:disabled { opacity: 0.6; cursor: default; }
-      .dml-picker-copied {
-        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-        background: rgba(0, 128, 96, 0.85); color: #fff; font-size: 12px; font-weight: 700;
+
+      .dml-lightbox-backdrop {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200;
+        display: flex; align-items: center; justify-content: center; padding: 24px;
       }
+      .dml-lightbox-card {
+        background: #fff; border-radius: 12px; padding: 16px; max-width: min(900px, 100%);
+        max-height: 90vh; display: flex; flex-direction: column; gap: 12px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      }
+      .dml-lightbox-head { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+      .dml-lightbox-img-wrap { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+      .dml-lightbox-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; display: block; }
 
       /* Rough visual approximation of the storefront's .dmls-card (dark
          gradient panel, rounded, clips overflow) — not pixel-identical to

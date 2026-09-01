@@ -117,6 +117,7 @@ export default function SettingsPage() {
   const [libraryErr, setLibraryErr] = useState("");
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [viewingImage, setViewingImage] = useState<{ key: string; url: string } | null>(null);
 
   useEffect(() => {
     authedFetch("/api/admin/settings").then(async (r) => {
@@ -890,9 +891,9 @@ export default function SettingsPage() {
                 <h2 className="dml-card-title">Media library</h2>
                 <p className="dml-card-hint">
                   Every image ever uploaded for this store, from every tab. Upload here to stage art before
-                  deciding where to use it, click an image to copy its URL, or delete uploads you no longer
-                  need &mdash; deleting removes the file itself, so anything still using it will start showing
-                  broken.
+                  deciding where to use it, click an image to view it full-size, or delete uploads you no
+                  longer need &mdash; deleting removes the file itself, so anything still using it will start
+                  showing broken.
                 </p>
                 <label className="dml-btn-secondary dml-btn-sm" style={{ display: "inline-flex", marginBottom: 16 }}>
                   {uploading === "library" ? "Uploading…" : "Upload"}
@@ -916,12 +917,11 @@ export default function SettingsPage() {
                     {library.map((img) => (
                       <div className="dml-picker-item" key={img.key}>
                         <button
-                          type="button" className="dml-picker-thumb" title="Copy image URL"
-                          onClick={() => copyImageUrl(img.url, img.key)}
+                          type="button" className="dml-picker-thumb" title="View full image"
+                          onClick={() => setViewingImage({ key: img.key, url: img.url })}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={img.url} alt="" />
-                          {copiedKey === img.key && <span className="dml-picker-copied">Copied!</span>}
                         </button>
                         <button
                           type="button" className="dml-picker-delete" title="Delete image"
@@ -974,6 +974,31 @@ export default function SettingsPage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {viewingImage && (
+        <div className="dml-lightbox-backdrop" onClick={() => setViewingImage(null)}>
+          <div className="dml-lightbox-card" onClick={(e) => e.stopPropagation()}>
+            <div className="dml-lightbox-head">
+              <button
+                type="button" className="dml-btn-ghost dml-btn-sm" style={{ flex: "none" }}
+                onClick={() => copyImageUrl(viewingImage.url, viewingImage.key)}
+              >
+                {copiedKey === viewingImage.key ? "Copied!" : "Copy URL"}
+              </button>
+              <button
+                type="button" className="dml-btn-ghost dml-btn-sm" style={{ flex: "none" }}
+                onClick={() => setViewingImage(null)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="dml-lightbox-img-wrap">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={viewingImage.url} alt="" />
+            </div>
           </div>
         </div>
       )}
