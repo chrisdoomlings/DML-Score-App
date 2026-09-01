@@ -635,7 +635,13 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 #dmls-modal .dmls-modal-card {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   width: min(92vw, var(--dmls-modal-width, 520px));
-  height: var(--dmls-modal-height, 90vh); max-height: var(--dmls-modal-height, 90vh);
+  /* min() here matters when the admin picks a fixed px height (Settings →
+     General → Modal size) — a vh value is already viewport-relative and can
+     never overflow, but a fixed px one otherwise would on a short screen
+     (phones in landscape, or just short portrait devices), clipping the
+     modal off-screen top/bottom. */
+  height: min(96vh, var(--dmls-modal-height, 90vh));
+  max-height: min(96vh, var(--dmls-modal-height, 90vh));
   display: flex; flex-direction: column;
 }
 #dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; }
