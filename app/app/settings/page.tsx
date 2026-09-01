@@ -31,6 +31,8 @@ interface Settings {
   trophyTopImages: string[];
   logoWidth: number;
   cardMinHeight: number;
+  modalWidth: number;
+  modalHeight: number;
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -54,13 +56,16 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "achievements", label: "Achievements" },
 ];
 
-// One image field per step, keyed to its score_settings.images slot —
+// Two image fields per step, keyed to its score_settings.images slots —
 // bgExp already existed (expansion-points screen); bgWe/bgFv/bgBp are new.
-const STEP_META: { key: StepKey; label: string; imageKey: string }[] = [
-  { key: "we", label: "World's End", imageKey: "bgWe" },
-  { key: "fv", label: "Face Value", imageKey: "bgFv" },
-  { key: "bp", label: "Bonus Points", imageKey: "bgBp" },
-  { key: "mp", label: "Expansion Points", imageKey: "bgExp" },
+// bgKey is the character image (layers on top of whichever background is
+// showing); bgCustomKey is an optional per-step background override (falls
+// back to the shared "General" background when empty).
+const STEP_META: { key: StepKey; label: string; imageKey: string; bgCustomKey: string }[] = [
+  { key: "we", label: "World's End", imageKey: "bgWe", bgCustomKey: "bgWeCustom" },
+  { key: "fv", label: "Face Value", imageKey: "bgFv", bgCustomKey: "bgFvCustom" },
+  { key: "bp", label: "Bonus Points", imageKey: "bgBp", bgCustomKey: "bgBpCustom" },
+  { key: "mp", label: "Expansion Points", imageKey: "bgExp", bgCustomKey: "bgExpCustom" },
 ];
 
 const GENERAL_IMAGE_FIELDS: { key: string; label: string }[] = [
@@ -391,6 +396,30 @@ export default function SettingsPage() {
                 />
               </section>
 
+              <section className="dml-card">
+                <h2 className="dml-card-title">Modal size</h2>
+                <p className="dml-card-hint">
+                  The size of the pop-up window itself (not the card inside it). Width is still capped at 92% of
+                  the screen on narrow phones no matter what you set here.
+                </p>
+                <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+                  <div>
+                    <label className="dml-label">Width (px)</label>
+                    <input
+                      className="dml-input dml-input-sm" type="number" min={320} max={900} value={settings.modalWidth}
+                      onChange={(e) => setSettings({ ...settings, modalWidth: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="dml-label">Height (% of screen height)</label>
+                    <input
+                      className="dml-input dml-input-sm" type="number" min={50} max={100} value={settings.modalHeight}
+                      onChange={(e) => setSettings({ ...settings, modalHeight: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </section>
+
               <section className="dml-card dml-card-wide">
                 <h2 className="dml-card-title">Shared images</h2>
                 <p className="dml-card-hint">
@@ -501,7 +530,9 @@ export default function SettingsPage() {
                 <h2 className="dml-card-title">Scoring steps</h2>
                 <p className="dml-card-hint">
                   Heading, description, and an optional character image for each of the 4 scoring screens. All 4
-                  share one background (set on the General tab) — the character image, if set, layers on top of it.
+                  share one background (set on the General tab) by default — the character image, if set, layers on
+                  top of whichever background is showing. Each step can also override the shared background with its
+                  own.
                 </p>
                 <div className="dml-subtabs" style={{ padding: 0, margin: "0 0 18px" }}>
                   {STEP_META.map((s) => (
@@ -534,10 +565,14 @@ export default function SettingsPage() {
                         onChange={(e) => patchStep(s.key, { sub: e.target.value })}
                       />
                       <label className="dml-label" style={{ marginTop: 14 }}>
-                        Character image (optional — layers on top of the shared background above, not a replacement for it)
+                        Character image (optional — layers on top of whichever background is showing below, not a replacement for it)
                       </label>
                       {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-                      {imageGrid([{ key: s.imageKey, label: s.label + " character", fallbackSrc: settings.images.bg, wide: true }])}
+                      {imageGrid([{ key: s.imageKey, label: s.label + " character", fallbackSrc: settings.images[s.bgCustomKey] || settings.images.bg, wide: true }])}
+                      <label className="dml-label" style={{ marginTop: 14 }}>
+                        Background (optional — overrides the shared background above for this step only; leave blank to keep using it)
+                      </label>
+                      {imageGrid([{ key: s.bgCustomKey, label: s.label + " background", fallbackSrc: settings.images.bg, wide: true }])}
                     </div>
                   );
                 })}

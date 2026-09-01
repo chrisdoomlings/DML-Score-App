@@ -137,20 +137,24 @@
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
 } */
 /* Each step's optional character image (client spec, May 2026; Settings →
-   Steps → "Character image") layers ON TOP of the shared "main scoring
-   screens" background — it's a decoration, not a replacement background,
-   so all 4 steps still show the one shared photo underneath at all times. */
+   Steps → "Character image") layers ON TOP of whichever background is
+   showing underneath — it's a decoration, not a replacement background.
+   That underlying background is normally the shared "main scoring screens"
+   background, but Settings → Steps → "Background" lets a step override it
+   with its own image instead (added Sept 2026); when that per-step
+   override is unset, --dmls-bg-*-custom-url is unset too and the chain
+   falls through to the shared --dmls-bg-url. */
 .dmls-card-exp {
-  background-image: var(--dmls-bg-exp-url, none), var(--dmls-bg-url, none);
+  background-image: var(--dmls-bg-exp-url, none), var(--dmls-bg-exp-custom-url, var(--dmls-bg-url, none));
 }
 .dmls-card-step-we {
-  background-image: var(--dmls-bg-we-url, none), var(--dmls-bg-url, none);
+  background-image: var(--dmls-bg-we-url, none), var(--dmls-bg-we-custom-url, var(--dmls-bg-url, none));
 }
 .dmls-card-step-fv {
-  background-image: var(--dmls-bg-fv-url, none), var(--dmls-bg-url, none);
+  background-image: var(--dmls-bg-fv-url, none), var(--dmls-bg-fv-custom-url, var(--dmls-bg-url, none));
 }
 .dmls-card-step-bp {
-  background-image: var(--dmls-bg-bp-url, none), var(--dmls-bg-url, none);
+  background-image: var(--dmls-bg-bp-url, none), var(--dmls-bg-bp-custom-url, var(--dmls-bg-url, none));
 }
 /* Sizing for the two layers above — a class of its own since a single
    element's background-size/position can't be scoped to one layer. The
@@ -630,7 +634,8 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
    just .dmls-scroll-mid/.dmls-card-body. */
 #dmls-modal .dmls-modal-card {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(92vw, 520px); height: 90vh; max-height: 90vh;
+  width: min(92vw, var(--dmls-modal-width, 520px));
+  height: var(--dmls-modal-height, 90vh); max-height: var(--dmls-modal-height, 90vh);
   display: flex; flex-direction: column;
 }
 #dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; }

@@ -36,6 +36,8 @@ export async function GET(req: NextRequest) {
         trophyTopImages: settings.trophyTopImages,
         logoWidth: settings.logoWidth,
         cardMinHeight: settings.cardMinHeight,
+        modalWidth: settings.modalWidth,
+        modalHeight: settings.modalHeight,
         winnerImageSize: settings.winnerImageSize,
         charactersWidth: settings.charactersWidth,
         headingWidth: settings.headingWidth,

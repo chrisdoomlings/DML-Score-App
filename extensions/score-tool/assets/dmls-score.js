@@ -513,7 +513,6 @@
       '<div class="dmls-card-body dmls-split">' +
       '<div class="dmls-card-head">' +
       dots(stepNo) +
-      '<p class="dmls-eyebrow">Step ' + stepNo + " of 4</p>" +
       '<h2 class="dmls-title">' + stepHeadingHTML(content) + "</h2>" +
       '<p class="dmls-sub">' + esc(content.sub) + "</p>" +
       "</div>" +
@@ -1391,6 +1390,10 @@
       if (images.bgWe) modalEl.style.setProperty("--dmls-bg-we-url", 'url("' + images.bgWe + '")');
       if (images.bgFv) modalEl.style.setProperty("--dmls-bg-fv-url", 'url("' + images.bgFv + '")');
       if (images.bgBp) modalEl.style.setProperty("--dmls-bg-bp-url", 'url("' + images.bgBp + '")');
+      if (images.bgWeCustom) modalEl.style.setProperty("--dmls-bg-we-custom-url", 'url("' + images.bgWeCustom + '")');
+      if (images.bgFvCustom) modalEl.style.setProperty("--dmls-bg-fv-custom-url", 'url("' + images.bgFvCustom + '")');
+      if (images.bgBpCustom) modalEl.style.setProperty("--dmls-bg-bp-custom-url", 'url("' + images.bgBpCustom + '")');
+      if (images.bgExpCustom) modalEl.style.setProperty("--dmls-bg-exp-custom-url", 'url("' + images.bgExpCustom + '")');
       if (images.bgWinner) modalEl.style.setProperty("--dmls-bg-winner-url", 'url("' + images.bgWinner + '")');
       if (images.trophyBg) modalEl.style.setProperty("--dmls-bg-trophy-url", 'url("' + images.trophyBg + '")');
       if (images.bg) root.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")'); // launcher card reuses the same bg
@@ -1405,10 +1408,12 @@
       // moment "Next" is clicked, and fast clicking through steps outruns
       // the download. Warm the browser's cache for all of them right away,
       // while the player is still on Welcome/Add Names.
-      [images.bg, images.bgExp, images.bgWe, images.bgFv, images.bgBp, images.bgWinner, images.trophyBg].forEach(function (url) {
+      [images.bg, images.bgExp, images.bgWe, images.bgFv, images.bgBp, images.bgWeCustom, images.bgFvCustom, images.bgBpCustom, images.bgExpCustom, images.bgWinner, images.trophyBg].forEach(function (url) {
         if (url) new Image().src = url;
       });
       if (typeof c.cardMinHeight === "number") modalEl.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
+      if (typeof c.modalWidth === "number") modalEl.style.setProperty("--dmls-modal-width", c.modalWidth + "px");
+      if (typeof c.modalHeight === "number") modalEl.style.setProperty("--dmls-modal-height", c.modalHeight + "vh");
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge
       // into ICONS so any future render() picks up the override, and only
@@ -1416,7 +1421,7 @@
       // (welcome) that already painted with the old default.
       var needsRerender = false;
       for (var key in images) {
-        if (key !== "bg" && key !== "bgExp" && key !== "bgWe" && key !== "bgFv" && key !== "bgBp" && key !== "bgWinner" && key !== "trophyBg" && images[key] && ICONS[key] !== images[key]) {
+        if (key !== "bg" && key !== "bgExp" && key !== "bgWe" && key !== "bgFv" && key !== "bgBp" && key !== "bgWeCustom" && key !== "bgFvCustom" && key !== "bgBpCustom" && key !== "bgExpCustom" && key !== "bgWinner" && key !== "trophyBg" && images[key] && ICONS[key] !== images[key]) {
           ICONS[key] = images[key];
           needsRerender = true;
         }

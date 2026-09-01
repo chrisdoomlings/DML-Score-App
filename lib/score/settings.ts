@@ -16,6 +16,10 @@ export const IMAGE_KEYS = [
   "bgWe",
   "bgFv",
   "bgBp",
+  "bgWeCustom",
+  "bgFvCustom",
+  "bgBpCustom",
+  "bgExpCustom",
   "logo",
   "bgWinner",
   "beeNormal",
@@ -39,6 +43,8 @@ export interface ScoreSettings {
   homeSubheading: string; // welcome screen subheading (under the heading); empty = hidden
   logoWidth: number; // px; applies to the logo on both the home and winner screens
   cardMinHeight: number; // px; floor height for the score card — grows past this if content needs more room
+  modalWidth: number; // px; max-width cap of the #dmls-modal shell itself (still bounded by 92vw on narrow phones)
+  modalHeight: number; // vh percentage (0-100); height of the #dmls-modal shell itself
   winnerImageSize: number; // px; max-width of the winner reveal art
   charactersWidth: number; // px; welcome-screen character illustration — can exceed the card width to bleed off the edges (card clips via overflow:hidden)
   headingWidth: number; // px; max-width of the welcome heading, controls line wrapping
@@ -49,7 +55,7 @@ export interface ScoreSettings {
   trophySubheading: string; // trophy screen caption shown after the loser names (e.g. "Did Not.")
   trophyTagline: string; // optional second line shown between the loser names and trophySubheading; empty = hidden
   trophyActionsBg: string; // hex color behind the trophy screen's action buttons; empty = transparent (card's own default background)
-  steps: StepConfig; // per-step heading/description for the 4 scoring screens; backgrounds are images.bgWe/bgFv/bgBp/bgExp
+  steps: StepConfig; // per-step heading/description for the 4 scoring screens; character images are images.bgWe/bgFv/bgBp/bgExp; per-step background overrides are images.bgWeCustom/bgFvCustom/bgBpCustom/bgExpCustom (empty = falls back to the shared images.bg)
   trophyTopImages: string[]; // pool of trophy-graphic designs; storefront picks one at random per "Generate Trophy" (client spec — variety, not a single fixed design)
 }
 
@@ -68,6 +74,8 @@ const DEFAULTS = {
   trophyActionsBg: "",
   logoWidth: 220,
   cardMinHeight: 560,
+  modalWidth: 520,
+  modalHeight: 90,
   winnerImageSize: 260,
   charactersWidth: 320,
   headingWidth: 320,
@@ -77,6 +85,7 @@ const DEFAULTS = {
 const EMPTY_IMAGES: ImageUrls = {
   worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", winnerFooter: "", bg: "", bgExp: "", logo: "", bgWinner: "",
   bgWe: "", bgFv: "", bgBp: "",
+  bgWeCustom: "", bgFvCustom: "", bgBpCustom: "", bgExpCustom: "",
   beeNormal: "", beeHover: "", fishNormal: "", fishHover: "",
   trophyBg: "",
 };
@@ -102,6 +111,10 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageBgWe: string;
       imageBgFv: string;
       imageBgBp: string;
+      imageBgWeCustom: string;
+      imageBgFvCustom: string;
+      imageBgBpCustom: string;
+      imageBgExpCustom: string;
       imageLogo: string;
       imageBgWinner: string;
       imageBeeNormal: string;
@@ -121,6 +134,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       trophyActionsBg: string;
       logoWidth: number;
       cardMinHeight: number;
+      modalWidth: number;
+      modalHeight: number;
       winnerImageSize: number;
       charactersWidth: number;
       headingWidth: number;
@@ -144,6 +159,10 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_bg_we      AS "imageBgWe",
            image_bg_fv      AS "imageBgFv",
            image_bg_bp      AS "imageBgBp",
+           image_bg_we_custom  AS "imageBgWeCustom",
+           image_bg_fv_custom  AS "imageBgFvCustom",
+           image_bg_bp_custom  AS "imageBgBpCustom",
+           image_bg_exp_custom AS "imageBgExpCustom",
            image_logo       AS "imageLogo",
            image_bg_winner  AS "imageBgWinner",
            image_bee_normal  AS "imageBeeNormal",
@@ -163,6 +182,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            trophy_actions_bg AS "trophyActionsBg",
            logo_width       AS "logoWidth",
            card_min_height  AS "cardMinHeight",
+           modal_width      AS "modalWidth",
+           modal_height     AS "modalHeight",
            winner_image_size AS "winnerImageSize",
            characters_width  AS "charactersWidth",
            heading_width     AS "headingWidth",
@@ -190,6 +211,8 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       : [],
     logoWidth: r?.logoWidth ?? DEFAULTS.logoWidth,
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
+    modalWidth: r?.modalWidth ?? DEFAULTS.modalWidth,
+    modalHeight: r?.modalHeight ?? DEFAULTS.modalHeight,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
     charactersWidth: r?.charactersWidth ?? DEFAULTS.charactersWidth,
     headingWidth: r?.headingWidth ?? DEFAULTS.headingWidth,
@@ -208,6 +231,10 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
           bgWe: r.imageBgWe ?? "",
           bgFv: r.imageBgFv ?? "",
           bgBp: r.imageBgBp ?? "",
+          bgWeCustom: r.imageBgWeCustom ?? "",
+          bgFvCustom: r.imageBgFvCustom ?? "",
+          bgBpCustom: r.imageBgBpCustom ?? "",
+          bgExpCustom: r.imageBgExpCustom ?? "",
           logo: r.imageLogo ?? "",
           bgWinner: r.imageBgWinner ?? "",
           beeNormal: r.imageBeeNormal ?? "",
@@ -253,6 +280,8 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       : current.trophyTopImages,
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
+    modalWidth: clampInt(s.modalWidth ?? current.modalWidth, 320, 900),
+    modalHeight: clampInt(s.modalHeight ?? current.modalHeight, 50, 100),
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
     charactersWidth: clampInt(s.charactersWidth ?? current.charactersWidth, 60, 900),
     headingWidth: clampInt(s.headingWidth ?? current.headingWidth, 100, 600),
@@ -264,9 +293,10 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       shop, achievements, steps, guess_enabled, guess_gap_max, guess_every_n,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_winner_footer, image_bg, image_bg_exp,
       image_bg_we, image_bg_fv, image_bg_bp,
+      image_bg_we_custom, image_bg_fv_custom, image_bg_bp_custom, image_bg_exp_custom,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, trophy_top_images,
-      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, winner_image_size,
+      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
     )
@@ -274,9 +304,10 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${shop}, ${jsonb(next.achievements)}, ${jsonb(next.steps)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.winnerFooter}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.bgWe}, ${next.images.bgFv}, ${next.images.bgBp},
+      ${next.images.bgWeCustom}, ${next.images.bgFvCustom}, ${next.images.bgBpCustom}, ${next.images.bgExpCustom},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
-      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
     )
@@ -298,6 +329,10 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_bg_we      = EXCLUDED.image_bg_we,
       image_bg_fv      = EXCLUDED.image_bg_fv,
       image_bg_bp      = EXCLUDED.image_bg_bp,
+      image_bg_we_custom  = EXCLUDED.image_bg_we_custom,
+      image_bg_fv_custom  = EXCLUDED.image_bg_fv_custom,
+      image_bg_bp_custom  = EXCLUDED.image_bg_bp_custom,
+      image_bg_exp_custom = EXCLUDED.image_bg_exp_custom,
       image_logo       = EXCLUDED.image_logo,
       image_bg_winner  = EXCLUDED.image_bg_winner,
       image_bee_normal  = EXCLUDED.image_bee_normal,
@@ -317,6 +352,8 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       trophy_actions_bg = EXCLUDED.trophy_actions_bg,
       logo_width       = EXCLUDED.logo_width,
       card_min_height  = EXCLUDED.card_min_height,
+      modal_width      = EXCLUDED.modal_width,
+      modal_height     = EXCLUDED.modal_height,
       winner_image_size = EXCLUDED.winner_image_size,
       characters_width  = EXCLUDED.characters_width,
       heading_width     = EXCLUDED.heading_width,
