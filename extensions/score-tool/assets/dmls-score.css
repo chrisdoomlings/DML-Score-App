@@ -70,7 +70,7 @@
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
   background-size: cover, cover, cover;
   background-position: center, center, center;
-  border: 1px solid var(--dmls-line); border-radius: 20px;
+  border: 2px solid var(--dmls-line); border-radius: 20px;
   padding: 1.125em 1.25em; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
   transition: transform 0.12s ease;
 }
@@ -172,6 +172,7 @@
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
    it centered regardless of that value; max-width is just an overflow guard. */
 .dmls-logo { display: block; height: auto; max-width: 90%; margin: 0 auto 14px; }
+.dmls-title {
 
 /* Sits below .dmls-launcher, on the theme's own page background (not the
    card's dark gradient) — needs its own fully opaque dark surface, not a
@@ -179,7 +180,7 @@
 .dmls-tip {
   display: flex; align-items: center; gap: 12px;
   margin-top: 14px; padding: 0.875em 1em;
-  background: var(--dmls-night); border: 1px solid var(--dmls-line);
+  background: var(--dmls-night); border: 2px solid var(--dmls-line);
   border-radius: 14px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 .dmls-tip-icon {
@@ -312,7 +313,7 @@
 .dmls-scores { margin: 4px 0 2px; display: flex; flex-direction: column; gap: 9px; }
 .dmls-scores li {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  background: rgba(0, 0, 0, 0.22); border: 1px solid color-mix(in srgb, var(--dmls-line) 50%, transparent);
+  background: rgba(0, 0, 0, 0.22); border: 1px solid transparent;
   border-radius: 35px; padding: 0.5625em 0.625em 0.5625em 1em;
 }
 .dmls-scores .dmls-nm {
