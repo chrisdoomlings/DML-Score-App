@@ -27,13 +27,21 @@ const ACHIEVEMENT_PREFIX = "achievement:";
 // one fixed literal.
 const TROPHY_POOL_KEY = "trophyTopPool";
 
+// Settings → Media tab: uploads here aren't wired to any settings field —
+// they just land in R2 (and so in listShopImages()) for later reuse via a
+// "Browse" picker elsewhere, same as the trophy pool but with no array to
+// append to.
+const LIBRARY_KEY = "library";
+
 type ResolvedKey =
   | { kind: "setting"; key: ImageKey }
   | { kind: "achievement"; key: AchievementKey }
-  | { kind: "trophyPool" };
+  | { kind: "trophyPool" }
+  | { kind: "library" };
 
 function resolveImageKey(raw: string): ResolvedKey | null {
   if (raw === TROPHY_POOL_KEY) return { kind: "trophyPool" };
+  if (raw === LIBRARY_KEY) return { kind: "library" };
   if (raw.startsWith(ACHIEVEMENT_PREFIX)) {
     const suffix = raw.slice(ACHIEVEMENT_PREFIX.length);
     if ((ACHIEVEMENT_KEYS as string[]).includes(suffix)) {
@@ -76,11 +84,12 @@ export async function POST(req: NextRequest) {
     const storageSlug =
       resolved.kind === "achievement" ? `achievement-${resolved.key}` :
       resolved.kind === "trophyPool" ? "trophy-top-pool" :
+      resolved.kind === "library" ? "library" :
       resolved.key;
     const key = `${shop}/${storageSlug}-${Date.now()}.${ext}`;
     const url = await uploadToR2(Buffer.from(bytes), key, file.type);
 
-    return NextResponse.json({ url });
+    return NextResponse.json({ url, key });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Upload failed";
     console.error("[admin/upload]", err);

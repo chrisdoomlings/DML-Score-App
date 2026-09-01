@@ -46,7 +46,7 @@ interface LibraryImage {
   uploadedAt: string;
 }
 
-type Tab = "general" | "welcome" | "steps" | "winner" | "trophy" | "achievements";
+type Tab = "general" | "welcome" | "steps" | "winner" | "trophy" | "achievements" | "media";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "general", label: "General" },
@@ -55,6 +55,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "winner", label: "Winner" },
   { key: "trophy", label: "Trophy" },
   { key: "achievements", label: "Achievements" },
+  { key: "media", label: "Media" },
 ];
 
 // Two image fields per step, keyed to its score_settings.images slots —
@@ -115,6 +116,7 @@ export default function SettingsPage() {
   const [libraryLoading, setLibraryLoading] = useState(false);
   const [libraryErr, setLibraryErr] = useState("");
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   useEffect(() => {
     authedFetch("/api/admin/settings").then(async (r) => {
@@ -124,6 +126,12 @@ export default function SettingsPage() {
       throw new Error(d?.error ?? `Server returned ${r.status}`);
     }).catch((e) => setLoadError(String(e?.message ?? e)));
   }, []);
+
+  // Media tab shows every uploaded image the same way the per-field "Browse"
+  // picker does — load once, lazily, the first time either is used.
+  useEffect(() => {
+    if (tab === "media") loadLibrary();
+  }, [tab]);
 
   const dirty = useMemo(
     () => !!settings && !!saved && JSON.stringify(settings) !== JSON.stringify(saved),
@@ -164,6 +172,24 @@ export default function SettingsPage() {
       setSettings({ ...settings, images: { ...settings.images, [key]: d.url } });
     } else {
       setUploadErr(d.error ?? "Upload failed.");
+    }
+  }
+
+  // Media tab — uploads here aren't tied to a settings field, they just add
+  // to the library for later reuse via any "Browse" picker.
+  async function uploadLibraryImage(file: File) {
+    setUploading("library");
+    setLibraryErr("");
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("imageKey", "library");
+    const res = await authedFetch("/api/admin/upload", { method: "POST", body: fd });
+    const d = await res.json().catch(() => null);
+    setUploading(null);
+    if (d?.url && d?.key) {
+      setLibrary((prev) => [{ key: d.key, url: d.url, uploadedAt: new Date().toISOString() }, ...(prev ?? [])]);
+    } else {
+      setLibraryErr(d?.error ?? "Upload failed.");
     }
   }
 
@@ -236,18 +262,28 @@ export default function SettingsPage() {
     patchAchievement(key, { iconUrl: null });
   }
 
+  function loadLibrary() {
+    if (library !== null || libraryLoading) return;
+    setLibraryLoading(true);
+    setLibraryErr("");
+    authedFetch("/api/admin/images").then(async (r) => {
+      const d = await r.json().catch(() => null);
+      setLibraryLoading(false);
+      if (d?.images) setLibrary(d.images);
+      else setLibraryErr(d?.error ?? "Couldn’t load your uploaded images.");
+    }).catch((e) => { setLibraryLoading(false); setLibraryErr(String(e?.message ?? e)); });
+  }
+
   function openPicker(key: string) {
     setPickerFor(key);
-    if (library === null && !libraryLoading) {
-      setLibraryLoading(true);
-      setLibraryErr("");
-      authedFetch("/api/admin/images").then(async (r) => {
-        const d = await r.json().catch(() => null);
-        setLibraryLoading(false);
-        if (d?.images) setLibrary(d.images);
-        else setLibraryErr(d?.error ?? "Couldn’t load your uploaded images.");
-      }).catch((e) => { setLibraryLoading(false); setLibraryErr(String(e?.message ?? e)); });
-    }
+    loadLibrary();
+  }
+
+  function copyImageUrl(url: string, imgKey: string) {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedKey(imgKey);
+      setTimeout(() => setCopiedKey((k) => (k === imgKey ? null : k)), 1500);
+    });
   }
 
   async function deleteLibraryImage(imgKey: string) {
@@ -844,6 +880,60 @@ export default function SettingsPage() {
                     );
                   })}
                 </div>
+              </section>
+            </>
+          )}
+
+          {tab === "media" && (
+            <>
+              <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Media library</h2>
+                <p className="dml-card-hint">
+                  Every image ever uploaded for this store, from every tab. Upload here to stage art before
+                  deciding where to use it, click an image to copy its URL, or delete uploads you no longer
+                  need &mdash; deleting removes the file itself, so anything still using it will start showing
+                  broken.
+                </p>
+                <label className="dml-btn-secondary dml-btn-sm" style={{ display: "inline-flex", marginBottom: 16 }}>
+                  {uploading === "library" ? "Uploading…" : "Upload"}
+                  <input
+                    type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+                    disabled={uploading !== null}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) uploadLibraryImage(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {libraryErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{libraryErr}</p>}
+                {libraryLoading && <p className="dml-empty">Loading your uploads…</p>}
+                {!libraryLoading && library && library.length === 0 && (
+                  <p className="dml-empty">No images uploaded yet.</p>
+                )}
+                {!libraryLoading && library && library.length > 0 && (
+                  <div className="dml-picker-grid">
+                    {library.map((img) => (
+                      <div className="dml-picker-item" key={img.key}>
+                        <button
+                          type="button" className="dml-picker-thumb" title="Copy image URL"
+                          onClick={() => copyImageUrl(img.url, img.key)}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img.url} alt="" />
+                          {copiedKey === img.key && <span className="dml-picker-copied">Copied!</span>}
+                        </button>
+                        <button
+                          type="button" className="dml-picker-delete" title="Delete image"
+                          disabled={deletingKey === img.key}
+                          onClick={(e) => { e.stopPropagation(); deleteLibraryImage(img.key); }}
+                        >
+                          {deletingKey === img.key ? "…" : "×"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </section>
             </>
           )}

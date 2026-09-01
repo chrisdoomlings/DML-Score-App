@@ -190,6 +190,10 @@ export function GlobalStyle() {
       }
       .dml-picker-delete:hover { background: #d72c0d; }
       .dml-picker-delete:disabled { opacity: 0.6; cursor: default; }
+      .dml-picker-copied {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        background: rgba(0, 128, 96, 0.85); color: #fff; font-size: 12px; font-weight: 700;
+      }
 
       /* Rough visual approximation of the storefront's .dmls-card (dark
          gradient panel, rounded, clips overflow) — not pixel-identical to
