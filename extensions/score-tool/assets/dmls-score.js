@@ -1413,7 +1413,10 @@
       });
       if (typeof c.cardMinHeight === "number") modalEl.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
       if (typeof c.modalWidth === "number") modalEl.style.setProperty("--dmls-modal-width", c.modalWidth + "px");
-      if (typeof c.modalHeight === "number") modalEl.style.setProperty("--dmls-modal-height", c.modalHeight + "vh");
+      if (typeof c.modalHeight === "number") {
+        var modalHeightUnit = c.modalHeightUnit === "px" ? "px" : "vh";
+        modalEl.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
+      }
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge
       // into ICONS so any future render() picks up the override, and only

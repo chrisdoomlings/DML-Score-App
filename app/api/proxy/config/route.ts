@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
         cardMinHeight: settings.cardMinHeight,
         modalWidth: settings.modalWidth,
         modalHeight: settings.modalHeight,
+        modalHeightUnit: settings.modalHeightUnit,
         winnerImageSize: settings.winnerImageSize,
         charactersWidth: settings.charactersWidth,
         headingWidth: settings.headingWidth,

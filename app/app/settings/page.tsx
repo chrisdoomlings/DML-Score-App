@@ -33,6 +33,7 @@ interface Settings {
   cardMinHeight: number;
   modalWidth: number;
   modalHeight: number;
+  modalHeightUnit: "vh" | "px";
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -411,11 +412,28 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="dml-label">Height (% of screen height)</label>
-                    <input
-                      className="dml-input dml-input-sm" type="number" min={50} max={100} value={settings.modalHeight}
-                      onChange={(e) => setSettings({ ...settings, modalHeight: Number(e.target.value) })}
-                    />
+                    <label className="dml-label">
+                      Height ({settings.modalHeightUnit === "px" ? "px" : "% of screen height"})
+                    </label>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        className="dml-input dml-input-sm" type="number"
+                        min={settings.modalHeightUnit === "px" ? 300 : 50}
+                        max={settings.modalHeightUnit === "px" ? 1200 : 100}
+                        value={settings.modalHeight}
+                        onChange={(e) => setSettings({ ...settings, modalHeight: Number(e.target.value) })}
+                      />
+                      <select
+                        className="dml-input dml-input-sm" value={settings.modalHeightUnit}
+                        onChange={(e) => {
+                          const unit = e.target.value === "px" ? "px" : "vh";
+                          setSettings({ ...settings, modalHeightUnit: unit, modalHeight: unit === "px" ? 700 : 90 });
+                        }}
+                      >
+                        <option value="vh">%</option>
+                        <option value="px">px</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </section>

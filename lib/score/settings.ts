@@ -44,7 +44,8 @@ export interface ScoreSettings {
   logoWidth: number; // px; applies to the logo on both the home and winner screens
   cardMinHeight: number; // px; floor height for the score card — grows past this if content needs more room
   modalWidth: number; // px; max-width cap of the #dmls-modal shell itself (still bounded by 92vw on narrow phones)
-  modalHeight: number; // vh percentage (0-100); height of the #dmls-modal shell itself
+  modalHeight: number; // raw number, interpreted per modalHeightUnit; height of the #dmls-modal shell itself
+  modalHeightUnit: "vh" | "px"; // which unit modalHeight is in
   winnerImageSize: number; // px; max-width of the winner reveal art
   charactersWidth: number; // px; welcome-screen character illustration — can exceed the card width to bleed off the edges (card clips via overflow:hidden)
   headingWidth: number; // px; max-width of the welcome heading, controls line wrapping
@@ -76,6 +77,7 @@ const DEFAULTS = {
   cardMinHeight: 560,
   modalWidth: 520,
   modalHeight: 90,
+  modalHeightUnit: "vh" as const,
   winnerImageSize: 260,
   charactersWidth: 320,
   headingWidth: 320,
@@ -136,6 +138,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       cardMinHeight: number;
       modalWidth: number;
       modalHeight: number;
+      modalHeightUnit: string;
       winnerImageSize: number;
       charactersWidth: number;
       headingWidth: number;
@@ -184,6 +187,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            card_min_height  AS "cardMinHeight",
            modal_width      AS "modalWidth",
            modal_height     AS "modalHeight",
+           modal_height_unit AS "modalHeightUnit",
            winner_image_size AS "winnerImageSize",
            characters_width  AS "charactersWidth",
            heading_width     AS "headingWidth",
@@ -213,6 +217,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     cardMinHeight: r?.cardMinHeight ?? DEFAULTS.cardMinHeight,
     modalWidth: r?.modalWidth ?? DEFAULTS.modalWidth,
     modalHeight: r?.modalHeight ?? DEFAULTS.modalHeight,
+    modalHeightUnit: r?.modalHeightUnit === "px" ? "px" : DEFAULTS.modalHeightUnit,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
     charactersWidth: r?.charactersWidth ?? DEFAULTS.charactersWidth,
     headingWidth: r?.headingWidth ?? DEFAULTS.headingWidth,
@@ -255,6 +260,8 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       if (typeof s.images[key] === "string") nextImages[key] = sanitizeImageUrl(s.images[key]);
     }
   }
+  const modalHeightUnit: "vh" | "px" =
+    s.modalHeightUnit === "px" ? "px" : s.modalHeightUnit === "vh" ? "vh" : current.modalHeightUnit;
   const next: ScoreSettings = {
     achievements: mergeAchievementConfig(s.achievements ?? current.achievements),
     steps: mergeStepConfig(s.steps ?? current.steps),
@@ -281,7 +288,11 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     logoWidth: clampInt(s.logoWidth ?? current.logoWidth, 40, 600),
     cardMinHeight: clampInt(s.cardMinHeight ?? current.cardMinHeight, 300, 1200),
     modalWidth: clampInt(s.modalWidth ?? current.modalWidth, 320, 900),
-    modalHeight: clampInt(s.modalHeight ?? current.modalHeight, 50, 100),
+    modalHeightUnit,
+    modalHeight:
+      modalHeightUnit === "px"
+        ? clampInt(s.modalHeight ?? current.modalHeight, 300, 1200)
+        : clampInt(s.modalHeight ?? current.modalHeight, 50, 100),
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
     charactersWidth: clampInt(s.charactersWidth ?? current.charactersWidth, 60, 900),
     headingWidth: clampInt(s.headingWidth ?? current.headingWidth, 100, 600),
@@ -296,7 +307,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_bg_we_custom, image_bg_fv_custom, image_bg_bp_custom, image_bg_exp_custom,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, trophy_top_images,
-      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, winner_image_size,
+      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, modal_height_unit, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
     )
@@ -307,7 +318,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.bgWeCustom}, ${next.images.bgFvCustom}, ${next.images.bgBpCustom}, ${next.images.bgExpCustom},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
-      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.modalHeightUnit}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
     )
@@ -354,6 +365,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       card_min_height  = EXCLUDED.card_min_height,
       modal_width      = EXCLUDED.modal_width,
       modal_height     = EXCLUDED.modal_height,
+      modal_height_unit = EXCLUDED.modal_height_unit,
       winner_image_size = EXCLUDED.winner_image_size,
       characters_width  = EXCLUDED.characters_width,
       heading_width     = EXCLUDED.heading_width,
