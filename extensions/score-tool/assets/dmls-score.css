@@ -172,7 +172,6 @@
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
    it centered regardless of that value; max-width is just an overflow guard. */
 .dmls-logo { display: block; height: auto; max-width: 90%; margin: 0 auto 14px; }
-.dmls-title {
 
 /* Sits below .dmls-launcher, on the theme's own page background (not the
    card's dark gradient) — needs its own fully opaque dark surface, not a
