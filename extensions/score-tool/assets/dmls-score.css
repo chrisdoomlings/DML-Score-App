@@ -200,7 +200,7 @@
     line-height: 1.12;
     font-weight: 400;
     margin: 8px auto 6px;
-    padding-top: 20px;
+    padding-top: 6px;
     max-width: 250px;
 }
 /* A leading "(...)" tag split out of a step heading (see stepHeadingHTML in
@@ -235,7 +235,7 @@
     padding: 0.2em 1.5em;
     border-radius: 999px;
     font-weight: 500;
-    font-size: 1.5em;
+    font-size: 1.2em;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     transition: transform 0.12s ease;
@@ -246,16 +246,15 @@
   box-shadow: 0 0 18px rgba(128, 210, 53, 0.55);
 }
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
-.dmls-btn-ghost { border: 0;
-    color: #231a47;
-    background: #9287b0; }
+.dmls-btn-ghost { border: 0;color: #231a47;background: #9287b0; }
+#dmls-screen-step-mp .dmls-btn-ghost { border: 0;color: #231a47;background: #9287b0; }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .dmls-btn-link { color: var(--dmls-ink-dim); font-size: 0.875em; text-decoration: underline; text-underline-offset: 3px; background: none; border: none; }
 /* flex: none keeps this pinned at its natural size at the bottom of the
    fixed-height card — .dmls-card-body's flex: 1 1 auto is what pushes it
    there by consuming all the leftover space above it. */
-.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: none; margin-top: 16px; }
+.dmls-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: none; margin-top: 16px; padding: 14px; }
 .dmls-nav .dmls-spacer { flex: 1; }
 
 
@@ -314,7 +313,7 @@
 .dmls-scores { margin: 4px 0 2px; display: flex; flex-direction: column; gap: 9px; }
 .dmls-scores li {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  background: rgba(0, 0, 0, 0.22); border: 1px solid var(--dmls-line);
+  background: rgba(0, 0, 0, 0.22); border: 1px solid color-mix(in srgb, var(--dmls-line) 50%, transparent);
   border-radius: 35px; padding: 0.5625em 0.625em 0.5625em 1em;
 }
 .dmls-scores .dmls-nm {
