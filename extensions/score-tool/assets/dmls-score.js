@@ -1,14 +1,15 @@
 /* Doomlings Score Tool — storefront app block script.
    State machine ported from the concept demo; talks to the app proxy at /apps/score.
 
-   Structural note (Phase 5 rebuild): the tool's actual gameplay (Add Names
-   through the winner reveal, plus Achievements/History) lives inside a single
-   #dmls-modal overlay appended to document.body (same pattern as the
-   pre-existing #dmls-toast/#dmls-confetti nodes), not inline in the page.
-   #dmls-root on the page renders the welcome screen statically (see
-   renderPageWelcome()) — its "Start scoring"/"Resume it" buttons are what
-   open the modal, straight onto Add Names (or wherever a resumed game left
-   off), so there's no redundant welcome step inside the modal itself. */
+   Structural note: every screen renders inline inside #dmls-root, in the
+   theme's own page flow — no fixed-position overlay, backdrop, or
+   body-scroll-lock. #dmls-welcome-page renders the welcome screen (see
+   renderPageWelcome()); #dmls-modal is a plain content panel right after it
+   that renders everything else (Add Names through the winner reveal, plus
+   Achievements/History) — "#modal" is a legacy id/name only, kept because
+   the panel still needs its own show/hide toggle (showModal()/hideModal()
+   below) to swap places with the welcome screen; it no longer overlays
+   anything. */
 (function () {
   "use strict";
 
@@ -207,26 +208,27 @@
   }
 
   /* ---------------------------------------------------------------------
-     #dmls-modal shell — created once at boot, same body-level append
-     pattern as #dmls-toast/#dmls-confetti so it escapes #dmls-root's
-     stacking context entirely. */
+     #dmls-modal panel — created once at boot and inserted right after the
+     welcome section, inline in #dmls-root's own flow (not appended to
+     document.body — there's no overlay to escape #dmls-root's stacking
+     context for). showModal()/hideModal() just swap its visibility with
+     welcomeEl's; no backdrop, no body-scroll-lock, no focus trap — it's
+     ordinary page content, not a dialog. */
   var modalEl = document.createElement("div");
   modalEl.id = "dmls-modal";
-  modalEl.setAttribute("aria-hidden", "true");
   modalEl.innerHTML =
-    '<div class="dmls-modal-backdrop" id="dmls-modal-backdrop"></div>' +
-    '<div class="dmls-modal-card" id="dmls-modal-card" role="dialog" aria-modal="true" aria-label="Doomlings Score Tool">' +
-    '<button type="button" class="dmls-modal-close" id="dmls-modal-close" aria-label="Close">&times;</button>' +
+    '<div class="dmls-modal-card" id="dmls-modal-card">' +
+    '<button type="button" class="dmls-modal-close" id="dmls-modal-close" aria-label="Back to start">&times;</button>' +
     '<div class="dmls-modal-body" id="dmls-modal-body">' +
     '<div id="dmls-app" aria-live="polite"></div>' +
     '<div id="dmls-achv" hidden></div>' +
     '<div id="dmls-trophy" hidden></div>' +
     "</div></div>";
-  document.body.appendChild(modalEl);
+  if (welcomeEl && welcomeEl.parentNode) welcomeEl.parentNode.insertBefore(modalEl, welcomeEl.nextSibling);
+  else root.appendChild(modalEl);
   var app = document.getElementById("dmls-app");
   var achvEl = document.getElementById("dmls-achv");
   var trophyEl = document.getElementById("dmls-trophy");
-  var modalCardEl = document.getElementById("dmls-modal-card");
   var productsEl = document.getElementById("dmls-products");
 
   var view = "game"; // "game" | "achv"
@@ -237,18 +239,16 @@
     if (modalOpen) return;
     modalOpen = true;
     modalEl.classList.add("dmls-modal-open");
-    modalEl.setAttribute("aria-hidden", "false");
-    document.documentElement.classList.add("dmls-modal-lock");
-    document.body.classList.add("dmls-modal-lock");
-    var closeBtn = document.getElementById("dmls-modal-close");
-    if (closeBtn) closeBtn.focus();
+    if (welcomeEl) welcomeEl.hidden = true;
+    // Inline content can open below the fold (e.g. the player scrolled
+    // partway down a long welcome section) — bring it into view since
+    // there's no viewport-centered overlay doing that automatically anymore.
+    modalEl.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function hideModal() {
     modalOpen = false;
     modalEl.classList.remove("dmls-modal-open");
-    modalEl.setAttribute("aria-hidden", "true");
-    document.documentElement.classList.remove("dmls-modal-lock");
-    document.body.classList.remove("dmls-modal-lock");
+    if (welcomeEl) welcomeEl.hidden = false;
   }
   // X button / Escape: just hide. Never discard state.screen/state.players
   // here — a deep-linked open (e.g. a refresh mid-game re-landed on
@@ -264,11 +264,9 @@
     modalDeepLinked = false;
     hideModal();
     renderPageWelcome();
-    var startBtn = document.getElementById("dmls-start");
-    if (startBtn) startBtn.focus();
+    if (welcomeEl) welcomeEl.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   document.getElementById("dmls-modal-close").addEventListener("click", closeModal);
-  document.getElementById("dmls-modal-backdrop").addEventListener("click", closeModal);
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && modalOpen) closeModal();
   });
@@ -1195,17 +1193,12 @@
     });
     trophyImageBlob.then(function () { trophyImageReady = true; }, function () {});
 
-    // No pinned .dmls-nav footer here on purpose — the action row lives
-    // inside the scrollable .dmls-card-body, below the trophy art, so the
-    // screen opens showing only the trophy graphic (clean for a phone
-    // screenshot) and the actions only appear once the player scrolls past
-    // it. .dmls-trophy-fill forces the trophy content to occupy the card's
-    // full height on its own, so the action row starts exactly at the
-    // bottom edge of the first screenful instead of peeking into view.
-    // The share icon sits outside .dmls-card-body so it stays pinned over
-    // the art instead of scrolling away with it.
-    trophyEl.innerHTML =
-      '<div class="dmls-card dmls-anim-in dmls-trophy-scene" id="dmls-screen-trophy">' +
+    // Anchored inside .dmls-trophy-top-wrap (the trophy art's own wrapper,
+    // not the whole card) so top:50% in CSS centers the share/download
+    // icons against the art's height specifically — that stays correct now
+    // that the card sizes to its content instead of a fixed viewport-height
+    // card (see #dmls-root .dmls-card in dmls-score.css).
+    var floatActionsHTML =
       '<div class="dmls-trophy-float-actions">' +
       '<button type="button" class="dmls-trophy-share" id="dmls-trophy-share" aria-label="Share trophy image">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>' +
@@ -1213,15 +1206,21 @@
       '<button type="button" class="dmls-trophy-download" id="dmls-trophy-download" aria-label="Download trophy image">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>' +
       "</button>" +
-      "</div>" +
+      "</div>";
+    trophyEl.innerHTML =
+      '<div class="dmls-card dmls-anim-in dmls-trophy-scene" id="dmls-screen-trophy">' +
       '<div class="dmls-card-body">' +
       '<div class="dmls-trophy-fill">' +
       (trophyTopUrl
         ? '<div class="dmls-trophy-top-wrap">' +
           '<img class="dmls-trophy-top" src="' + trophyTopUrl + '" alt="" loading="lazy">' +
           '<p class="dmls-trophy-plate dmls-trophy-plate-overlay">' + winnerName + "</p>" +
+          floatActionsHTML +
           "</div>"
-        : '<p class="dmls-trophy-plate">' + winnerName + "</p>") +
+        : '<div class="dmls-trophy-top-wrap dmls-trophy-top-wrap-plain">' +
+          '<p class="dmls-trophy-plate">' + winnerName + "</p>" +
+          floatActionsHTML +
+          "</div>") +
       '<h2 class="dmls-trophy-heading">' + esc(trophyHeading) + "</h2>" +
       '<hr class="dmls-trophy-divider">' +
       (loserNames

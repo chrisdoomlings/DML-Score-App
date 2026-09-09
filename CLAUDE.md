@@ -86,6 +86,13 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   `app/api/proxy/guess/route.ts`. It no longer pays out anything — it's a cosmetic
   mini-game only. Honest-player note: scores are entered client-side, so the
   reveal-withholding is UX, not security.
-- The entire storefront tool now opens as a single full-screen modal (`#dmls-modal` in
-  `extensions/score-tool/assets/dmls-score.js`) launched from a button on the page,
-  rather than rendering inline — this covers every screen, not just Achievements.
+- The storefront tool renders entirely inline in the page (September 2026) — reverting
+  the earlier full-screen-modal rebuild. Every screen (welcome, Add Names, scoring
+  steps, winner, Achievements/History, trophy) lives in normal page flow inside
+  `#dmls-root`; `#dmls-welcome-page` is the welcome screen and `#dmls-modal` (a legacy
+  id/name only — it is not an overlay) is the panel right after it that shows
+  everything else, toggled via `showModal()`/`hideModal()` in
+  `extensions/score-tool/assets/dmls-score.js`. No backdrop, fixed positioning, or
+  body-scroll-lock. One consequence: the trophy screen's old "actions only appear
+  once you scroll past the trophy art" effect relied on the modal's fixed viewport
+  height and no longer applies — it now flows straight into the actions.

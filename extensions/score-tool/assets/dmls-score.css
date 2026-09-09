@@ -23,16 +23,15 @@
   font-display: swap;
 }
 
-/* Doomlings Score Tool
-   Two namespaced roots live on the page:
-   - #dmls-root  — the welcome screen, static in the theme's own page flow
-     (its Start scoring/Resume it buttons open #dmls-modal below)
-   - #dmls-modal — the full app shell (Add Names, scoring steps, winner,
-     achievements/history), a body-level overlay created by dmls-score.js the
-     same way the pre-existing #dmls-toast/#dmls-confetti nodes are, so it
-     escapes #dmls-root's stacking context. Both roots define the same
-     --dmls-* custom properties independently since they're siblings under
-     <body> with no shared themed ancestor to hoist tokens onto. */
+/* Doomlings Score Tool — everything lives inline inside #dmls-root, in the
+   theme's own page flow (no overlay, no fixed positioning). #dmls-modal is
+   a legacy id/name for the panel right after the welcome section that
+   holds every other screen (Add Names, scoring steps, winner,
+   achievements/history) — dmls-score.js inserts it as a normal child of
+   #dmls-root, not document.body, and just toggles its visibility against
+   the welcome screen's. It still gets its own custom-property declaration
+   below (redundant with inheriting #dmls-root's, but harmless) since the
+   two were historically separate roots and nothing depends on removing it. */
 
 #dmls-root,
 #dmls-modal {
@@ -80,11 +79,15 @@
 
 /* ---------------------------------------------------------------------
    On-page welcome (#dmls-root) — renderPageWelcome() in dmls-score.js
-   fills #dmls-welcome-page with the same .dmls-card markup the modal's
-   other screens use, so it just needs its forced modal min-height turned
-   off below to size naturally in the page's own flow. */
+   fills #dmls-welcome-page with the same .dmls-card markup every other
+   screen uses (#dmls-modal included, right below it). Every one of those
+   cards gets its forced modal-era min-height turned off below, so they all
+   size to their own content in the page's normal flow instead of a fixed
+   viewport-height card — the tradeoff is the trophy screen's old "actions
+   only appear once you scroll past the trophy art" effect, which relied on
+   that fixed height; it now just flows straight into the actions. */
 .dmls-launcher { max-width: 520px; margin: 36px auto 60px; padding: 0 1em; }
-#dmls-welcome-page .dmls-card { min-height: 0; }
+#dmls-root .dmls-card { min-height: 0; }
 
 .dmls-card {
   background-color: var(--dmls-panel);
@@ -448,6 +451,10 @@
 .dmls-trophy-top { display: block; width: 100%; height: auto; margin: 0; }
 
 .dmls-trophy-top-wrap { position: relative; width: 100%; max-width: 320px; margin: 0 auto 1.125em; }
+/* No trophy-art image configured — just the plate, but still tall enough
+   that .dmls-trophy-float-actions (also anchored here, see dmls-score.js)
+   has room to sit beside it instead of overlapping the text. */
+.dmls-trophy-top-wrap-plain { min-height: 68px; display: flex; align-items: center; justify-content: center; }
 .dmls-trophy-plate {
   display: inline-block; max-width: 90%;
   background: linear-gradient(180deg, #ffe9a8, var(--dmls-gold));
@@ -609,9 +616,6 @@
   .dmls-char-bee, .dmls-char-fish { opacity: 1; }
 }
 
-/* toast — bumped above the modal (see #dmls-modal z-index below) so status
-   messages triggered from inside the modal (e.g. "Added to cart") stay
-   visible instead of rendering behind it. */
 .dmls-toast {
   position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px);
   background: #0d1200; color: #eaffd0; border: 1px solid var(--dmls-green);
@@ -621,81 +625,33 @@
 }
 .dmls-toast.dmls-show { opacity: 1; transform: translate(-50%, 0); }
 
-/* confetti — also bumped above the modal so the winner-reveal burst (which
-   now happens while the modal is open) is actually visible. */
 #dmls-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 10010; }
 
 /* ---------------------------------------------------------------------
-   #dmls-modal — the app shell overlay. Structural styles here are all
-   scoped under #dmls-modal per CLAUDE.md's namespacing rule (it lives on
-   document.body, outside #dmls-root); the shared component classes above
+   #dmls-modal — the Add-Names-through-winner-reveal-and-Achievements
+   panel. "modal" is a legacy id/name only: it's plain inline content right
+   after #dmls-welcome-page in #dmls-root's own page flow, not an overlay —
+   no backdrop, no fixed positioning, no body-scroll-lock. Structural styles
+   here are scoped under #dmls-modal purely for namespacing (so they don't
+   leak onto unrelated page elements); the shared component classes above
    (.dmls-card, .dmls-btn, .dmls-title, etc.) are reused unprefixed exactly
-   as they were when they lived inside #dmls-root, since they were already
-   bare/unprefixed class selectors. */
-/* Applied to <html> and <body> while the modal is open, to stop the
-   storefront page behind it from scrolling. Both are locked, not just
-   body — themes that make <html> (not <body>) the actual scrolling box
-   would otherwise still show the outer page scrollbar behind the modal. */
-html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
-
-#dmls-modal {
-  position: fixed; inset: 0; z-index: 10000; display: none;
-}
+   as they are on the welcome screen. */
+#dmls-modal { display: none; width: min(100%, var(--dmls-modal-width, 520px)); margin: 36px auto 60px; padding: 0 1em; }
 #dmls-modal.dmls-modal-open { display: block; }
-#dmls-modal .dmls-modal-backdrop {
-  position: absolute; inset: 0; background: rgba(6, 6, 22, 0.72);
-}
-/* Every screen — welcome, Add Names, the 4 scoring steps, winner,
-   achievements — is now the same fixed size (height:90vh, not just capped at
-   it), so navigating between them never changes the modal's footprint. This
-   also has to be a *definite* height, not just the max-height it used to
-   rely on: percentage heights (the height:100% chain right below) only
-   resolve against a definite containing-block height, so without this the
-   browser falls back to auto-sizing and scrolling happens on
-   #dmls-modal-body (the whole card — header/list/nav together) instead of
-   just .dmls-scroll-mid/.dmls-card-body. */
-#dmls-modal .dmls-modal-card {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(92vw, var(--dmls-modal-width, 520px));
-  /* min() here matters when the admin picks a fixed px height (Settings →
-     General → Modal size) — a vh value is already viewport-relative and can
-     never overflow, but a fixed px one otherwise would on a short screen
-     (phones in landscape, or just short portrait devices), clipping the
-     modal off-screen top/bottom. */
-  height: min(96vh, var(--dmls-modal-height, 90vh));
-  max-height: min(96vh, var(--dmls-modal-height, 90vh));
-  display: flex; flex-direction: column;
-}
-/* #dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; } */
+#dmls-modal .dmls-modal-card { position: relative; }
 
 #dmls-modal .dmls-modal-close {
   position: absolute; top: 10px; right: 10px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
-
   color: #fff; font-size: 2.1875em; line-height: 1;
   display: flex; align-items: center; justify-content: center;
 }
 
-#dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0; }
+#dmls-modal .dmls-modal-body { padding: 0; }
 /* Descendant, not direct-child — .dmls-card sits inside #dmls-app or #dmls-achv,
    both children of .dmls-modal-body. */
 #dmls-modal .dmls-modal-body .dmls-card { margin: 0; }
-/* Phones rotated to landscape have very little vertical space — .dmls-modal-card
-   stays a fixed height:90vh (see above), but on a short viewport that can be
-   well under .dmls-card's 560px min-height floor, which pushed the card's top
-   and bottom (close button, nav) off-screen. Drop the floor once space is
-   tight so .dmls-card shrinks to fit height:100% of the modal card instead;
-   .dmls-card-body / .dmls-scroll-mid already scroll their own content, so
-   nothing is lost, it just scrolls sooner. */
-@media (max-height: 600px) {
-  .dmls-card { min-height: 0; }
-}
 @media (prefers-reduced-motion: no-preference) {
-  #dmls-modal.dmls-modal-open .dmls-modal-card { animation: dmls-modal-pop 0.22s ease; }
-  @keyframes dmls-modal-pop {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
-    to { opacity: 1; transform: translate(-50%, -50%); }
-  }
   .dmls-card.dmls-anim-in { animation: dmls-pop 0.35s ease; }
   @keyframes dmls-pop {
     from { opacity: 0; transform: translateY(10px); }
