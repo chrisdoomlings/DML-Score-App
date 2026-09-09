@@ -262,7 +262,7 @@
     font-weight: 500;
     font-size: 1.5em;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+
     transition: transform 0.12s ease;
 }
 .dmls-btn:active:not(:disabled) { transform: scale(0.97); }
@@ -273,6 +273,10 @@
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
 .dmls-btn-ghost { border: solid 1px #9287b0;
     color: #9287b0;}
+ #dmls-modal-card .dmls-btn-ghost   {border: solid 1px #9287b0;
+    color: #221946;
+    background: #9287b0;
+    font-weight: bold;}
 #dmls-screen-step-mp .dmls-btn-ghost { border: solid 1px #38909e;color: #38909e; }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }

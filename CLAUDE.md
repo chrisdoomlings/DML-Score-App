@@ -80,11 +80,18 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   tiles show "??????" instead). Awards are rows in `score_achievements_unlocked`;
   idempotency = `UNIQUE (shop, customer_id, achievement_key)` + `ON CONFLICT DO NOTHING`
   in `saveGame()`. Guests (no `customer_id`) can log games but never unlock achievements.
-- Guess eligibility (close game + every-Nth + logged-in) is decided server-side in
-  `saveGame`; the one-guess-per-game claim is the atomic UPDATE in
-  `app/api/proxy/guess/route.ts`. It no longer pays out anything — it's a cosmetic
-  mini-game only. Honest-player note: scores are entered client-side, so the
-  reveal-withholding is UX, not security.
+- **"Guess Who Won?" mini-game removed entirely (September 2026)** — it used to detour
+  before the reveal on close games, every Nth logged game, for logged-in customers only
+  (no payout even before removal, just a reveal-timing novelty). Removed front-to-back:
+  `renderGuess()` and all `guessResult`/`guessOffered` state in `dmls-score.js`, the
+  `app/api/proxy/guess` route (deleted), the close-game/every-Nth eligibility check in
+  `saveGame()`, the guess settings section in the admin Settings page, and the guess
+  stats card in Analytics. `POST /apps/score/game` now always returns `winnerNames`/
+  `topScore` immediately — it no longer ever withholds them. The
+  `score_games.guess_offered/guess_name/guess_correct` and
+  `score_settings.guess_enabled/guess_gap_max/guess_every_n` DB columns were left in
+  place (unused, not dropped) rather than migrated away — ask before writing a migration
+  to drop them.
 - The storefront tool renders entirely inline in the page (September 2026) — reverting
   the earlier full-screen-modal rebuild. Every screen (welcome, Add Names, scoring
   steps, winner, Achievements/History, trophy) lives in normal page flow inside
