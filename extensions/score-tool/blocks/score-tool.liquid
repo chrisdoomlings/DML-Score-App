@@ -10,20 +10,15 @@
   data-heading="{{ block.settings.heading | escape }}">
 
   {% comment %}
-    The tool itself (welcome screen through winner reveal, plus the
-    Achievements/History view) now renders inside a #dmls-modal overlay that
-    dmls-score.js appends to document.body at boot — this on-page element is
-    just the launcher trigger. See extensions/score-tool/assets/dmls-score.js.
+    The gameplay itself (Add Names through the winner reveal, plus the
+    Achievements/History view) renders inside a #dmls-modal overlay that
+    dmls-score.js appends to document.body at boot. This on-page element is
+    the welcome screen, rendered statically here by renderPageWelcome() in
+    dmls-score.js — its Start scoring/Resume it buttons open the modal
+    directly onto Add Names (or a resumed screen), with no separate welcome
+    step inside the modal.
   {% endcomment %}
-  <div class="dmls-launcher">
-    <button type="button" class="dmls-launcher-btn" id="dmls-launch" aria-haspopup="dialog">
-      <span class="dmls-launcher-icon" aria-hidden="true">🎲</span>
-      <span class="dmls-launcher-text">
-        <span class="dmls-launcher-title">{{ block.settings.heading | escape }}</span>
-        <span class="dmls-launcher-sub">Tap to score your game</span>
-      </span>
-    </button>
-  </div>
+  <div class="dmls-launcher" id="dmls-welcome-page"></div>
 
   {% if block.settings.show_products and block.settings.recs_collection != blank %}
     <div id="dmls-products" hidden>

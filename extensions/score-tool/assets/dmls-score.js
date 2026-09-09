@@ -1,16 +1,21 @@
 /* Doomlings Score Tool — storefront app block script.
    State machine ported from the concept demo; talks to the app proxy at /apps/score.
 
-   Structural note (Phase 5 rebuild): the whole tool now lives inside a single
+   Structural note (Phase 5 rebuild): the tool's actual gameplay (Add Names
+   through the winner reveal, plus Achievements/History) lives inside a single
    #dmls-modal overlay appended to document.body (same pattern as the
    pre-existing #dmls-toast/#dmls-confetti nodes), not inline in the page.
-   #dmls-root on the page is now just a launcher trigger. */
+   #dmls-root on the page renders the welcome screen statically (see
+   renderPageWelcome()) — its "Start scoring"/"Resume it" buttons are what
+   open the modal, straight onto Add Names (or wherever a resumed game left
+   off), so there's no redundant welcome step inside the modal itself. */
 (function () {
   "use strict";
 
   var cfg = window.DMLS_CONFIG || {};
   var root = document.getElementById("dmls-root");
   if (!root) return;
+  var welcomeEl = document.getElementById("dmls-welcome-page");
 
   var PROXY = cfg.proxyBase || "/apps/score";
   var CUSTOMER = cfg.customer || null;
@@ -244,20 +249,23 @@
     modalEl.setAttribute("aria-hidden", "true");
     document.documentElement.classList.remove("dmls-modal-lock");
     document.body.classList.remove("dmls-modal-lock");
-    var launchBtn = document.getElementById("dmls-launch");
-    if (launchBtn) launchBtn.focus();
   }
   // X button / Escape: just hide. Never discard state.screen/state.players
   // here — a deep-linked open (e.g. a refresh mid-game re-landed on
   // "#players") can carry just as much real in-progress data as one opened
-  // from the launcher, so resetting to the welcome screen on close used to
+  // from the page welcome, so resetting state.screen to 0 on close used to
   // silently strand that data behind a "Resume it" banner the player could
   // easily miss — and tapping "Start scoring" from there wipes it for good.
   // Leaving state/hash untouched means close/reopen and close/refresh both
-  // land the player back exactly where they left off.
+  // land the player back exactly where they left off. renderPageWelcome()
+  // re-renders the on-page welcome (e.g. to show/hide the resume banner)
+  // now that the player is looking at it again.
   function closeModal() {
     modalDeepLinked = false;
     hideModal();
+    renderPageWelcome();
+    var startBtn = document.getElementById("dmls-start");
+    if (startBtn) startBtn.focus();
   }
   document.getElementById("dmls-modal-close").addEventListener("click", closeModal);
   document.getElementById("dmls-modal-backdrop").addEventListener("click", closeModal);
@@ -326,8 +334,11 @@
     // every click made that shared background look like it was resetting
     // instead of staying put.
     if (productsEl && state.screen !== 6) productsEl.hidden = true;
-    if (state.screen === 0) renderWelcome();
-    else if (state.screen === 1) renderPlayers();
+    // screen 0 (welcome) is never rendered inside the modal — it lives
+    // statically on the page (see renderPageWelcome()); the modal only ever
+    // opens straight onto screen 1+ (openGameModal()/the deep-link restore
+    // at boot both guarantee that).
+    if (state.screen === 1) renderPlayers();
     else if (state.screen >= 2 && state.screen <= 5) {
       // stepContent (heading/preHeading/description) is only ever populated
       // by /config — nothing hardcoded to fall back to (see stepContent
@@ -356,18 +367,25 @@
     });
   }
 
-  /* --- welcome --- */
+  /* --- page welcome (static — not part of the modal's screen flow) ---
+     Renders into #dmls-welcome-page on the page itself. "Start scoring"/
+     "Resume it" open the modal directly onto Add Names (or a resumed
+     screen) — there's no separate welcome step inside the modal. Called at
+     boot, whenever /config resolves new copy/images (loadConfig() below),
+     and every time the modal closes (so the resume banner reflects
+     whatever the player just did). */
   function charStyle(normalUrl, hoverUrl) {
     var s = "";
     if (normalUrl) s += "--dmls-char-normal:url('" + normalUrl.replace(/'/g, "%27") + "');";
     if (hoverUrl) s += "--dmls-char-hover:url('" + hoverUrl.replace(/'/g, "%27") + "');";
     return s ? ' style="' + s + '"' : "";
   }
-  function renderWelcome() {
+  function renderPageWelcome() {
+    if (!welcomeEl) return;
     var images = (serverConfig && serverConfig.images) || {};
     var hasBee = !!images.beeNormal;
     var hasFish = !!images.fishNormal;
-    app.innerHTML =
+    welcomeEl.innerHTML =
       '<div class="dmls-card dmls-anim-in" id="dmls-screen-welcome">' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
@@ -393,14 +411,20 @@
       "</div>" +
       (homeTip ? '<div class="dmls-tip"><span class="dmls-tip-icon" aria-hidden="true">i</span><p>' + esc(homeTip) + "</p></div>" : "");
     document.getElementById("dmls-start").addEventListener("click", function () {
-      state.players = [];
-      state.customerOptedOut = false;
-      lastResult = null;
-      guessResult = null;
-      state.screen = 1;
-      hasResume = false;
-      save();
-      render();
+      // Only reset to a fresh game if one hasn't already been started this
+      // session (state.screen stays >0 after a mid-game modal close) — a
+      // returning-within-session player should just be dropped back where
+      // they left off, not have their in-progress players wiped.
+      if (state.screen === 0) {
+        state.players = [];
+        state.customerOptedOut = false;
+        lastResult = null;
+        guessResult = null;
+        state.screen = 1;
+        hasResume = false;
+        save();
+      }
+      openGameModal();
     });
     var r = document.getElementById("dmls-resume");
     if (r) r.addEventListener("click", function () {
@@ -409,7 +433,7 @@
       state.customerOptedOut = !!saved.customerOptedOut;
       hasResume = false;
       save();
-      render();
+      openGameModal();
       toast("Game restored");
     });
     var al = document.getElementById("dmls-achv-link");
@@ -490,7 +514,9 @@
       save();
       renderPlayers();
     });
-    document.getElementById("dmls-back").addEventListener("click", function () { state.screen = 0; save(); render(); });
+    // Add Names is the modal's first screen now — Back exits to the page's
+    // static welcome instead of rendering a welcome screen inside the modal.
+    document.getElementById("dmls-back").addEventListener("click", function () { state.screen = 0; save(); closeModal(); });
     document.getElementById("dmls-next").addEventListener("click", function () {
       if (state.players.length < 2) { toast("Add at least 2 players"); return; }
       stepNavDirection = "next";
@@ -1366,10 +1392,6 @@
     })(start);
   }
 
-  /* --- launcher --- */
-  var launchBtn = document.getElementById("dmls-launch");
-  if (launchBtn) launchBtn.addEventListener("click", openGameModal);
-
   /* --- boot --- */
   // A refresh (or a bookmarked/shared link) carries the screen in the URL
   // hash. Only trust it as a restore target when it agrees with what's
@@ -1393,6 +1415,8 @@
       modalDeepLinked = true;
     }
   }
+
+  renderPageWelcome(); // after hasResume/state are finalized above
 
   syncHash(false); // normalize the URL to match the restored/default state, no extra history entry
 
@@ -1524,7 +1548,8 @@
       // and unlike the step screens below, renderWinner() has no pending-state gate
       // to fall back on, so without this it would paint once with no logo and stay
       // that way even after config shows up.
-      if (needsRerender && view === "game" && (state.screen === 0 || state.screen === 6)) render();
+      if (needsRerender) renderPageWelcome(); // welcome lives on the page, independent of the modal's view/screen
+      if (needsRerender && view === "game" && state.screen === 6) render();
       // If a step screen is mid-render waiting on this (see render() below),
       // finish the job now that stepContent is actually populated.
       if (state.screen >= 2 && state.screen <= 5) render();

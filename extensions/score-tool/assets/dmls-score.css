@@ -25,8 +25,9 @@
 
 /* Doomlings Score Tool
    Two namespaced roots live on the page:
-   - #dmls-root  — the small on-page launcher card (static, in the theme's own flow)
-   - #dmls-modal — the full app shell (welcome, players, scoring steps, winner,
+   - #dmls-root  — the welcome screen, static in the theme's own page flow
+     (its Start scoring/Resume it buttons open #dmls-modal below)
+   - #dmls-modal — the full app shell (Add Names, scoring steps, winner,
      achievements/history), a body-level overlay created by dmls-score.js the
      same way the pre-existing #dmls-toast/#dmls-confetti nodes are, so it
      escapes #dmls-root's stacking context. Both roots define the same
@@ -78,26 +79,12 @@
 :where(#dmls-root, #dmls-modal) a { color: inherit; }
 
 /* ---------------------------------------------------------------------
-   On-page launcher (#dmls-root) — replaces the old inline-rendered app.
-   Everything else (welcome screen onward) now lives inside #dmls-modal. */
+   On-page welcome (#dmls-root) — renderPageWelcome() in dmls-score.js
+   fills #dmls-welcome-page with the same .dmls-card markup the modal's
+   other screens use, so it just needs its forced modal min-height turned
+   off below to size naturally in the page's own flow. */
 .dmls-launcher { max-width: 520px; margin: 36px auto 60px; padding: 0 1em; }
-.dmls-launcher-btn {
-  width: 100%; display: flex; align-items: center; gap: 14px; text-align: left;
-  background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.45), rgba(16, 21, 63, 0.72)),
-    var(--dmls-bg-url, none),
-    linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
-  background-size: cover, cover, cover;
-  background-position: center, center, center;
-  border: 2px solid var(--dmls-line); border-radius: 20px;
-  padding: 1.125em 1.25em; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
-  transition: transform 0.12s ease;
-}
-.dmls-launcher-btn:active { transform: scale(0.98); }
-.dmls-launcher-icon { flex: none; font-size: 1.875em; line-height: 1; }
-.dmls-launcher-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.dmls-launcher-title { font-weight: 800; font-size: 1.0625em; }
-.dmls-launcher-sub { font-size: 0.8125em; color: var(--dmls-ink-dim); }
+#dmls-welcome-page .dmls-card { min-height: 0; }
 
 .dmls-card {
   background-color: var(--dmls-panel);
@@ -270,7 +257,7 @@
     padding: 0.25em 1.5em;
     border-radius: 999px;
     font-weight: 500;
-    font-size: 1.3em;
+    font-size: 1.5em;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     transition: transform 0.12s ease;
@@ -584,7 +571,7 @@
 .dmls-resume button { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; color: var(--dmls-gold); }
 
 .dmls-welcome-hero { position: relative; }
-.dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; padding-top: 90px;z-index: 2; position: relative; }
+.dmls-welcome-characters { display: block !important; width: calc(100% + 45px); max-width: none !important; height: auto !important; margin: 0 -39px 12px !important; padding-top: 90px;z-index: 2; position: relative; }
 
 /* Absolutely positioned over the hero image's top corners — not a row
    below it — so it reads as part of the illustration and doesn't add
