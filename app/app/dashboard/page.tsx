@@ -106,8 +106,7 @@ export default function DashboardPage() {
         <section className="dml-card">
           <h2 className="dml-card-title">Achievements</h2>
           <p className="dml-card-hint">
-            Configure which of the 20 achievements are active, their names/descriptions/icons, and
-            the &ldquo;Guess Who Won?&rdquo; mini-game.
+            Configure which of the 20 achievements are active, and their names/descriptions/icons.
           </p>
           <a className="dml-btn-secondary dml-btn-sm" href="/app/settings" style={{ display: "inline-block", textDecoration: "none" }}>
             Open Settings
@@ -117,8 +116,7 @@ export default function DashboardPage() {
         <section className="dml-card">
           <h2 className="dml-card-title">Deeper insights</h2>
           <p className="dml-card-hint">
-            See which achievements are actually being earned, how the guess mini-game is performing,
-            and how many players use expansion content.
+            See which achievements are actually being earned and how many players use expansion content.
           </p>
           <a className="dml-btn-secondary dml-btn-sm" href="/app/analytics" style={{ display: "inline-block", textDecoration: "none" }}>
             Open Analytics

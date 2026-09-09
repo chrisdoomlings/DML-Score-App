@@ -15,9 +15,6 @@ import { STEP_KEYS, DEFAULT_STEPS, type StepConfig, type StepKey } from "@/lib/s
 interface Settings {
   achievements: AchievementConfig;
   steps: StepConfig;
-  guessEnabled: boolean;
-  guessGapMax: number;
-  guessEveryN: number;
   images: Record<string, string>;
   tipText: string;
   homeHeading: string;
@@ -411,37 +408,6 @@ export default function SettingsPage() {
         <div className="dml-grid">
           {tab === "general" && (
             <>
-              <section className="dml-card">
-                <h2 className="dml-card-title">&ldquo;Guess Who Won?&rdquo; mini-game</h2>
-                <p className="dml-card-hint">
-                  Offered before the reveal on close games only, to logged-in customers, every Nth game.
-                  No points payout &mdash; just the guess/reveal moment.
-                </p>
-                <label className="dml-checkbox-row">
-                  <input
-                    type="checkbox" checked={settings.guessEnabled}
-                    onChange={(e) => setSettings({ ...settings, guessEnabled: e.target.checked })}
-                  />
-                  Enabled
-                </label>
-                <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
-                  <div>
-                    <label className="dml-label">Max gap for a &ldquo;close game&rdquo;</label>
-                    <input
-                      className="dml-input" type="number" min={0} value={settings.guessGapMax}
-                      onChange={(e) => setSettings({ ...settings, guessGapMax: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div>
-                    <label className="dml-label">Offer every Nth game</label>
-                    <input
-                      className="dml-input" type="number" min={1} value={settings.guessEveryN}
-                      onChange={(e) => setSettings({ ...settings, guessEveryN: Number(e.target.value) })}
-                    />
-                  </div>
-                </div>
-              </section>
-
               <section className="dml-card">
                 <h2 className="dml-card-title">Card minimum height</h2>
                 <p className="dml-card-hint">

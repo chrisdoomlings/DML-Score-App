@@ -5,7 +5,6 @@ import { authedFetch } from "@/lib/hooks/useAuthedFetch";
 import { CenteredMessage } from "@/components/admin/AdminUI";
 interface Analytics {
   achievements: { achievementKey: string; name: string; count: number }[];
-  guess: { offered: number; played: number; correct: number };
   playerCounts: { playerCount: number; games: number }[];
   expansion: { withExpansion: number; total: number };
 }
@@ -41,8 +40,6 @@ export default function AnalyticsPage() {
 
   const maxAchievement = Math.max(1, ...data.achievements.map((m) => m.count));
   const maxPlayers = Math.max(1, ...data.playerCounts.map((p) => p.games));
-  const guessPlayRate = data.guess.offered ? Math.round((data.guess.played / data.guess.offered) * 100) : 0;
-  const guessCorrectRate = data.guess.played ? Math.round((data.guess.correct / data.guess.played) * 100) : 0;
   const expansionRate = data.expansion.total
     ? Math.round((data.expansion.withExpansion / data.expansion.total) * 100)
     : 0;
@@ -62,25 +59,6 @@ export default function AnalyticsPage() {
               <Bar key={m.achievementKey} label={m.name} value={m.count} max={maxAchievement} />
             ))
           )}
-        </section>
-
-        <section className="dml-card">
-          <h2 className="dml-card-title">&ldquo;Guess Who Won?&rdquo;</h2>
-          <p className="dml-card-hint">Engagement with the mini-game, out of games it was offered on.</p>
-          <div className="dml-stats">
-            <div className="dml-stat">
-              <div className="dml-stat-value">{data.guess.offered}</div>
-              <div className="dml-stat-label">Offered</div>
-            </div>
-            <div className="dml-stat">
-              <div className="dml-stat-value">{guessPlayRate}%</div>
-              <div className="dml-stat-label">Played ({data.guess.played})</div>
-            </div>
-            <div className="dml-stat">
-              <div className="dml-stat-value">{guessCorrectRate}%</div>
-              <div className="dml-stat-label">Correct ({data.guess.correct})</div>
-            </div>
-          </div>
         </section>
 
         <section className="dml-card">

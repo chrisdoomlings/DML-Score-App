@@ -22,7 +22,7 @@ You implement new features, fix bugs, and apply updates to the DML Score app wit
 
 ### Directory Layout
 - `app/auth/` + `app/auth/callback/` — OAuth
-- `app/api/proxy/` — `config`, `game`, `guess`, `stats` (proxy routes)
+- `app/api/proxy/` — `config`, `game`, `stats` (proxy routes)
 - `app/api/admin/` — `settings`, `summary`, `analytics`, `upload` (JWT-protected)
 - `app/api/webhooks/` — `app/uninstalled`
 - `lib/score/` — `games.ts`, `settings.ts`, `milestones.ts`
@@ -39,7 +39,6 @@ All game/score tables are `score_`-prefixed. `score_points_ledger` was dropped �
 |---|---|---|
 | `/apps/score/config` | `/api/proxy/config` | Settings (GET, public) |
 | `/apps/score/game` | `/api/proxy/game` | POST save completed game (+achievements if customer) |
-| `/apps/score/guess` | `/api/proxy/guess` | POST one-shot Guess Who Won? claim (no reward) |
 | `/apps/score/achievements` | `/api/proxy/achievements` | GET customer achievements + game history |
 | `/apps/score/profile` | `/api/proxy/profile` | POST self-reported birthday |
 
@@ -56,7 +55,6 @@ All game/score tables are `score_`-prefixed. `score_points_ledger` was dropped �
 - **Mobile-first**: ~99% of traffic is phones at the game table. Base layout is 520px single column; desktop is the media-query exception
 - **Guests can log games** without points/customer_id — handle this gracefully
 - **Milestone idempotency** — awards use unique partial indexes and `ON CONFLICT DO NOTHING` from migration 002
-- **Guess eligibility** is decided server-side in `saveGame`; one-guess-per-game is enforced by atomic UPDATE
 - **Product recommendations** are Liquid-rendered from collection block settings — no API calls needed
 - **CSS namespacing**: theme extension styles must be scoped under `#dmls-root`; assets use `dmls-` prefix
 

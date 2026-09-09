@@ -60,14 +60,13 @@ points per game, activity summary.
   entered inside the Bonus step (mixed with suppressed traits), so the rule needs
   client confirmation before enabling. When the formal milestone list arrives it's a
   settings change, not code.
-- **"Guess Who Won?" mini-game**: offered before the reveal when ALL of: customer
-  logged in, close game (1st-vs-2nd gap ≤ `guess_gap_max`, not an all-way tie), and
-  it's the customer's every-`guess_every_n`-th logged game — all checked server-side
-  in `saveGame`. When offered, the game response withholds `winnerNames` and the
-  storefront shows the guess screen; POST `/apps/score/guess` claims the one allowed
-  guess atomically (`guess_name IS NULL` guard on the game row, 30-min window) and
-  awards `guess_points` on a correct pick. Skipping or offline just reveals normally.
-  Still needs: a fun program name from the client.
+- **"Guess Who Won?" mini-game — removed (September 2026)**: used to detour before the
+  reveal on close games, every Nth logged game, for logged-in customers, via
+  POST `/apps/score/guess`. Fully removed front-and-back — no eligibility check, no
+  route, no admin settings, no analytics — the reveal always shows immediately. The
+  `score_games.guess_offered/guess_name/guess_correct` and
+  `score_settings.guess_enabled/guess_gap_max/guess_every_n` columns are left in the
+  DB schema (unused, not dropped) in case this is revisited.
 
 ## Phase 3 (not built yet)
 

@@ -504,11 +504,10 @@
 }
 .dmls-widget-title {
   font-size: 1.5em;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     color: white;
     margin: 0 0 10px;
-    font-weight: 700;
     text-align: center;
     font-family: "DMLS Catastrophe", "Segoe UI", cursive;
 }

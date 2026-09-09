@@ -57,8 +57,7 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
 | Storefront URL | Server route | Purpose |
 |---|---|---|
 | `/apps/score/config` | `/api/proxy/config` | Settings (public) |
-| `/apps/score/game` | `/api/proxy/game` | POST save completed game (+achievements if customer; may offer guess) |
-| `/apps/score/guess` | `/api/proxy/guess` | POST one-shot "Guess Who Won?" claim (customer only, no reward) |
+| `/apps/score/game` | `/api/proxy/game` | POST save completed game (+achievements if customer) |
 | `/apps/score/achievements` | `/api/proxy/achievements` | GET customer achievements + game history |
 | `/apps/score/profile` | `/api/proxy/profile` | POST self-reported birthday (for the "Birthdoom" achievement) |
 
