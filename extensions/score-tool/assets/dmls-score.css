@@ -206,7 +206,7 @@
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
    it centered regardless of that value; max-width is just an overflow guard. */
-.dmls-logo { display: block; height: auto; max-width: 90%; margin: 0 auto 14px; }
+.dmls-logo { display: block; height: auto; max-width: 90%; margin: 0 auto; }
 
 /* Sits below .dmls-launcher, on the theme's own page background (not the
    card's dark gradient) — needs its own fully opaque dark surface, not a
@@ -267,10 +267,10 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 0.2em 1.5em;
+    padding: 0.25em 1.5em;
     border-radius: 999px;
     font-weight: 500;
-    font-size: 1.2em;
+    font-size: 1.3em;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     transition: transform 0.12s ease;
@@ -584,13 +584,13 @@
 .dmls-resume button { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; color: var(--dmls-gold); }
 
 .dmls-welcome-hero { position: relative; }
-.dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; padding-top: 115px;z-index: 2; position: relative; }
+.dmls-welcome-characters { display: block !important; width: calc(100% + 76px); max-width: none !important; height: auto !important; margin: 0 -38px 12px !important; padding-top: 90px;z-index: 2; position: relative; }
 
 /* Absolutely positioned over the hero image's top corners — not a row
    below it — so it reads as part of the illustration and doesn't add
    extra scroll height under the fixed-height welcome card. */
 .dmls-welcome-chars {
-  position: absolute; top: 6%; left: 0; right: 0;
+  position: absolute; top: -4%; left: 0; right: 0;
   display: flex; justify-content: space-between; padding: 0 6%;
   pointer-events: none;
 }
@@ -600,10 +600,10 @@
    touching the other. */
 .dmls-char-bee {
   width: 76px; height: 76px; background-repeat: no-repeat; background-position: center; background-size: contain;
-  background-image: var(--dmls-char-normal, none);
+  background-image: var(--dmls-char-normal, none); margin-top: 40px;
 }
 .dmls-char-fish {
-  width: 130px; height: 130px; background-repeat: no-repeat; background-position: center; background-size: contain;
+  width: 100px; height: 130px; background-repeat: no-repeat; background-position: center; background-size: contain;
   background-image: var(--dmls-char-normal, none);
 }
 .dmls-char-bee:hover, .dmls-char-bee.dmls-char-touch { background-image: var(--dmls-char-hover, var(--dmls-char-normal, none)); }
@@ -679,11 +679,8 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
   max-height: min(96vh, var(--dmls-modal-height, 90vh));
   display: flex; flex-direction: column;
 }
-#dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; }
-/* Kept fully inside the card (not poking past its edge) so it can never be
-   clipped by the viewport on narrow phones — the primary target device. A
-   persistent background circle (not just an outline glyph) so it reads the
-   same on every screen regardless of what background art sits behind it. */
+/* #dmls-app, #dmls-achv, #dmls-trophy, .dmls-card { height: 100%; } */
+
 #dmls-modal .dmls-modal-close {
   position: absolute; top: 10px; right: 10px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
@@ -833,7 +830,7 @@ html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
 }
 
 
-#dmls-screen-welcome { padding:0; padding-top:50px; padding-bottom: 40px;}
+#dmls-screen-welcome { padding:0; padding-top:60px; padding-bottom: 30px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
 .dmls-prod-note{display:none;}
