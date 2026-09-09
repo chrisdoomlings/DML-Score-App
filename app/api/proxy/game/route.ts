@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const deviceType = sanitizeDeviceType(body.deviceType);
     const playedAtLocalDate = sanitizeLocalDate(body.playedAtLocalDate);
 
-    const { game, achievementsUnlocked, guessOffered, gamesPlayed } = await saveGame(
+    const { game, achievementsUnlocked, gamesPlayed } = await saveGame(
       shop,
       customerId,
       players,
@@ -54,10 +54,9 @@ export async function POST(req: NextRequest) {
       {
         saved: true,
         gameId: game.id,
-        // When the mini-game is offered the reveal is deferred to POST /guess.
-        ...(guessOffered ? {} : { winnerNames: game.winnerNames, topScore: game.topScore }),
+        winnerNames: game.winnerNames,
+        topScore: game.topScore,
         achievementsUnlocked,
-        guessOffered,
         gamesPlayed,
       },
       { headers: HEADERS }

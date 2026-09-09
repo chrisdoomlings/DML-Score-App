@@ -285,7 +285,7 @@
 
 
 .dmls-addrow {
-  display: flex; align-items: center; gap: 6px; max-width: 380px; margin: 22px auto 8px;
+  display: flex; align-items: center; gap: 6px; max-width: 380px; margin: 19px 4px 6px;
   background: #fff; border: 2px solid #9287b0; border-radius: 999px;
   padding: 5px 5px 5px 1.125em;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
@@ -305,6 +305,7 @@
 }
 .dmls-addrow-plus:hover { background: #5cab1d; }
 .dmls-addrow-plus:active { background: #427e12; }
+.dmls-addrow-plus span { margin-top: -6px; } /* optically centers the "+" glyph in the circle, same fix as .dmls-prod-buy */
 .dmls-hint { font-size: 0.7813em; color: var(--dmls-ink-faint); margin-top: 10px; text-align: center; }
 
 
@@ -526,9 +527,8 @@
 .dmls-widget-center .dmls-widget-title { text-align: center; }
 .dmls-win-stat-num { font-size: 2.75em; font-weight: 800; line-height: 1; color: #fff; margin: 0 0 4px; }
 .dmls-win-achv-item { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0 0 6px; }
-.dmls-win-achv-item .dmls-achv-icon { width: 72px; height: 72px; }
+.dmls-win-achv-item .dmls-achv-icon { width: 150px; height: 150px; }
 .dmls-win-achv-item .dmls-achv-name { font-size: 0.9375em; }
-.dmls-win-guess-note { font-size: 0.8125em; color: var(--dmls-ink-dim); margin: 8px 0 0; }
 
 .dmls-bonuses { margin-top: 10px; text-align: left; }
 .dmls-bonuses li {
@@ -659,7 +659,7 @@
   }
 }
 
-/* --- counting interstitial + Guess Who Won? mini-game --- */
+/* --- counting interstitial --- */
 /* No .dmls-card-body/.dmls-nav split here (transient, <3s, no footer) — just
    center its short content in the fixed-height card instead of leaving it
    stuck to the top with blank space below. */
@@ -667,32 +667,13 @@
 .dmls-count-dots { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
 .dmls-count-dots i {
   width: 12px; height: 12px; border-radius: 50%;
-  background: var(--dmls-gold); opacity: 0.25;
+  background: #18c94b; opacity: 0.25;
   animation: dmls-pulse 1s infinite;
 }
 .dmls-count-dots i:nth-child(2) { animation-delay: 0.2s; }
 .dmls-count-dots i:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dmls-pulse { 50% { opacity: 1; transform: scale(1.25); } }
 @media (prefers-reduced-motion: reduce) { .dmls-count-dots i { animation: none; opacity: 0.7; } }
-
-.dmls-guess-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0 6px; }
-.dmls-guess-grid .dmls-guess-opt {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--dmls-line);
-  border-radius: 14px;
-  padding: 0.875em 0.625em;
-  font-weight: 700;
-  font-size: 1em;
-  overflow-wrap: anywhere;
-  transition: background 0.15s, border-color 0.15s;
-}
-.dmls-guess-grid .dmls-guess-opt:hover:not(:disabled) { background: rgba(255, 255, 255, 0.16); }
-.dmls-guess-grid .dmls-guess-opt:disabled { opacity: 0.45; cursor: default; }
-.dmls-guess-grid .dmls-guess-picked {
-  opacity: 1 !important;
-  border-color: var(--dmls-gold);
-  background: rgba(255, 213, 74, 0.18);
-}
 
 /* Achievements + History (opened via the welcome screen's "Achievements"
    link, replacing the old in-place "My Stats" screen 7). */
@@ -715,12 +696,9 @@
 }
 .dmls-achv-icon {
   width: 104px; height: 104px; border-radius: 50%; margin-bottom: 4px;
-  background-color: rgba(255, 255, 255, 0.1); background-size: cover; background-position: center;
-  /* Sticker look, matching the mock — thick white die-cut outline + drop
-     shadow, not just a plain circle crop. Locked tiles override this below
-     since they're meant to read as a hidden silhouette, not a sticker. */
-  border: 4px solid #fff;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+   background-size: cover; background-position: center;
+  
+  
 }
 .dmls-achv-icon-locked {
   /* Show the real icon (once the admin sets one) dimmed/desaturated rather

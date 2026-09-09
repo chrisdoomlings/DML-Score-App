@@ -97,7 +97,6 @@
   var serverConfig = null; // {loggedIn, images, ...} from /config
   var configFailed = false; // true once loadConfig() has exhausted its retry — see renderStepPending()
   var lastResult = null;   // response from POST /game
-  var guessResult = null;  // {correct, winnerNames, topScore} from POST /guess
   var saveFailed = false;  // true once /game has definitively failed (not just still in flight)
   var gamesPlayedRefreshing = false; // guards the "guest-saved game, now logged in" re-fetch in renderWinner() — see there
 
@@ -115,7 +114,6 @@
         players: state.players,
         customerOptedOut: state.customerOptedOut,
         lastResult: lastResult,
-        guessResult: guessResult,
         saveFailed: saveFailed,
       }));
     } catch (e) { /* ignore */ }
@@ -417,7 +415,6 @@
         state.players = [];
         state.customerOptedOut = false;
         lastResult = null;
-        guessResult = null;
         state.screen = 1;
         hasResume = false;
         save();
@@ -471,7 +468,7 @@
       (CUSTOMER
         ? '<p class="dmls-sub">Playing as <strong style="color:var(--dmls-green)">' + esc(cap(CUSTOMER.firstName) || "you") + "</strong> — this game will save to your account.</p>"
         : '<p class="dmls-sub"><a class="dmls-inline-link" href="' + esc(withReturnUrl(loginUrl)) + '">Sign in</a> to keep your game history and earn achievements.</p>') +
-      '<div class="dmls-addrow"><input id="dmls-name" maxlength="30" placeholder="Enter name here…" autocomplete="off"><button type="button" id="dmls-add" class="dmls-addrow-plus" aria-label="Add player">+</button></div>' +
+      '<div class="dmls-addrow"><input id="dmls-name" maxlength="30" placeholder="Enter name here…" autocomplete="off"><button type="button" id="dmls-add" class="dmls-addrow-plus" aria-label="Add player"><span aria-hidden="true">+</span></button></div>' +
       "</div>" +
       '<div class="dmls-scroll-mid" id="dmls-chips-scroll"><ul class="dmls-chips" id="dmls-chips">' + chips + "</ul></div>" +
       '<p class="dmls-hint">' + (enough ? "" : "Add at least 2 players") + "</p>" +
@@ -615,9 +612,8 @@
     state.screen = 6;
     save();
 
-    // Brief suspense beat while the game saves; if the server offers the
-    // "Guess Who Won?" mini-game we detour there before the reveal. Offline or
-    // slow (>3s) falls back to the local reveal exactly as before.
+    // Brief suspense beat while the game saves. Offline or slow (>3s) falls
+    // back to the local reveal exactly as before.
     var revealed = false;
     app.innerHTML =
       '<div class="dmls-card dmls-anim-in dmls-counting" id="dmls-screen-counting">' +
@@ -648,8 +644,7 @@
         if (revealed) { renderWinner(); return; } // arrived after fallback: refresh stats only
         clearTimeout(fallback);
         revealed = true;
-        if (res.guessOffered && CUSTOMER) renderGuess(res);
-        else renderWinner();
+        renderWinner();
       })
       .catch(function () {
         saveFailed = true;
@@ -664,51 +659,6 @@
         if (revealed) { renderWinner(); return; } // late failure: correct the message on screen
         clearTimeout(fallback); revealed = true; renderWinner();
       });
-  }
-
-  /* --- Guess Who Won? mini-game --- */
-  function renderGuess(res) {
-    var names = state.players.map(function (p) { return p.name; });
-    for (var i = names.length - 1; i > 0; i--) { // shuffle so order leaks nothing
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = names[i]; names[i] = names[j]; names[j] = t;
-    }
-    var buttons = names.map(function (n) {
-      return '<button type="button" class="dmls-btn dmls-guess-opt" data-guess="' + esc(n) + '">' + esc(n) + "</button>";
-    }).join("");
-
-    app.innerHTML =
-      '<div class="dmls-card dmls-anim-in dmls-guess" id="dmls-screen-guess">' +
-      '<div class="dmls-card-body">' +
-      '<p class="dmls-eyebrow">Mini-game · too close to call!</p>' +
-      '<h2 class="dmls-title">GUESS WHO WON?</h2>' +
-      '<p class="dmls-sub">Think you know? Take a shot before the reveal.</p>' +
-      '<div class="dmls-guess-grid" id="dmls-guess-grid">' + buttons + "</div>" +
-      "</div>" +
-      '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn-link" id="dmls-guess-skip">Skip — just show the winner</button><span class="dmls-spacer"></span></div>' +
-      "</div>";
-
-    var picked = false;
-    var grid = document.getElementById("dmls-guess-grid");
-    grid.addEventListener("click", function (e) {
-      var b = e.target.closest("button[data-guess]");
-      if (!b || picked) return;
-      picked = true;
-      Array.prototype.forEach.call(grid.querySelectorAll("button[data-guess]"), function (x) { x.disabled = true; });
-      b.classList.add("dmls-guess-picked");
-      apiPost("/guess", { gameId: res.gameId, guess: b.getAttribute("data-guess") })
-        .then(function (g) {
-          if (g && typeof g.correct === "boolean") {
-            guessResult = g;
-            if (g.correct) confettiBurst();
-          }
-          renderWinner();
-        })
-        .catch(function () { renderWinner(); });
-    });
-    document.getElementById("dmls-guess-skip").addEventListener("click", function () {
-      if (!picked) { picked = true; renderWinner(); }
-    });
   }
 
   /* --- Achievements + History modal content --- */
@@ -916,7 +866,6 @@
       state.players = [];
       state.customerOptedOut = false;
       lastResult = null;
-      guessResult = null;
       state.screen = 1;
       view = "game";
       achvEl.hidden = true;
@@ -961,11 +910,6 @@
     if (CUSTOMER) {
       if (lastResult) {
         var unlocked = lastResult.achievementsUnlocked || [];
-        var guessLine = guessResult
-          ? '<p class="dmls-win-guess-note">' +
-            (guessResult.correct ? "You guessed the winner right!" : "Nice try — wrong guess this time.") +
-            "</p>"
-          : "";
         if (unlocked.length) {
           var achvItems = unlocked.map(function (a) {
             return '<div class="dmls-win-achv-item">' +
@@ -976,14 +920,13 @@
           loyaltyHTML =
             '<div class="dmls-widget dmls-widget-center">' +
             '<h3 class="dmls-widget-title">' + (unlocked.length > 1 ? "New Achievements!" : "New Achievement!") + "</h3>" +
-            achvItems + guessLine +
+            achvItems +
             '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
         } else {
           loyaltyHTML =
             '<div class="dmls-widget dmls-widget-center">' +
             '<p class="dmls-win-stat-num">' + (lastResult.gamesPlayed != null ? lastResult.gamesPlayed : "—") + "</p>" +
             '<h3 class="dmls-widget-title">Games Played</h3>' +
-            guessLine +
             '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
           // gamesPlayed is only ever null here when this exact game was saved
           // as a guest (no customer_id) — e.g. the player finished the game,
@@ -1117,7 +1060,6 @@
   function rematch() {
     state.players.forEach(function (p) { p.we = 0; p.fv = 0; p.bp = 0; p.mp = 0; });
     lastResult = null;
-    guessResult = null;
     stepNavDirection = "next";
     state.screen = 2;
     save();
@@ -1130,7 +1072,6 @@
     state.players = [];
     state.customerOptedOut = false;
     lastResult = null;
-    guessResult = null;
     state.screen = 1;
     save();
     view = "game";
@@ -1408,7 +1349,6 @@
       state.players = saved.players || [];
       state.customerOptedOut = !!saved.customerOptedOut;
       lastResult = saved.lastResult || null;
-      guessResult = saved.guessResult || null;
       saveFailed = !!saved.saveFailed;
       hasResume = false;
       modalDeepLinked = true;
@@ -1488,9 +1428,9 @@
       }
       // Not gated behind needsRerender/screen 0 like the rest of this block —
       // it only affects the winner screen, which is reached directly from
-      // finishGame()/renderGuess() rather than through render()'s dispatcher,
-      // so there's nothing here to usefully re-render anyway. By the time a
-      // game finishes, /config has long since resolved at boot.
+      // finishGame() rather than through render()'s dispatcher, so there's
+      // nothing here to usefully re-render anyway. By the time a game
+      // finishes, /config has long since resolved at boot.
       if (typeof c.discordUrl === "string") discordUrl = c.discordUrl;
       if (typeof c.winnerFooterUrl === "string") winnerFooterUrl = c.winnerFooterUrl;
       if (typeof c.trophyHeading === "string" && c.trophyHeading) trophyHeading = c.trophyHeading;

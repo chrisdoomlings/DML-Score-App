@@ -87,7 +87,6 @@ export async function saveGame(
 ): Promise<{
   game: SavedGame;
   achievementsUnlocked: AchievementUnlock[];
-  guessOffered: boolean;
   gamesPlayed: number | null;
 }> {
   const db = getDb();
@@ -95,7 +94,6 @@ export async function saveGame(
   const winnerNames = players.filter((p) => p.total === topScore).map((p) => p.name);
   const customerWon = players.some((p) => p.isCustomer && p.total === topScore);
 
-  let guessOffered = false;
   let gamesLoggedBefore = 0;
   let achievementsConfig: AchievementConfig | null = null;
 
@@ -109,26 +107,16 @@ export async function saveGame(
     ]);
     gamesLoggedBefore = prior[0]?.n ?? 0;
     achievementsConfig = settings.achievements;
-
-    // "Close game" = gap between 1st and runner-up within the configured max —
-    // but not an all-way tie (guessing would be trivially correct).
-    const runnerUp = players
-      .map((p) => p.total)
-      .filter((t) => t < topScore)
-      .reduce((a, b) => Math.max(a, b), -Infinity);
-    const closeGame = winnerNames.length < players.length && topScore - runnerUp <= settings.guessGapMax;
-    guessOffered =
-      settings.guessEnabled && closeGame && (gamesLoggedBefore + 1) % settings.guessEveryN === 0;
   }
 
   const rows = await db<{ id: string; playedAt: string }[]>`
     INSERT INTO score_games (
       shop, customer_id, player_count, winner_names, top_score, customer_won, players,
-      guess_offered, device_type, played_at_local_date
+      device_type, played_at_local_date
     )
     VALUES (
       ${shop}, ${customerId}, ${players.length}, ${jsonb(winnerNames)}, ${topScore}, ${customerWon}, ${jsonb(players)},
-      ${guessOffered}, ${deviceType}, ${playedAtLocalDate}
+      ${deviceType}, ${playedAtLocalDate}
     )
     RETURNING id, played_at AS "playedAt"
   `;
@@ -169,7 +157,6 @@ export async function saveGame(
   return {
     game,
     achievementsUnlocked,
-    guessOffered,
     gamesPlayed: customerId ? gamesLoggedBefore + 1 : null,
   };
 }
@@ -289,27 +276,19 @@ export async function getShopSummary(shop: string) {
 
 export interface ShopAnalytics {
   achievements: { achievementKey: string; name: string; count: number }[];
-  guess: { offered: number; played: number; correct: number };
   playerCounts: { playerCount: number; games: number }[];
   expansion: { withExpansion: number; total: number };
 }
 
 export async function getShopAnalytics(shop: string): Promise<ShopAnalytics> {
   const db = getDb();
-  const [settings, achievementCounts, guess, playerCounts, expansion] = await Promise.all([
+  const [settings, achievementCounts, playerCounts, expansion] = await Promise.all([
     getSettings(shop),
     db<{ achievementKey: string; count: number }[]>`
       SELECT achievement_key AS "achievementKey", COUNT(*)::int AS count
       FROM score_achievements_unlocked
       WHERE shop = ${shop}
       GROUP BY achievement_key ORDER BY count DESC
-    `,
-    db<{ offered: number; played: number; correct: number }[]>`
-      SELECT
-        COUNT(*) FILTER (WHERE guess_offered)::int      AS offered,
-        COUNT(*) FILTER (WHERE guess_name IS NOT NULL)::int AS played,
-        COUNT(*) FILTER (WHERE guess_correct)::int       AS correct
-      FROM score_games WHERE shop = ${shop}
     `,
     db<{ playerCount: number; games: number }[]>`
       SELECT player_count AS "playerCount", COUNT(*)::int AS games
@@ -331,7 +310,6 @@ export async function getShopAnalytics(shop: string): Promise<ShopAnalytics> {
       ...a,
       name: settings.achievements[a.achievementKey as AchievementKey]?.name ?? a.achievementKey,
     })),
-    guess: guess[0] ?? { offered: 0, played: 0, correct: 0 },
     playerCounts,
     expansion: expansion[0] ?? { withExpansion: 0, total: 0 },
   };

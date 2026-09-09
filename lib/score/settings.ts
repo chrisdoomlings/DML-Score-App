@@ -34,9 +34,6 @@ export type ImageUrls = Record<ImageKey, string>;
 
 export interface ScoreSettings {
   achievements: AchievementConfig;
-  guessEnabled: boolean;
-  guessGapMax: number; // max point gap between 1st and 2nd for a game to count as "close"
-  guessEveryN: number; // offer the mini-game every Nth logged game per customer
   images: ImageUrls; // empty string per key = use the bundled default asset ("logo" has no default — empty hides it)
   tipText: string; // shown in the home-screen tip bar; empty = hidden
   homeHeading: string; // welcome screen heading; empty = fall back to the theme block's data-heading
@@ -61,9 +58,6 @@ export interface ScoreSettings {
 }
 
 const DEFAULTS = {
-  guessEnabled: true,
-  guessGapMax: 10,
-  guessEveryN: 3,
   tipText: "Tip: add Google’s keyboard if your phone doesn’t have a minus “-” symbol.",
   homeHeading: "",
   homeSubheading: "",
@@ -98,9 +92,6 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     {
       achievements: unknown;
       steps: unknown;
-      guessEnabled: boolean;
-      guessGapMax: number;
-      guessEveryN: number;
       imageWorldsend: string;
       imageCompass: string;
       imageDrop: string;
@@ -147,9 +138,6 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
   >`
     SELECT achievements,
            steps,
-           guess_enabled AS "guessEnabled",
-           guess_gap_max AS "guessGapMax",
-           guess_every_n AS "guessEveryN",
            image_worldsend  AS "imageWorldsend",
            image_compass    AS "imageCompass",
            image_drop       AS "imageDrop",
@@ -198,9 +186,6 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
   return {
     achievements: mergeAchievementConfig(r?.achievements),
     steps: mergeStepConfig(r?.steps),
-    guessEnabled: r?.guessEnabled ?? DEFAULTS.guessEnabled,
-    guessGapMax: r?.guessGapMax ?? DEFAULTS.guessGapMax,
-    guessEveryN: r?.guessEveryN ?? DEFAULTS.guessEveryN,
     tipText: r?.tipText ?? DEFAULTS.tipText,
     homeHeading: r?.homeHeading ?? DEFAULTS.homeHeading,
     homeSubheading: r?.homeSubheading ?? DEFAULTS.homeSubheading,
@@ -265,9 +250,6 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
   const next: ScoreSettings = {
     achievements: mergeAchievementConfig(s.achievements ?? current.achievements),
     steps: mergeStepConfig(s.steps ?? current.steps),
-    guessEnabled: typeof s.guessEnabled === "boolean" ? s.guessEnabled : current.guessEnabled,
-    guessGapMax: clampInt(s.guessGapMax ?? current.guessGapMax, 0, 9_999),
-    guessEveryN: clampInt(s.guessEveryN ?? current.guessEveryN, 1, 100),
     images: nextImages,
     tipText: typeof s.tipText === "string" ? s.tipText.trim().slice(0, 280) : current.tipText,
     homeHeading: typeof s.homeHeading === "string" ? s.homeHeading.trim().slice(0, 120) : current.homeHeading,
@@ -301,7 +283,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
   const db = getDb();
   await db`
     INSERT INTO score_settings (
-      shop, achievements, steps, guess_enabled, guess_gap_max, guess_every_n,
+      shop, achievements, steps,
       image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_winner_footer, image_bg, image_bg_exp,
       image_bg_we, image_bg_fv, image_bg_bp,
       image_bg_we_custom, image_bg_fv_custom, image_bg_bp_custom, image_bg_exp_custom,
@@ -312,7 +294,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       updated_at
     )
     VALUES (
-      ${shop}, ${jsonb(next.achievements)}, ${jsonb(next.steps)}, ${next.guessEnabled}, ${next.guessGapMax}, ${next.guessEveryN},
+      ${shop}, ${jsonb(next.achievements)}, ${jsonb(next.steps)},
       ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.winnerFooter}, ${next.images.bg}, ${next.images.bgExp},
       ${next.images.bgWe}, ${next.images.bgFv}, ${next.images.bgBp},
       ${next.images.bgWeCustom}, ${next.images.bgFvCustom}, ${next.images.bgBpCustom}, ${next.images.bgExpCustom},
@@ -325,9 +307,6 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     ON CONFLICT (shop) DO UPDATE SET
       achievements     = EXCLUDED.achievements,
       steps            = EXCLUDED.steps,
-      guess_enabled    = EXCLUDED.guess_enabled,
-      guess_gap_max    = EXCLUDED.guess_gap_max,
-      guess_every_n    = EXCLUDED.guess_every_n,
       image_worldsend  = EXCLUDED.image_worldsend,
       image_compass    = EXCLUDED.image_compass,
       image_drop       = EXCLUDED.image_drop,
