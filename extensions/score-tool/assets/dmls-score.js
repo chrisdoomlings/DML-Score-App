@@ -716,7 +716,6 @@
 
   function renderAchvLoading() {
     achvChrome(
-      '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">Achievements</h2>' +
       '<p class="dmls-sub">Loading…</p>',
       "dmls-screen-achv-loading"
@@ -724,7 +723,6 @@
   }
   function renderAchvError() {
     achvChrome(
-      '<p class="dmls-eyebrow">Your Doomlings career</p>' +
       '<h2 class="dmls-title">Achievements</h2>' +
       '<p class="dmls-sub">Couldn’t load your achievements right now — check your connection and try again.</p>' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-achv-retry">Retry</button>',
@@ -802,12 +800,11 @@
       : '<p class="dmls-hist-empty">No games logged yet — play one to get started!</p>';
 
     achvChromeSplit(
-      '<p class="dmls-eyebrow">Your Doomlings career</p>' +
-      '<h2 class="dmls-title">Achievements</h2>' +
       '<div class="dmls-achv-tabs" role="tablist">' +
       '<button type="button" class="dmls-achv-tab" data-tab="achv" role="tab">ACHV.</button>' +
       '<button type="button" class="dmls-achv-tab" data-tab="history" role="tab">HISTORY</button>' +
-      "</div>",
+      "</div>" +
+      '<h2 class="dmls-title">Achievements</h2>',
       '<div id="dmls-achv-panel-achv">' + achvGrid + "</div>" +
       '<div id="dmls-achv-panel-history" hidden>' + histList + "</div>",
       "dmls-screen-achievements"
@@ -918,13 +915,13 @@
               '></div><p class="dmls-achv-name">' + esc(a.name) + "</p></div>";
           }).join("");
           loyaltyHTML =
-            '<div class="dmls-widget dmls-widget-center">' +
+            '<div class="dmls-widget dmls-widget-center dmls-widget-new-achievement">' +
             '<h3 class="dmls-widget-title">' + (unlocked.length > 1 ? "New Achievements!" : "New Achievement!") + "</h3>" +
             achvItems +
             '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
         } else {
           loyaltyHTML =
-            '<div class="dmls-widget dmls-widget-center">' +
+            '<div class="dmls-widget dmls-widget-center dmls-widget-games-played">' +
             '<p class="dmls-win-stat-num">' + (lastResult.gamesPlayed != null ? lastResult.gamesPlayed : "—") + "</p>" +
             '<h3 class="dmls-widget-title">Games Played</h3>' +
             '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
@@ -953,11 +950,11 @@
         }
       } else if (saveFailed) {
         loyaltyHTML =
-          '<div class="dmls-widget"><h3 class="dmls-widget-title">Your Game</h3>' +
+          '<div class="dmls-widget dmls-widget-save-failed"><h3 class="dmls-widget-title">Your Game</h3>' +
           "<p>We couldn’t save this game to your account — check your connection. This game won’t count toward your achievements.</p></div>";
       } else {
         loyaltyHTML =
-          '<div class="dmls-widget"><h3 class="dmls-widget-title">Your Game</h3>' +
+          '<div class="dmls-widget dmls-widget-saving"><h3 class="dmls-widget-title">Your Game</h3>' +
           "<p>Saving your game…</p></div>";
       }
     } else {
@@ -968,7 +965,7 @@
       // having to tell those two apart (we can't — both look like "no
       // session").
       loyaltyHTML =
-        '<div class="dmls-widget dmls-widget-center"><h3 class="dmls-widget-title">Save this victory</h3>' +
+        '<div class="dmls-widget dmls-widget-center dmls-widget-guest-cta"><h3 class="dmls-widget-title">Save this victory</h3>' +
         "<p>Create or Sign In to your free Doomlings account to track your game history and earn achievements.</p>" +
         '<a class="dmls-btn dmls-btn-ghost" href="' + esc(withReturnUrl(loginUrl)) + '">My Account</a>' +
         "</div>";
@@ -1099,7 +1096,10 @@
     var winner = ranked[0];
     var winnerName = winner ? esc(winner.name) : "";
     var top = ranked.length ? total(ranked[0]) : 0;
-    var loserNamesRaw = ranked.slice(1).map(function (p) { return p.name; }).join(", ");
+    // Excludes everyone at the top score, not just ranked[0] — on a tie for
+    // first, slice(1) would otherwise list a co-winner as one of "the other
+    // people".
+    var loserNamesRaw = ranked.filter(function (p) { return total(p) !== top; }).map(function (p) { return p.name; }).join(", ");
     var loserNames = esc(loserNamesRaw);
     // One of the admin's trophy-design pool, picked fresh on every visit to
     // this screen (client spec: random per generation, for variety — not a
