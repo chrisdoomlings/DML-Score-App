@@ -117,6 +117,7 @@
   min-height: 0; /* lets it shrink below content size once .dmls-card hits its max-height, instead of pushing the card taller */
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain; /* stops wheel/touch scroll from chaining to the page once this hits its own top/bottom */
   padding-right: 0.125em; /* keeps the scrollbar (where visible) off the text */
   scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12);
   /* -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
@@ -132,7 +133,7 @@
    scrolling instead of the whole card body. */
 .dmls-card-body.dmls-split { display: flex; flex-direction: column; overflow: hidden; padding-right: 0; min-height: 0; }
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
-.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0px 19px 0px 0px;  }
+.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 0px 19px 0px 0px;  }
 /* fitScrollMid() in dmls-score.js adds this once it measures that the list
    doesn't actually overflow — no scrollbar, so no need to reserve room for one. */
 .dmls-card-body.dmls-split > .dmls-scroll-mid.dmls-scroll-fit { padding-right: 0; }
@@ -235,7 +236,7 @@
     font-weight: 400;
     margin: 8px auto 6px;
     padding-top: 6px;
-    max-width: 250px;
+    max-width: 266px;
 }
 /* A leading "(...)" tag split out of a step heading (see stepHeadingHTML in
    dmls-score.js) — sized/positioned as its own small line, in the same
@@ -269,7 +270,7 @@
     padding: 0.25em 1.5em;
     border-radius: 999px;
     font-weight: 500;
-    font-size: 1.5em;
+    font-size: 1.3em;
     text-transform: uppercase;
 
     transition: transform 0.12s ease;
@@ -758,7 +759,6 @@
 .dmls-btn-full { width: 100%; }
 
 @media (min-width: 640px) {
-  .dmls-achv-grid { grid-template-columns: repeat(3, 1fr); }
   .dmls-trophy-share { display: none; }
 }
 
@@ -771,3 +771,4 @@
 
 #dmls-screen-welcome .dmls-sub{ display:none;}
 
+#dmls-screen-achievements { padding-top: 55px; }
