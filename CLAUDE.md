@@ -102,3 +102,11 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   body-scroll-lock. One consequence: the trophy screen's old "actions only appear
   once you scroll past the trophy art" effect relied on the modal's fixed viewport
   height and no longer applies — it now flows straight into the actions.
+  Every `.dmls-card` under `#dmls-root` still has `min-height: 0` (grows to fit short
+  content instead of a tall fixed floor) but also a restored `max-height` — no screen
+  (Achievements included) grows past Settings → General → "Screen size cap" (the
+  admin field still named `modalHeight`/`modalHeightUnit`/`modalWidth` in code/DB);
+  content that doesn't fit scrolls inside it via `.dmls-scroll-mid` (Add Names/steps/
+  achievements) or `.dmls-card-body` directly (welcome/winner/trophy). `loadConfig()`
+  sets `--dmls-modal-height`/`--dmls-modal-width` on `#dmls-root` itself (not just the
+  `#dmls-modal` panel) so welcome is capped identically to every other screen.

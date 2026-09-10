@@ -1405,10 +1405,13 @@
         if (url) new Image().src = url;
       });
       if (typeof c.cardMinHeight === "number") modalEl.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
-      if (typeof c.modalWidth === "number") modalEl.style.setProperty("--dmls-modal-width", c.modalWidth + "px");
+      // Set on #dmls-root (not just the #dmls-modal panel) so the cap applies
+      // uniformly to every screen, welcome included — #dmls-root .dmls-card's
+      // max-height in dmls-score.css reads this var.
+      if (typeof c.modalWidth === "number") root.style.setProperty("--dmls-modal-width", c.modalWidth + "px");
       if (typeof c.modalHeight === "number") {
         var modalHeightUnit = c.modalHeightUnit === "px" ? "px" : "vh";
-        modalEl.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
+        root.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
       }
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge

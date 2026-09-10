@@ -81,13 +81,21 @@
    On-page welcome (#dmls-root) — renderPageWelcome() in dmls-score.js
    fills #dmls-welcome-page with the same .dmls-card markup every other
    screen uses (#dmls-modal included, right below it). Every one of those
-   cards gets its forced modal-era min-height turned off below, so they all
-   size to their own content in the page's normal flow instead of a fixed
-   viewport-height card — the tradeoff is the trophy screen's old "actions
-   only appear once you scroll past the trophy art" effect, which relied on
-   that fixed height; it now just flows straight into the actions. */
+   cards gets its forced modal-era min-height turned off below, so a short
+   screen just sizes to its own content instead of a tall fixed-height
+   card — the tradeoff is the trophy screen's old "actions only appear once
+   you scroll past the trophy art" effect, which relied on that fixed
+   height; it now just flows straight into the actions.
+   max-height is the opposite direction: no screen (Achievements included)
+   grows past the admin's configured Settings → General → Modal size
+   height — loadConfig() in dmls-score.js sets --dmls-modal-height on
+   #dmls-root itself (not just the old #dmls-modal panel) so welcome and
+   every other screen are capped identically. Past that height, the
+   .dmls-scroll-mid middle section scrolls (Add Names/steps/achievements),
+   or .dmls-card-body itself does (welcome/winner/trophy, which don't split
+   out a separate scrolling middle). */
 .dmls-launcher { max-width: 520px; margin: 36px auto 60px; padding: 0 1em; }
-#dmls-root .dmls-card { min-height: 0; }
+#dmls-root .dmls-card { min-height: 0; max-height: min(96vh, var(--dmls-modal-height, 90vh)); }
 
 .dmls-card {
   background-color: var(--dmls-panel);
@@ -106,6 +114,7 @@
 }
 .dmls-card-body {
   flex: 1 1 auto;
+  min-height: 0; /* lets it shrink below content size once .dmls-card hits its max-height, instead of pushing the card taller */
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 0.125em; /* keeps the scrollbar (where visible) off the text */

@@ -422,10 +422,12 @@ export default function SettingsPage() {
               </section>
 
               <section className="dml-card">
-                <h2 className="dml-card-title">Modal size</h2>
+                <h2 className="dml-card-title">Screen size cap</h2>
                 <p className="dml-card-hint">
-                  The size of the pop-up window itself (not the card inside it). Width is still capped at 92% of
-                  the screen on narrow phones no matter what you set here.
+                  Height applies to every screen of the tool (welcome, Add Names, scoring steps, winner,
+                  Achievements, trophy) — none of them grow taller than this, and content that doesn&rsquo;t fit
+                  scrolls inside instead. Width only caps how wide the Add-Names-through-Achievements panel
+                  gets on desktop/tablet.
                 </p>
                 <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
                   <div>
