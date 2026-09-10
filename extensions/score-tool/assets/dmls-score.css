@@ -94,6 +94,14 @@
    .dmls-scroll-mid middle section scrolls (Add Names/steps/achievements),
    or .dmls-card-body itself does (welcome/winner/trophy, which don't split
    out a separate scrolling middle). */
+/* Settings → General → "Lock page scroll" (default off, opt-in). Toggled
+   on <html> by showModal()/hideModal() in dmls-score.js while the tool's
+   card is open, so wheel/touch scrolling stays inside the card (its
+   .dmls-scroll-mid/.dmls-card-body already contain their own scroll) instead
+   of moving the storefront page behind it. */
+html.dmls-page-scroll-locked,
+html.dmls-page-scroll-locked body { overflow: hidden; }
+
 .dmls-launcher { max-width: 520px; margin: 36px auto 60px; padding: 0 1em; }
 #dmls-root .dmls-card { min-height: 0; max-height: min(96vh, var(--dmls-modal-height, 90vh)); }
 

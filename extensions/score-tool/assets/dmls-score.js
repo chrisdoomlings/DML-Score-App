@@ -232,12 +232,33 @@
   var view = "game"; // "game" | "achv"
   var modalOpen = false;
   var modalDeepLinked = false; // true only for a fresh page load that landed directly on a hash, no prior in-app navigation
+  // Settings → General → "Lock page scroll" (default off) — loadConfig()
+  // flips this once /config resolves. Opt-in re-add of body-scroll-lock,
+  // which the Sept 2026 inline rebuild deliberately removed; see
+  // lockPageScroll() below for why it's a simple overflow toggle rather
+  // than the old fixed-position/scroll-restore approach.
+  var lockScrollEnabled = false;
+
+  // Simple overflow:hidden toggle on <html> — not the fixed-position +
+  // saved-scrollY technique some scroll-locks use, since that reintroduces
+  // exactly the "fixed positioning" behavior the Sept 2026 rebuild removed
+  // on purpose. This only stops the page from scrolling while open; it
+  // doesn't preserve/restore scroll position (nothing moves it in the
+  // first place) and doesn't compensate for scrollbar-width layout shift,
+  // which is a non-issue on the ~99% mobile traffic this tool targets.
+  function lockPageScroll() {
+    document.documentElement.classList.add("dmls-page-scroll-locked");
+  }
+  function unlockPageScroll() {
+    document.documentElement.classList.remove("dmls-page-scroll-locked");
+  }
 
   function showModal() {
     if (modalOpen) return;
     modalOpen = true;
     modalEl.classList.add("dmls-modal-open");
     if (welcomeEl) welcomeEl.hidden = true;
+    if (lockScrollEnabled) lockPageScroll();
     // Inline content can open below the fold (e.g. the player scrolled
     // partway down a long welcome section) — bring it into view since
     // there's no viewport-centered overlay doing that automatically anymore.
@@ -247,6 +268,7 @@
     modalOpen = false;
     modalEl.classList.remove("dmls-modal-open");
     if (welcomeEl) welcomeEl.hidden = false;
+    unlockPageScroll();
   }
   // X button / Escape: just hide. Never discard state.screen/state.players
   // here — a deep-linked open (e.g. a refresh mid-game re-landed on
@@ -1413,6 +1435,10 @@
         var modalHeightUnit = c.modalHeightUnit === "px" ? "px" : "vh";
         root.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
       }
+      lockScrollEnabled = Boolean(c.lockPageScroll);
+      // Config can resolve after the tool was already opened (e.g. deep-linked
+      // straight onto a hash on first paint) — apply immediately if so.
+      if (modalOpen && lockScrollEnabled) lockPageScroll();
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge
       // into ICONS so any future render() picks up the override, and only

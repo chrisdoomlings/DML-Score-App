@@ -31,6 +31,7 @@ interface Settings {
   modalWidth: number;
   modalHeight: number;
   modalHeightUnit: "vh" | "px";
+  lockPageScroll: boolean;
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -462,6 +463,22 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+              </section>
+
+              <section className="dml-card">
+                <h2 className="dml-card-title">Page scroll</h2>
+                <p className="dml-card-hint">
+                  When on, scrolling while the tool&rsquo;s card is open (Add Names, scoring steps, etc.) always
+                  scrolls inside the card instead of the storefront page behind it &mdash; like the old full-screen
+                  modal. When off (default), the card flows inline with the page and the page scrolls normally.
+                </p>
+                <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <input
+                    type="checkbox" checked={settings.lockPageScroll}
+                    onChange={(e) => setSettings({ ...settings, lockPageScroll: e.target.checked })}
+                  />
+                  Lock page scroll while the tool is open
+                </label>
               </section>
 
               <section className="dml-card dml-card-wide">
