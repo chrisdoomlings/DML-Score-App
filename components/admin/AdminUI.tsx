@@ -34,13 +34,14 @@ export function GlobalStyle() {
       .dml-msg-err { font-size: 13px; color: #d72c0d; font-weight: 600; }
       .dml-msg-dirty { font-size: 13px; color: #8a6116; font-weight: 600; }
 
-      .dml-nav { max-width: 1120px; margin: 0 auto; padding: 14px 24px 0; display: flex; gap: 4px; }
+      .dml-nav { max-width: 1120px; margin: 0 auto; padding: 10px 20px 0; display: flex; gap: 2px; }
       .dml-nav-link {
-        font-size: 13px; font-weight: 600; color: #6d7175; text-decoration: none;
-        padding: 8px 4px; border-bottom: 2px solid transparent; margin-bottom: -1px;
+        font-size: 14px; font-weight: 600; color: #6d7175; text-decoration: none;
+        padding: 10px 14px; border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent;
+        margin-bottom: -1px; transition: background 0.15s, color 0.15s;
       }
-      .dml-nav-link:hover { color: #202223; }
-      .dml-nav-link.active { color: #008060; border-bottom-color: #008060; }
+      .dml-nav-link:hover { color: #202223; background: #f1f2f3; }
+      .dml-nav-link.active { color: #008060; background: #e3f1ed; border-bottom-color: #008060; }
 
       .dml-subtabs {
         max-width: 1120px; margin: 0 auto; padding: 16px 24px 0;
