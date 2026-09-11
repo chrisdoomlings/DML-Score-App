@@ -596,8 +596,6 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    scrolls up underneath it while it's pinned. */
 .dmls-resume {
   display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap;
-  background: linear-gradient(rgba(61, 38, 107, 0.97), rgba(61, 38, 107, 0.97)), rgba(255, 213, 74, 0.12);
-  border: 1px solid rgba(255, 213, 74, 0.4);
   border-radius: 12px; padding: 0.75em 1em; margin: 18px auto 0;
   font-size: 0.875em; color: var(--dmls-gold);
   position: sticky; top: 0; z-index: 3;
@@ -666,6 +664,55 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 #dmls-modal { display: none; width: min(100%, var(--dmls-modal-width, 520px)); margin: 36px auto 60px; padding: 0 1em; }
 #dmls-modal.dmls-modal-open { display: block; }
 #dmls-modal .dmls-modal-card { position: relative; }
+#dmls-modal .dmls-modal-backdrop { display: none; } /* only ever shown in modal mode below */
+
+/* ---------------------------------------------------------------------
+   Settings → General → "Display mode" = "Full-screen modal (classic)".
+   dmls-score.js's moveModalToBody() makes #dmls-modal a direct child of
+   <body> when that's picked (instead of leaving it inline right after
+   #dmls-welcome-page) — every rule below keys off that DOM position
+   (`body > #dmls-modal`) rather than a mode class, so the inline rules
+   above are completely untouched when this mode is off (the default).
+   Restores the pre-Sept-2026 full-screen overlay this app originally
+   shipped with: fixed position, dark backdrop, centered card, page scroll
+   locked shut for as long as it's open (unconditionally — the separate
+   "Lock page scroll" setting above only applies to inline mode, where
+   locking is optional; a modal *always* blocks the page behind it). */
+html.dmls-modal-lock, body.dmls-modal-lock { overflow: hidden; height: 100%; }
+
+body > #dmls-modal {
+  position: fixed; inset: 0; z-index: 10000; width: auto; margin: 0; padding: 0;
+}
+body > #dmls-modal .dmls-modal-backdrop {
+  display: block; position: absolute; inset: 0; background: rgba(6, 6, 22, 0.72);
+}
+body > #dmls-modal .dmls-modal-card {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(92vw, var(--dmls-modal-width, 520px));
+  height: min(96vh, var(--dmls-modal-height, 90vh));
+  max-height: min(96vh, var(--dmls-modal-height, 90vh));
+  display: flex; flex-direction: column;
+}
+body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+/* Cards no longer sit under #dmls-root once moved to <body>, so they miss
+   out on #dmls-root .dmls-card's min-height:0/max-height reset further up
+   this file — back to the plain floor-height .dmls-card default, and the
+   modal-card's own fixed height (not just max-height) above is what makes
+   that floor scroll instead of overflow, same as the original modal. */
+@media (max-height: 600px) {
+  /* Very short viewports (phones in landscape) have too little room for
+     that floor — drop it so the card shrinks to fit instead of clipping
+     off-screen; .dmls-card-body/.dmls-scroll-mid already scroll their own
+     content regardless. */
+  body > #dmls-modal .dmls-card { min-height: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  body > #dmls-modal.dmls-modal-open .dmls-modal-card { animation: dmls-modal-pop 0.22s ease; }
+  @keyframes dmls-modal-pop {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+}
 
 #dmls-modal .dmls-modal-close {
   position: absolute; top: 10px; right: 10px; z-index: 1;

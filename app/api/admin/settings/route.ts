@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       modalHeight: body.modalHeight,
       modalHeightUnit: body.modalHeightUnit,
       lockPageScroll: body.lockPageScroll,
+      layoutMode: body.layoutMode,
       winnerImageSize: body.winnerImageSize,
       charactersWidth: body.charactersWidth,
       headingWidth: body.headingWidth,

@@ -43,7 +43,8 @@ export interface ScoreSettings {
   modalWidth: number; // px; max-width cap of the #dmls-modal shell itself (still bounded by 92vw on narrow phones)
   modalHeight: number; // raw number, interpreted per modalHeightUnit; height of the #dmls-modal shell itself
   modalHeightUnit: "vh" | "px"; // which unit modalHeight is in
-  lockPageScroll: boolean; // while the tool's card is open, lock the underlying page from scrolling so only the card's own content scrolls
+  lockPageScroll: boolean; // while the tool's card is open, lock the underlying page from scrolling so only the card's own content scrolls (inline layoutMode only — modal mode always locks)
+  layoutMode: "inline" | "modal"; // "inline" (default, Sept 2026 rebuild) renders in the page's own flow; "modal" restores the pre-rebuild full-screen overlay (fixed position, backdrop, always-locked page scroll)
   winnerImageSize: number; // px; max-width of the winner reveal art
   charactersWidth: number; // px; welcome-screen character illustration — can exceed the card width to bleed off the edges (card clips via overflow:hidden)
   headingWidth: number; // px; max-width of the welcome heading, controls line wrapping
@@ -74,6 +75,7 @@ const DEFAULTS = {
   modalHeight: 90,
   modalHeightUnit: "vh" as const,
   lockPageScroll: false,
+  layoutMode: "inline" as const,
   winnerImageSize: 260,
   charactersWidth: 320,
   headingWidth: 320,
@@ -133,6 +135,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       modalHeight: number;
       modalHeightUnit: string;
       lockPageScroll: boolean;
+      layoutMode: string;
       winnerImageSize: number;
       charactersWidth: number;
       headingWidth: number;
@@ -180,6 +183,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            modal_height     AS "modalHeight",
            modal_height_unit AS "modalHeightUnit",
            lock_page_scroll AS "lockPageScroll",
+           layout_mode AS "layoutMode",
            winner_image_size AS "winnerImageSize",
            characters_width  AS "charactersWidth",
            heading_width     AS "headingWidth",
@@ -208,6 +212,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     modalHeight: r?.modalHeight ?? DEFAULTS.modalHeight,
     modalHeightUnit: r?.modalHeightUnit === "px" ? "px" : DEFAULTS.modalHeightUnit,
     lockPageScroll: r?.lockPageScroll ?? DEFAULTS.lockPageScroll,
+    layoutMode: r?.layoutMode === "modal" ? "modal" : DEFAULTS.layoutMode,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
     charactersWidth: r?.charactersWidth ?? DEFAULTS.charactersWidth,
     headingWidth: r?.headingWidth ?? DEFAULTS.headingWidth,
@@ -281,6 +286,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
         ? clampInt(s.modalHeight ?? current.modalHeight, 300, 1200)
         : clampInt(s.modalHeight ?? current.modalHeight, 50, 100),
     lockPageScroll: typeof s.lockPageScroll === "boolean" ? s.lockPageScroll : current.lockPageScroll,
+    layoutMode: s.layoutMode === "modal" ? "modal" : s.layoutMode === "inline" ? "inline" : current.layoutMode,
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
     charactersWidth: clampInt(s.charactersWidth ?? current.charactersWidth, 60, 900),
     headingWidth: clampInt(s.headingWidth ?? current.headingWidth, 100, 600),
@@ -295,7 +301,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_bg_we_custom, image_bg_fv_custom, image_bg_bp_custom, image_bg_exp_custom,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, trophy_top_images,
-      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, modal_height_unit, lock_page_scroll, winner_image_size,
+      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, modal_height_unit, lock_page_scroll, layout_mode, winner_image_size,
       characters_width, heading_width, heading_font_size,
       updated_at
     )
@@ -306,7 +312,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.bgWeCustom}, ${next.images.bgFvCustom}, ${next.images.bgBpCustom}, ${next.images.bgExpCustom},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
-      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.modalHeightUnit}, ${next.lockPageScroll}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.modalHeightUnit}, ${next.lockPageScroll}, ${next.layoutMode}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       NOW()
     )
@@ -352,6 +358,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       modal_height     = EXCLUDED.modal_height,
       modal_height_unit = EXCLUDED.modal_height_unit,
       lock_page_scroll = EXCLUDED.lock_page_scroll,
+      layout_mode      = EXCLUDED.layout_mode,
       winner_image_size = EXCLUDED.winner_image_size,
       characters_width  = EXCLUDED.characters_width,
       heading_width     = EXCLUDED.heading_width,

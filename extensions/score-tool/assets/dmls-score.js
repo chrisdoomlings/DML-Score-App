@@ -211,11 +211,21 @@
      document.body — there's no overlay to escape #dmls-root's stacking
      context for). showModal()/hideModal() just swap its visibility with
      welcomeEl's; no backdrop, no body-scroll-lock, no focus trap — it's
-     ordinary page content, not a dialog. */
+     ordinary page content, not a dialog.
+     Settings → General → "Display mode" = "Full-screen modal (classic)"
+     (layoutModeIsModal below) restores the pre-Sept-2026 overlay instead:
+     loadConfig() moves this same node to be a direct child of <body>, and
+     dmls-score.css keys its fixed/backdrop/centered-card rules off that
+     DOM position (`body > #dmls-modal`) rather than a mode class — so the
+     default inline mode is completely untouched by any of it. The backdrop
+     div and dialog ARIA attributes below are always present either way:
+     inert (zero-size, unpositioned) in inline mode, real in modal mode. */
   var modalEl = document.createElement("div");
   modalEl.id = "dmls-modal";
+  modalEl.setAttribute("aria-hidden", "true");
   modalEl.innerHTML =
-    '<div class="dmls-modal-card" id="dmls-modal-card">' +
+    '<div class="dmls-modal-backdrop" id="dmls-modal-backdrop"></div>' +
+    '<div class="dmls-modal-card" id="dmls-modal-card" role="dialog" aria-modal="true" aria-label="Doomlings Score Tool">' +
     '<button type="button" class="dmls-modal-close" id="dmls-modal-close" aria-label="Back to start">&times;</button>' +
     '<div class="dmls-modal-body" id="dmls-modal-body">' +
     '<div id="dmls-app" aria-live="polite"></div>' +
@@ -232,6 +242,16 @@
   var view = "game"; // "game" | "achv"
   var modalOpen = false;
   var modalDeepLinked = false; // true only for a fresh page load that landed directly on a hash, no prior in-app navigation
+  // Flipped by loadConfig() once /config resolves (default false = inline,
+  // matching the sync-boot default below before that network round trip
+  // lands — same accepted race as lockScrollEnabled just above).
+  var layoutModeIsModal = false;
+  // Moves the (already-created, already-listened-to) #dmls-modal node to
+  // document.body so the `body > #dmls-modal` CSS takes over — safe to call
+  // more than once, and safe even after the panel has already been opened.
+  function moveModalToBody() {
+    if (modalEl.parentNode !== document.body) document.body.appendChild(modalEl);
+  }
   // Settings → General → "Lock page scroll" (default off) — loadConfig()
   // flips this once /config resolves. Opt-in re-add of body-scroll-lock,
   // which the Sept 2026 inline rebuild deliberately removed; see
@@ -257,36 +277,62 @@
     if (modalOpen) return;
     modalOpen = true;
     modalEl.classList.add("dmls-modal-open");
-    if (welcomeEl) welcomeEl.hidden = true;
-    if (lockScrollEnabled) lockPageScroll();
-    // Inline content can open below the fold (e.g. the player scrolled
-    // partway down a long welcome section) — bring it into view since
-    // there's no viewport-centered overlay doing that automatically anymore.
-    modalEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    modalEl.setAttribute("aria-hidden", "false");
+    if (layoutModeIsModal) {
+      // Classic overlay: page underneath stays exactly as it was (the
+      // backdrop covers it), locked from scrolling for as long as the
+      // modal's open — always, not gated by the separate "Lock page
+      // scroll" setting, matching the pre-Sept-2026 behavior.
+      document.documentElement.classList.add("dmls-modal-lock");
+      document.body.classList.add("dmls-modal-lock");
+      var closeBtn = document.getElementById("dmls-modal-close");
+      if (closeBtn) closeBtn.focus();
+    } else {
+      if (welcomeEl) welcomeEl.hidden = true;
+      if (lockScrollEnabled) lockPageScroll();
+      // Inline content can open below the fold (e.g. the player scrolled
+      // partway down a long welcome section) — bring it into view since
+      // there's no viewport-centered overlay doing that automatically here.
+      modalEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
   function hideModal() {
     modalOpen = false;
     modalEl.classList.remove("dmls-modal-open");
-    if (welcomeEl) welcomeEl.hidden = false;
-    unlockPageScroll();
+    modalEl.setAttribute("aria-hidden", "true");
+    if (layoutModeIsModal) {
+      document.documentElement.classList.remove("dmls-modal-lock");
+      document.body.classList.remove("dmls-modal-lock");
+    } else {
+      if (welcomeEl) welcomeEl.hidden = false;
+      unlockPageScroll();
+    }
   }
-  // X button / Escape: just hide. Never discard state.screen/state.players
-  // here — a deep-linked open (e.g. a refresh mid-game re-landed on
-  // "#players") can carry just as much real in-progress data as one opened
-  // from the page welcome, so resetting state.screen to 0 on close used to
-  // silently strand that data behind a "Resume it" banner the player could
-  // easily miss — and tapping "Start scoring" from there wipes it for good.
-  // Leaving state/hash untouched means close/reopen and close/refresh both
-  // land the player back exactly where they left off. renderPageWelcome()
-  // re-renders the on-page welcome (e.g. to show/hide the resume banner)
-  // now that the player is looking at it again.
+  // X button / Escape / backdrop click: just hide. Never discard
+  // state.screen/state.players here — a deep-linked open (e.g. a refresh
+  // mid-game re-landed on "#players") can carry just as much real
+  // in-progress data as one opened from the page welcome, so resetting
+  // state.screen to 0 on close used to silently strand that data behind a
+  // "Resume it" banner the player could easily miss — and tapping "Start
+  // scoring" from there wipes it for good. Leaving state/hash untouched
+  // means close/reopen and close/refresh both land the player back exactly
+  // where they left off. renderPageWelcome() re-renders the on-page welcome
+  // (e.g. to show/hide the resume banner) now that the player is looking at
+  // it again (inline mode) or is about to see it again once the overlay
+  // that was covering it closes (modal mode).
   function closeModal() {
     modalDeepLinked = false;
     hideModal();
     renderPageWelcome();
-    if (welcomeEl) welcomeEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (layoutModeIsModal) {
+      var startBtn = document.getElementById("dmls-start");
+      if (startBtn) startBtn.focus();
+    } else if (welcomeEl) {
+      welcomeEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
   document.getElementById("dmls-modal-close").addEventListener("click", closeModal);
+  document.getElementById("dmls-modal-backdrop").addEventListener("click", closeModal);
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && modalOpen) closeModal();
   });
@@ -1427,18 +1473,33 @@
         if (url) new Image().src = url;
       });
       if (typeof c.cardMinHeight === "number") modalEl.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
-      // Set on #dmls-root (not just the #dmls-modal panel) so the cap applies
-      // uniformly to every screen, welcome included — #dmls-root .dmls-card's
-      // max-height in dmls-score.css reads this var.
-      if (typeof c.modalWidth === "number") root.style.setProperty("--dmls-modal-width", c.modalWidth + "px");
+      // Set on #dmls-root AND on #dmls-modal itself, not just #dmls-root —
+      // in modal display mode (below) #dmls-modal is moved to be a direct
+      // child of <body>, outside #dmls-root's subtree entirely, so it can no
+      // longer inherit a custom property set only on #dmls-root. Setting it
+      // in both places keeps the admin's configured size correct regardless
+      // of which mode is active. #dmls-root's copy still also caps every
+      // #dmls-root .dmls-card (welcome included) via max-height in
+      // dmls-score.css.
+      if (typeof c.modalWidth === "number") {
+        root.style.setProperty("--dmls-modal-width", c.modalWidth + "px");
+        modalEl.style.setProperty("--dmls-modal-width", c.modalWidth + "px");
+      }
       if (typeof c.modalHeight === "number") {
         var modalHeightUnit = c.modalHeightUnit === "px" ? "px" : "vh";
         root.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
+        modalEl.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
       }
       lockScrollEnabled = Boolean(c.lockPageScroll);
+      layoutModeIsModal = c.layoutMode === "modal";
+      if (layoutModeIsModal) moveModalToBody();
       // Config can resolve after the tool was already opened (e.g. deep-linked
       // straight onto a hash on first paint) — apply immediately if so.
-      if (modalOpen && lockScrollEnabled) lockPageScroll();
+      if (modalOpen && lockScrollEnabled && !layoutModeIsModal) lockPageScroll();
+      if (modalOpen && layoutModeIsModal) {
+        document.documentElement.classList.add("dmls-modal-lock");
+        document.body.classList.add("dmls-modal-lock");
+      }
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge
       // into ICONS so any future render() picks up the override, and only

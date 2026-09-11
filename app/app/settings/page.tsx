@@ -32,6 +32,7 @@ interface Settings {
   modalHeight: number;
   modalHeightUnit: "vh" | "px";
   lockPageScroll: boolean;
+  layoutMode: "inline" | "modal";
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -466,19 +467,30 @@ export default function SettingsPage() {
               </section>
 
               <section className="dml-card">
-                <h2 className="dml-card-title">Page scroll</h2>
+                <h2 className="dml-card-title">Display mode</h2>
                 <p className="dml-card-hint">
-                  When on, scrolling while the tool&rsquo;s card is open (Add Names, scoring steps, etc.) always
-                  scrolls inside the card instead of the storefront page behind it &mdash; like the old full-screen
-                  modal. When off (default), the card flows inline with the page and the page scrolls normally.
+                  Inline (default) flows the tool&rsquo;s card in the page itself, right after the welcome section.
+                  Full-screen modal restores the tool&rsquo;s original look &mdash; a centered overlay with a dark
+                  backdrop, fixed in place over the page, with the page behind it always locked from scrolling
+                  while it&rsquo;s open.
                 </p>
-                <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input
-                    type="checkbox" checked={settings.lockPageScroll}
-                    onChange={(e) => setSettings({ ...settings, lockPageScroll: e.target.checked })}
-                  />
-                  Lock page scroll while the tool is open
-                </label>
+                <label className="dml-label">Layout</label>
+                <select
+                  className="dml-input dml-input-sm" value={settings.layoutMode}
+                  onChange={(e) => setSettings({ ...settings, layoutMode: e.target.value === "modal" ? "modal" : "inline" })}
+                >
+                  <option value="inline">Inline (default)</option>
+                  <option value="modal">Full-screen modal (classic)</option>
+                </select>
+                {settings.layoutMode === "inline" && (
+                  <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+                    <input
+                      type="checkbox" checked={settings.lockPageScroll}
+                      onChange={(e) => setSettings({ ...settings, lockPageScroll: e.target.checked })}
+                    />
+                    Lock page scroll while the tool is open
+                  </label>
+                )}
               </section>
 
               <section className="dml-card dml-card-wide">
