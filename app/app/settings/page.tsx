@@ -381,7 +381,7 @@ export default function SettingsPage() {
       <div style={{
         background: "#fff", borderBottom: "1px solid #e1e3e5",
         padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between",
-        maxWidth: 1120, margin: "0 auto", gap: 16, flexWrap: "wrap",
+        maxWidth: 1120, margin: "16px auto 0", gap: 16, flexWrap: "wrap",
       }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: "#202223" }}>Settings</span>
         <div className="dml-savebar">
