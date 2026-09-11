@@ -595,12 +595,22 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    background (not the plain translucent gold tint) since content now
    scrolls up underneath it while it's pinned. */
 .dmls-resume {
-  display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap;
-  border-radius: 12px; padding: 0.75em 1em; margin: 18px auto 0;
-  font-size: 0.875em; color: var(--dmls-gold);
-  position: sticky; top: 0; z-index: 3;
+      margin: 0 auto;
+    font-size: 0.875em;
+    color: #ffffff;
+    position: absolute;
+    top: 21%;
+    z-index: 3;
+    border: red;
+    left: 29%;
 }
-.dmls-resume button { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; color: var(--dmls-gold); }
+.dmls-resume button { font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    color: var(--dmls-gold);
+    display: block;
+    text-align: center;
+    margin: 0 auto;}
 
 .dmls-welcome-hero { position: relative; }
 .dmls-welcome-characters { display: block !important; width: calc(100% + 45px); max-width: none !important; height: auto !important; margin: 0 -39px 12px !important; padding-top: 90px;z-index: 2; position: relative; }
