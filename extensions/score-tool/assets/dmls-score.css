@@ -589,12 +589,18 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-prod-more { margin-top: 12px; }
 #dmls-products { margin: 0; }
 
-/* resume banner */
+/* resume banner — sticky to the top of .dmls-card-body's own scroll (see
+   overflow-y: auto there) so it stays on screen as the player scrolls the
+   welcome content instead of scrolling away with it. Needs a solid-ish
+   background (not the plain translucent gold tint) since content now
+   scrolls up underneath it while it's pinned. */
 .dmls-resume {
   display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap;
-  background: rgba(255, 213, 74, 0.12); border: 1px solid rgba(255, 213, 74, 0.4);
+  background: linear-gradient(rgba(61, 38, 107, 0.97), rgba(61, 38, 107, 0.97)), rgba(255, 213, 74, 0.12);
+  border: 1px solid rgba(255, 213, 74, 0.4);
   border-radius: 12px; padding: 0.75em 1em; margin: 18px auto 0;
   font-size: 0.875em; color: var(--dmls-gold);
+  position: sticky; top: 0; z-index: 3;
 }
 .dmls-resume button { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; color: var(--dmls-gold); }
 
