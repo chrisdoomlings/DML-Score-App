@@ -457,7 +457,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
     border: solid 2px #9287b0;}
 
 
-.dmls-trophy-scene { position: relative; }
+.dmls-trophy-scene { position: relative; padding-top: 40px; }
 
 /* Wrapper positions the Share/Download pair as a unit — was a single
    position:absolute button before a second (Download) action was added. */
@@ -503,7 +503,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 }
 .dmls-trophy-heading {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
-  font-size: clamp(26px, 8vw, 38px); line-height: 1.15; margin-bottom: 15px;
+  font-size: clamp(26px, 8vw, 44px); line-height: 1.15; margin-bottom: 15px;
 }
 .dmls-trophy-divider { border: none; border-top: 1px solid var(--dmls-line); width: 80%; margin: 0 auto 1.25em; }
 .dmls-trophy-losers { font-style: italic; font-weight: 700; font-size: 1.0625em; line-height: 1.5; color: white; margin: 0 0 0.375em; overflow-wrap: anywhere; }
@@ -513,7 +513,6 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-trophy-fill {
   display: flex; flex-direction: column; justify-content: center; padding: 30px 0;
   background-image:
-    linear-gradient(180deg, rgba(16, 21, 63, 0.25), rgba(16, 21, 63, 0.55)),
     var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
   background-size: cover; background-position: center; border-radius: 16px;
@@ -770,7 +769,7 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
    link, replacing the old in-place "My Stats" screen 7). */
 .dmls-welcome-links { margin-top: 14px; text-align: center; }
 
-.dmls-achv-tabs { display: flex; gap: 8px; margin: 4px 0 16px; flex: none; }
+.dmls-achv-tabs { display: flex; gap: 8px; margin: 4px 0 16px; flex: none; justify-content: space-around;}
 .dmls-achv-tab {
   flex: 1; padding: 0.625em; border-radius: 999px; background: #8f83c9;
   border: solid 1px transparent;

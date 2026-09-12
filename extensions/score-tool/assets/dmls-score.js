@@ -881,8 +881,8 @@
 
     achvChromeSplit(
       '<div class="dmls-achv-tabs" role="tablist">' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost" data-tab="achv" role="tab">ACHV.</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost-revert" data-tab="history" role="tab">HISTORY</button>' +
+      '<button type="button" class="dmls-achv-tab" data-tab="achv" role="tab">ACHV.</button>' +
+      '<button type="button" class="dmls-achv-tab" data-tab="history" role="tab">HISTORY</button>' +
       "</div>" +
       '<h2 class="dmls-title">Achievements</h2>',
       '<div id="dmls-achv-panel-achv">' + achvGrid + "</div>" +
@@ -952,9 +952,9 @@
     });
   }
   function applyAchvTab() {
-    var tabs = achvEl.querySelectorAll(".dmls-btn");
+    var tabs = achvEl.querySelectorAll(".dmls-achv-tab");
     Array.prototype.forEach.call(tabs, function (t) {
-      t.classList.toggle("dmls-btn-ghost", t.getAttribute("data-tab") === achvTab);
+      t.classList.toggle("dmls-achv-tab-on", t.getAttribute("data-tab") === achvTab);
     });
     var pAchv = document.getElementById("dmls-achv-panel-achv");
     var pHist = document.getElementById("dmls-achv-panel-history");
