@@ -466,7 +466,7 @@
           "</div>"
         : "") +
       "</div>" +
-      '<h2 class="dmls-title" style="max-width:' + headingWidth + 'px;font-size:' + headingFontSize + 'px">' + esc(heading) + "</h2>" +
+      '<h2 class="dmls-title">' + esc(heading) + "</h2>" +
       (homeSub ? '<p class="dmls-sub">' + esc(homeSub) + "</p>" : "") +
       (hasResume ? '<div class="dmls-resume">You have a game in progress. <button type="button" id="dmls-resume">Resume it</button></div>' : "") +
       (CUSTOMER ? '<div class="dmls-welcome-links"><button type="button" class="dmls-btn-link" id="dmls-achv-link">Achievements</button></div>' : "") +

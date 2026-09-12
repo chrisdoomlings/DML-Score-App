@@ -868,6 +868,9 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
 
 
 #dmls-screen-welcome { padding:0; padding-top:60px; padding-bottom: 30px;}
+#dmls-screen-welcome h2{    max-width: none;
+    font-size: 46px;
+    padding: 15px 30px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
 .dmls-prod-note{display:none;}
