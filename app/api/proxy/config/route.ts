@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedProxyParams } from "@/lib/utils/appProxy";
 import { getSettings } from "@/lib/score/settings";
+import { getRecommendedProducts } from "@/lib/score/products";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,10 +20,15 @@ export async function GET(req: NextRequest) {
     const images = Object.fromEntries(
       Object.entries(settings.images).filter(([, url]) => url)
     );
+    const products = await getRecommendedProducts(shop, settings);
     return NextResponse.json(
       {
         loggedIn: Boolean(params.logged_in_customer_id),
         images,
+        showProducts: settings.showProducts && products.length > 0,
+        productsHeading: settings.productsHeading,
+        productsNote: settings.productsNote,
+        products,
         tipText: settings.tipText,
         homeHeading: settings.homeHeading,
         homeSubheading: settings.homeSubheading,

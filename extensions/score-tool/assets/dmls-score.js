@@ -73,10 +73,50 @@
   var charactersWidth = 320; // px; unused for rendering, see note above
   var headingWidth = 320; // px; max-width, controls line wrapping
   var headingFontSize = 32; // px
+  // Winner-screen recommended-products widget — populated from /config
+  // (Settings → Products, Admin-API-backed collection picker server-side).
+  // Rendered client-side by renderProducts() since Liquid has no way to read
+  // that app-side config at page-render time (see score-tool.liquid).
+  var productsShow = false;
+  var productsHeadingText = "";
+  var productsNoteText = "";
+  var productsList = [];
   function logoHTML(cls) {
     // Width is merchant-set but centering is structural (margin:auto in CSS),
     // so any width the admin picks stays centered — never make this fill-width.
     return ICONS.logo ? '<img class="' + cls + '" src="' + ICONS.logo + '" alt="" style="width:' + logoWidth + 'px" loading="lazy">' : "";
+  }
+
+  // Populates #dmls-products from the /config payload — same markup/classes
+  // the old Liquid product loop used, so no CSS changes were needed to move
+  // this client-side. Idempotent: safe to call once config resolves, before
+  // the winner screen (which just moves/shows this same node) ever renders.
+  function renderProducts() {
+    if (!productsEl) return;
+    if (!productsShow || !productsList.length) {
+      productsEl.innerHTML = "";
+      return;
+    }
+    var itemsHTML = productsList.map(function (p) {
+      var buy = p.available
+        ? '<button class="dmls-prod-buy" type="button" aria-label="Add ' + esc(p.title) + ' to cart"' +
+          ' data-variant-id="' + p.variantId + '" data-title="' + esc(p.title) + '">' +
+          '<span aria-hidden="true">+</span></button>'
+        : '<a class="dmls-prod-buy dmls-prod-view" href="' + esc(p.url) + '" aria-label="View ' + esc(p.title) + '">' +
+          '<span aria-hidden="true">&rsaquo;</span></a>';
+      return '<div class="dmls-prod">' +
+        (p.imageUrl ? '<img class="dmls-prod-img" src="' + esc(p.imageUrl) + '" alt="" width="60" height="60" loading="lazy">' : "") +
+        '<div class="dmls-prod-info">' +
+        '<a href="' + esc(p.url) + '" class="dmls-prod-title">' + esc(p.title) + "</a>" +
+        '<span class="dmls-prod-price">' + esc(p.price) + "</span>" +
+        "</div>" +
+        buy +
+        "</div>";
+    }).join("");
+    productsEl.innerHTML =
+      '<h3 class="dmls-widget-title">' + esc(productsHeadingText) + "</h3>" +
+      '<div class="dmls-prods">' + itemsHTML + "</div>" +
+      (productsNoteText ? '<p class="dmls-prod-note">' + esc(productsNoteText) + "</p>" : "");
   }
 
   // Computed once at boot per spec — included on every POST /game.
@@ -1087,9 +1127,10 @@
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
       "</div></div>";
 
-    // Move Liquid-rendered products into the widgets column and show them
+    // Move the products widget (populated by renderProducts(), see loadConfig())
+    // into the widgets column and show it, if there's anything to show.
     var widgets = document.getElementById("dmls-widgets");
-    if (productsEl && widgets) {
+    if (productsEl && widgets && productsShow && productsList.length) {
       productsEl.hidden = false;
       productsEl.classList.add("dmls-widget");
       widgets.appendChild(productsEl);
@@ -1583,6 +1624,11 @@
         homeSub = c.homeSubheading;
         needsRerender = true;
       }
+      productsShow = Boolean(c.showProducts);
+      productsHeadingText = typeof c.productsHeading === "string" ? c.productsHeading : "";
+      productsNoteText = typeof c.productsNote === "string" ? c.productsNote : "";
+      productsList = Array.isArray(c.products) ? c.products : [];
+      renderProducts();
       // Also covers screen 6 (winner) — logoHTML() reads ICONS.logo, which (unlike
       // ICONS.winner, baked into the page at boot) only arrives via this /config
       // response; a fast click-through can reach the winner screen before it lands,

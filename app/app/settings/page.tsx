@@ -37,6 +37,11 @@ interface Settings {
   charactersWidth: number;
   headingWidth: number;
   headingFontSize: number;
+  showProducts: boolean;
+  recsCollectionId: string;
+  recsCollectionTitle: string;
+  productsHeading: string;
+  productsNote: string;
 }
 
 interface LibraryImage {
@@ -117,6 +122,12 @@ export default function SettingsPage() {
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [viewingImage, setViewingImage] = useState<{ key: string; url: string } | null>(null);
+  const [collectionPickerOpen, setCollectionPickerOpen] = useState(false);
+  const [collectionQuery, setCollectionQuery] = useState("");
+  const [collectionResults, setCollectionResults] = useState<{ id: string; title: string; handle: string }[] | null>(null);
+  const [collectionLoading, setCollectionLoading] = useState(false);
+  const [collectionErr, setCollectionErr] = useState("");
+  const [collectionReauth, setCollectionReauth] = useState<string | null>(null); // shop domain to reconnect, or null when not needed
 
   useEffect(() => {
     authedFetch("/api/admin/settings").then(async (r) => {
@@ -363,6 +374,38 @@ export default function SettingsPage() {
       setSettings({ ...settings, images: { ...settings.images, [pickerFor]: url } });
     }
     setPickerFor(null);
+  }
+
+  function searchCollections(q: string) {
+    setCollectionLoading(true);
+    setCollectionErr("");
+    authedFetch(`/api/admin/collections?q=${encodeURIComponent(q)}`).then(async (r) => {
+      const d = await r.json().catch(() => null);
+      setCollectionLoading(false);
+      if (r.status === 403 && d?.error === "reauth_required") { setCollectionReauth(d.shop || ""); return; }
+      if (d?.collections) setCollectionResults(d.collections);
+      else setCollectionErr(d?.error ?? "Couldn’t load collections.");
+    }).catch((e) => { setCollectionLoading(false); setCollectionErr(String(e?.message ?? e)); });
+  }
+
+  function openCollectionPicker() {
+    setCollectionPickerOpen(true);
+    setCollectionQuery("");
+    setCollectionResults(null);
+    setCollectionErr("");
+    setCollectionReauth(null);
+    searchCollections("");
+  }
+
+  function selectCollection(c: { id: string; title: string }) {
+    if (!settings) return;
+    setSettings({ ...settings, recsCollectionId: c.id, recsCollectionTitle: c.title });
+    setCollectionPickerOpen(false);
+  }
+
+  function clearCollection() {
+    if (!settings) return;
+    setSettings({ ...settings, recsCollectionId: "", recsCollectionTitle: "" });
   }
 
   if (authError) return <CenteredMessage>This app must be opened from your Shopify admin.</CenteredMessage>;
@@ -725,6 +768,44 @@ export default function SettingsPage() {
               </section>
 
               <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Recommended products</h2>
+                <p className="dml-card-hint">
+                  Up to 3 products shown after the winner reveal, pulled live from a collection you pick here.
+                </p>
+                <div className="dml-checkbox-row">
+                  <input
+                    type="checkbox" id="showProducts" checked={settings.showProducts}
+                    onChange={(e) => setSettings({ ...settings, showProducts: e.target.checked })}
+                  />
+                  <label htmlFor="showProducts">Show recommended products</label>
+                </div>
+                <label className="dml-label" style={{ marginTop: 14 }}>Collection</label>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 13, color: settings.recsCollectionTitle ? "#202223" : "#8a8d91" }}>
+                    {settings.recsCollectionTitle || "No collection selected"}
+                  </span>
+                  <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={openCollectionPicker}>
+                    {settings.recsCollectionTitle ? "Change" : "Choose"}
+                  </button>
+                  {settings.recsCollectionId && (
+                    <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={clearCollection}>
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <label className="dml-label" style={{ marginTop: 14 }}>Products heading</label>
+                <input
+                  className="dml-input" type="text" maxLength={120} value={settings.productsHeading}
+                  onChange={(e) => setSettings({ ...settings, productsHeading: e.target.value })}
+                />
+                <label className="dml-label" style={{ marginTop: 14 }}>Products note (optional)</label>
+                <input
+                  className="dml-input" type="text" maxLength={200} value={settings.productsNote}
+                  onChange={(e) => setSettings({ ...settings, productsNote: e.target.value })}
+                />
+              </section>
+
+              <section className="dml-card dml-card-wide">
                 <h2 className="dml-card-title">Images</h2>
                 <p className="dml-card-hint">
                   Replace the winner reveal screen&rsquo;s art with your own. Leave blank to use the built-in default.
@@ -989,6 +1070,62 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {collectionPickerOpen && (
+        <div className="dml-picker-backdrop" onClick={() => setCollectionPickerOpen(false)}>
+          <div className="dml-picker-card" onClick={(e) => e.stopPropagation()}>
+            <div className="dml-picker-head">
+              <span>Choose a collection</span>
+              <button type="button" className="dml-btn-ghost dml-btn-sm" style={{ flex: "none" }} onClick={() => setCollectionPickerOpen(false)}>Close</button>
+            </div>
+            {collectionReauth !== null ? (
+              <>
+                <p className="dml-msg-err" style={{ marginBottom: 12 }}>
+                  This app needs to be reconnected to load your collections — a permission (viewing products)
+                  was added after you first installed it.
+                </p>
+                <a
+                  className="dml-btn-primary" style={{ display: "inline-block", textDecoration: "none" }}
+                  href={`/auth?shop=${encodeURIComponent(collectionReauth)}`} target="_top"
+                >
+                  Reconnect the app
+                </a>
+              </>
+            ) : (
+              <>
+                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                  <input
+                    className="dml-input" type="text" placeholder="Search collections…"
+                    value={collectionQuery}
+                    onChange={(e) => setCollectionQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") searchCollections(collectionQuery); }}
+                  />
+                  <button type="button" className="dml-btn-secondary dml-btn-sm" style={{ flex: "none" }} onClick={() => searchCollections(collectionQuery)}>
+                    Search
+                  </button>
+                </div>
+                {collectionLoading && <p className="dml-empty">Loading collections…</p>}
+                {collectionErr && <p className="dml-msg-err">{collectionErr}</p>}
+                {!collectionLoading && !collectionErr && collectionResults && collectionResults.length === 0 && (
+                  <p className="dml-empty">No collections found.</p>
+                )}
+                {!collectionLoading && collectionResults && collectionResults.length > 0 && (
+                  <div className="dml-collection-list">
+                    {collectionResults.map((c) => (
+                      <button
+                        type="button" className="dml-collection-item" key={c.id}
+                        onClick={() => selectCollection(c)}
+                      >
+                        {c.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

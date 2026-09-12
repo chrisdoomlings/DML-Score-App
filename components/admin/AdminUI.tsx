@@ -176,6 +176,12 @@ export function GlobalStyle() {
         display: flex; align-items: center; justify-content: space-between;
         font-size: 14px; font-weight: 700; color: #202223; margin-bottom: 14px;
       }
+      .dml-collection-list { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; }
+      .dml-collection-item {
+        text-align: left; padding: 10px 12px; border-radius: 8px; font-size: 13px; color: #202223;
+        background: none; border: 0; cursor: pointer; transition: background 0.15s;
+      }
+      .dml-collection-item:hover { background: #f6f6f7; }
       .dml-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
       .dml-picker-item { position: relative; aspect-ratio: 1; }
       .dml-picker-thumb {

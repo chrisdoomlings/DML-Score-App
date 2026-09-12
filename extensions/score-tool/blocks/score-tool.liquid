@@ -20,43 +20,17 @@
   {% endcomment %}
   <div class="dmls-launcher" id="dmls-welcome-page"></div>
 
-  {% if block.settings.show_products and block.settings.recs_collection != blank %}
-    <div id="dmls-products" hidden>
-      <h3 class="dmls-widget-title">{{ block.settings.products_heading | escape }}</h3>
-      <div class="dmls-prods">
-        {% for product in block.settings.recs_collection.products limit: 3 %}
-          <div class="dmls-prod">
-            {% if product.featured_image %}
-              <img class="dmls-prod-img" src="{{ product.featured_image | image_url: width: 120 }}" alt="{{ product.featured_image.alt | escape }}" width="60" height="60" loading="lazy">
-            {% endif %}
-            <div class="dmls-prod-info">
-              <a href="{{ product.url }}" class="dmls-prod-title">{{ product.title | escape }}</a>
-              <span class="dmls-prod-price">{{ product.price | money }}</span>
-            </div>
-            {% if product.available %}
-              <button class="dmls-prod-buy" type="button" aria-label="Add {{ product.title | escape }} to cart"
-                data-variant-id="{{ product.selected_or_first_available_variant.id }}"
-                data-title="{{ product.title | escape }}">
-                <span aria-hidden="true">+</span>
-              </button>
-            {% else %}
-              <a class="dmls-prod-buy dmls-prod-view" href="{{ product.url }}" aria-label="View {{ product.title | escape }}">
-                <span aria-hidden="true">&rsaquo;</span>
-              </a>
-            {% endif %}
-          </div>
-        {% endfor %}
-      </div>
-      {% if block.settings.products_note != blank %}
-        <p class="dmls-prod-note">{{ block.settings.products_note | escape }}</p>
-      {% endif %}
-      {% if block.settings.recs_collection.url %}
-        <div class="dmls-prod-more-wrapper">
-          <a class="dmls-btn dmls-btn-ghost-revert " href="{{ block.settings.recs_collection.url }}">Shop more</a>
-        </div>
-      {% endif %}
-    </div>
-  {% endif %}
+  {% comment %}
+    The recommended-products widget used to be rendered here directly from a
+    `collection`-type block setting. That setting (and show_products/
+    products_heading/products_note alongside it) moved into the app's own
+    Settings → Products page (Admin GraphQL-backed collection picker) so it
+    doesn't require the theme editor to change — Liquid has no way to read
+    that app-side config at render time, so renderProducts() in dmls-score.js
+    populates this container client-side from /apps/score/config once it
+    resolves, same pattern as #dmls-welcome-page above.
+  {% endcomment %}
+  <div id="dmls-products" hidden></div>
 </div>
 
 <script>
@@ -80,30 +54,6 @@
       "id": "heading",
       "label": "Welcome heading",
       "default": "Ready to see who won the game?"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_products",
-      "label": "Show recommended products on the winner screen",
-      "default": true
-    },
-    {
-      "type": "collection",
-      "id": "recs_collection",
-      "label": "Recommendations collection",
-      "info": "Products shown after the winner reveal (first 3). Create a collection like \"Score Page Picks\" and manage it anytime."
-    },
-    {
-      "type": "text",
-      "id": "products_heading",
-      "label": "Products heading",
-      "default": "Level up your game"
-    },
-    {
-      "type": "text",
-      "id": "products_note",
-      "label": "Products note (optional)",
-      "default": "One tap to add to cart."
     }
   ]
 }

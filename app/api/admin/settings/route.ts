@@ -47,6 +47,11 @@ export async function POST(req: NextRequest) {
       charactersWidth: body.charactersWidth,
       headingWidth: body.headingWidth,
       headingFontSize: body.headingFontSize,
+      showProducts: body.showProducts,
+      recsCollectionId: body.recsCollectionId,
+      recsCollectionTitle: body.recsCollectionTitle,
+      productsHeading: body.productsHeading,
+      productsNote: body.productsNote,
     });
     return NextResponse.json({ settings });
   } catch (err) {

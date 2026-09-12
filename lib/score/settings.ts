@@ -57,6 +57,11 @@ export interface ScoreSettings {
   trophyActionsBg: string; // hex color behind the trophy screen's action buttons; empty = transparent (card's own default background)
   steps: StepConfig; // per-step heading/description for the 4 scoring screens; character images are images.bgWe/bgFv/bgBp/bgExp; per-step background overrides are images.bgWeCustom/bgFvCustom/bgBpCustom/bgExpCustom (empty = falls back to the shared images.bg)
   trophyTopImages: string[]; // pool of trophy-graphic designs; storefront picks one at random per "Generate Trophy" (client spec — variety, not a single fixed design)
+  showProducts: boolean; // winner-screen recommended-products widget on/off
+  recsCollectionId: string; // Shopify GID (gid://shopify/Collection/...), chosen via Settings → Products' Admin-API-backed picker; empty = widget stays hidden even if showProducts is true
+  recsCollectionTitle: string; // cached label for the picker's current-selection display, avoids an extra Admin API round trip just to show it
+  productsHeading: string; // widget heading, shown above the 3 recommended products
+  productsNote: string; // optional caption below the products; empty = hidden
 }
 
 const DEFAULTS = {
@@ -80,6 +85,11 @@ const DEFAULTS = {
   charactersWidth: 320,
   headingWidth: 320,
   headingFontSize: 32,
+  showProducts: true,
+  recsCollectionId: "",
+  recsCollectionTitle: "",
+  productsHeading: "Level up your game",
+  productsNote: "One tap to add to cart.",
 };
 
 const EMPTY_IMAGES: ImageUrls = {
@@ -140,6 +150,11 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       charactersWidth: number;
       headingWidth: number;
       headingFontSize: number;
+      showProducts: boolean;
+      recsCollectionId: string;
+      recsCollectionTitle: string;
+      productsHeading: string;
+      productsNote: string;
     }[]
   >`
     SELECT achievements,
@@ -187,7 +202,12 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            winner_image_size AS "winnerImageSize",
            characters_width  AS "charactersWidth",
            heading_width     AS "headingWidth",
-           heading_font_size AS "headingFontSize"
+           heading_font_size AS "headingFontSize",
+           show_products     AS "showProducts",
+           recs_collection_id    AS "recsCollectionId",
+           recs_collection_title AS "recsCollectionTitle",
+           products_heading  AS "productsHeading",
+           products_note     AS "productsNote"
     FROM score_settings WHERE shop = ${shop}
   `;
   const r = rows[0];
@@ -217,6 +237,11 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     charactersWidth: r?.charactersWidth ?? DEFAULTS.charactersWidth,
     headingWidth: r?.headingWidth ?? DEFAULTS.headingWidth,
     headingFontSize: r?.headingFontSize ?? DEFAULTS.headingFontSize,
+    showProducts: r?.showProducts ?? DEFAULTS.showProducts,
+    recsCollectionId: r?.recsCollectionId ?? DEFAULTS.recsCollectionId,
+    recsCollectionTitle: r?.recsCollectionTitle ?? DEFAULTS.recsCollectionTitle,
+    productsHeading: r?.productsHeading ?? DEFAULTS.productsHeading,
+    productsNote: r?.productsNote ?? DEFAULTS.productsNote,
     images: r
       ? {
           worldsend: r.imageWorldsend ?? "",
@@ -291,6 +316,11 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     charactersWidth: clampInt(s.charactersWidth ?? current.charactersWidth, 60, 900),
     headingWidth: clampInt(s.headingWidth ?? current.headingWidth, 100, 600),
     headingFontSize: clampInt(s.headingFontSize ?? current.headingFontSize, 14, 60),
+    showProducts: typeof s.showProducts === "boolean" ? s.showProducts : current.showProducts,
+    recsCollectionId: typeof s.recsCollectionId === "string" ? sanitizeCollectionGid(s.recsCollectionId) : current.recsCollectionId,
+    recsCollectionTitle: typeof s.recsCollectionTitle === "string" ? s.recsCollectionTitle.trim().slice(0, 120) : current.recsCollectionTitle,
+    productsHeading: typeof s.productsHeading === "string" ? s.productsHeading.trim().slice(0, 120) || DEFAULTS.productsHeading : current.productsHeading,
+    productsNote: typeof s.productsNote === "string" ? s.productsNote.trim().slice(0, 200) : current.productsNote,
   };
   const db = getDb();
   await db`
@@ -303,6 +333,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_trophy_bg, trophy_top_images,
       tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, modal_height_unit, lock_page_scroll, layout_mode, winner_image_size,
       characters_width, heading_width, heading_font_size,
+      show_products, recs_collection_id, recs_collection_title, products_heading, products_note,
       updated_at
     )
     VALUES (
@@ -314,6 +345,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
       ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.modalHeightUnit}, ${next.lockPageScroll}, ${next.layoutMode}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
+      ${next.showProducts}, ${next.recsCollectionId}, ${next.recsCollectionTitle}, ${next.productsHeading}, ${next.productsNote},
       NOW()
     )
     ON CONFLICT (shop) DO UPDATE SET
@@ -363,8 +395,19 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       characters_width  = EXCLUDED.characters_width,
       heading_width     = EXCLUDED.heading_width,
       heading_font_size = EXCLUDED.heading_font_size,
+      show_products     = EXCLUDED.show_products,
+      recs_collection_id    = EXCLUDED.recs_collection_id,
+      recs_collection_title = EXCLUDED.recs_collection_title,
+      products_heading  = EXCLUDED.products_heading,
+      products_note     = EXCLUDED.products_note,
       updated_at       = NOW()
   `;
+  // The cache is keyed implicitly to "whichever collection was last fetched" —
+  // switching collections without clearing it would keep serving the old
+  // collection's products until the TTL in lib/score/products.ts lapses.
+  if (next.recsCollectionId !== current.recsCollectionId) {
+    await db`UPDATE score_settings SET products_cache = '[]'::jsonb, products_cache_at = NULL WHERE shop = ${shop}`;
+  }
   return next;
 }
 
@@ -389,6 +432,15 @@ function sanitizeHexColor(v: string): string {
   const trimmed = v.trim();
   if (!trimmed) return "";
   return /^#[0-9a-fA-F]{3}$|^#[0-9a-fA-F]{6}$/.test(trimmed) ? trimmed : "";
+}
+
+/** Recommended-products collection — a Shopify GID from our own Admin GraphQL
+ * picker (app/api/admin/collections/route.ts), not free text; reject anything
+ * that doesn't look like one rather than storing arbitrary client input. */
+function sanitizeCollectionGid(v: string): string {
+  const trimmed = v.trim();
+  if (!trimmed) return "";
+  return /^gid:\/\/shopify\/Collection\/\d+$/.test(trimmed) ? trimmed : "";
 }
 
 function clampInt(v: unknown, min: number, max: number): number {

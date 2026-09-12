@@ -1,10 +1,9 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { SCOPES } from "@/lib/utils/scopes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const SCOPES = "read_customers";
 
 // Stateless HMAC state — no cookies needed
 function buildState(shop: string): string {

@@ -4,11 +4,11 @@ import { Session } from "@shopify/shopify-api";
 import { saveShop } from "@/lib/supabase/shopStore";
 import { sessionStorage } from "@/lib/supabase/sessionStore";
 import { safeEqualHex } from "@/lib/utils/timingSafeEqual";
+import { SCOPES } from "@/lib/utils/scopes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SCOPES = "read_customers";
 const STATE_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
 
 function verifyState(shop: string, state: string): boolean {
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Token exchange failed" }, { status: 400 });
     }
 
-    const { access_token } = await tokenRes.json();
+    const { access_token, scope: grantedScope } = await tokenRes.json();
 
     const session = Session.fromPropertyArray([
       ["id", `offline_${shop}`],
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       ["state", state],
       ["isOnline", false],
       ["accessToken", access_token],
-      ["scope", SCOPES],
+      ["scope", typeof grantedScope === "string" && grantedScope ? grantedScope : SCOPES],
     ]);
     await sessionStorage.storeSession(session);
     await saveShop(shop, { installedAt: new Date().toISOString(), uninstalledAt: null });

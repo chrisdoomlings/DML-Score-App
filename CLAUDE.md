@@ -14,9 +14,12 @@ Reviews & Rewards** — never touch that repo from here; it is the client's crit
 - Admin UI is plain React (no Polaris) — one dashboard page.
 
 ## Layout
-- OAuth: `app/auth/` + `app/auth/callback/` (scope: `read_customers`)
+- OAuth: `app/auth/` + `app/auth/callback/` (scope: `read_customers,read_products`, shared
+  constant in `lib/utils/scopes.ts`)
 - Proxy API: `app/api/proxy/` — `config` (GET), `game` (POST), `stats` (GET)
-- Admin API: `app/api/admin/` — `settings`, `summary`, `analytics`, `upload` (App Bridge JWT-authed via `lib/utils/adminAuth.ts`)
+- Admin API: `app/api/admin/` — `settings`, `summary`, `analytics`, `upload`, `collections`
+  (App Bridge JWT-authed via `lib/utils/adminAuth.ts`; `collections` additionally needs the
+  shop's offline session to carry `read_products`, via `lib/utils/adminGraphql.ts`)
 - Webhooks: `app/api/webhooks/` — `app/uninstalled`
 - Business logic: `lib/score/` — `games.ts` (save/stats), `settings.ts`
 - DB: `lib/supabase/client.ts` + `supabase/migrations/001_initial.sql` (5 tables, all `score_`-prefixed except sessions/shops)
@@ -27,8 +30,9 @@ Reviews & Rewards** — never touch that repo from here; it is the client's crit
   loyalty program in phase 1. A later bridge migrates/mirrors them. Do not call other apps' APIs.
 - **Guests can log games** (no points, no customer_id); customers are identified only via
   `logged_in_customer_id` injected by Shopify's app proxy — never trust a client-sent id.
-- **Product recommendations are Liquid-rendered** from a collection block setting — no API needed;
-  the merchant curates them in Shopify admin.
+- **Product recommendations are admin-configured, JS-rendered** (moved off Liquid in
+  September 2026 — see the Phase 4 note below). The merchant picks the collection from
+  Settings → Winner → "Recommended products", not the theme editor.
 - **Survey was removed at client request (July 2026)** — don't rebuild it; the client wants
   effort on the tool itself. Recoverable from git history if they change their mind.
 - **Mobile-first is a client requirement** — ~99% of traffic is phones at the game table.
@@ -118,3 +122,44 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   screen. The classic full-screen modal (`body > #dmls-modal .dmls-modal-card`) already
   worked this way before this change — `width`/`height` (not just `max-height`) were
   already explicit there; this change brought inline mode in line with it.
+
+## Phase 4 note (recommended-products widget moves off Liquid, September 2026)
+- The winner-screen recommended-products widget's settings (show/hide, which collection,
+  heading, note) used to be a `collection`-type Liquid block setting, editable only in the
+  theme editor. They now live in the app's own Settings → Winner → "Recommended products"
+  section instead, matching how most other content already worked. Liquid has no way to read
+  the app's Postgres-backed settings at render time, so this required a real architecture
+  change, not just moving fields around:
+  - **New OAuth scope**: `read_products`, added to `read_customers` (shared constant
+    `lib/utils/scopes.ts`, used by both `app/auth/route.ts` and `app/auth/callback/route.ts`).
+    This is the app's first-ever Admin API call of any kind. **Every shop that installed
+    before this shipped must re-approve the app** (visit `/auth?shop=<shop>` again) before
+    the collection picker or product fetching will work for them — there's no way around
+    Shopify's re-consent requirement when a scope is added. Until they do, `read_products`
+    is simply absent from their stored session's scope string.
+  - `lib/utils/adminGraphql.ts`: `getOfflineSession()` (loads the shop's offline session from
+    `lib/supabase/sessionStore.ts`, distinct from `lib/utils/adminAuth.ts#getAdminShop()`
+    which only verifies the embedded app's JWT and never touches an access token),
+    `hasScope()`, and `adminGraphql()` — a raw `fetch` to Admin GraphQL, not the full
+    `shopifyApi()` client object, consistent with this app's hand-rolled OAuth in
+    `app/auth/callback/route.ts`.
+  - `app/api/admin/collections/route.ts`: lists collections for the Settings picker; returns
+    `{ error: "reauth_required", shop }` (403) if the stored session lacks `read_products` —
+    the Settings page shows a "Reconnect the app" link (`/auth?shop=...`, `target="_top"`
+    since OAuth can't run inside the embedded iframe) rather than failing silently.
+  - `lib/score/products.ts`: resolves the chosen collection's first 3 products via Admin
+    GraphQL, cached in `score_settings.products_cache`/`products_cache_at` (15 min TTL) so
+    `/apps/score/config` doesn't hit the Admin API on every storefront page load; falls back
+    to a stale cache rather than an empty widget if a live fetch fails. Cache is invalidated
+    in `saveSettings()` whenever `recsCollectionId` changes.
+  - `extensions/score-tool/blocks/score-tool.liquid` no longer has `show_products`/
+    `recs_collection`/`products_heading`/`products_note` schema settings, and `#dmls-products`
+    is now a bare container — `renderProducts()` in `dmls-score.js` populates it client-side
+    from `/apps/score/config`'s `products`/`showProducts`/`productsHeading`/`productsNote`
+    fields. **Any store where these were customized in the theme editor lost that
+    customization** — it must be re-entered in the app Settings page, theme editor values are
+    no longer read at all.
+  - The "Shop more" link the old Liquid version had (linking to the collection's own page)
+    was dropped rather than carried over — resolving it would've meant fetching+caching the
+    collection's handle/URL alongside the product list, not just re-plumbing existing data.
+    Revisit if a merchant asks for it back.

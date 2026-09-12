@@ -15,9 +15,14 @@ api_version = "2026-01"
   uri = "/api/webhooks"
 
 [access_scopes]
-# Customer read access only — the score tool identifies logged-in customers
-# via the app proxy; it does not write to customer records in phase 1.
-scopes = "read_customers"
+# read_customers: the score tool identifies logged-in customers via the app
+# proxy; it does not write to customer records in phase 1.
+# read_products: Admin GraphQL collection/product lookups for the winner-screen
+# recommended-products widget (Settings → Products), added when that widget's
+# collection picker moved from the theme editor into the app admin — see
+# lib/utils/adminGraphql.ts. Existing installs must re-approve the app to pick
+# this scope up (Shopify requires re-consent whenever scopes are added).
+scopes = "read_customers,read_products"
 
 [auth]
 redirect_urls = [
