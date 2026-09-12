@@ -399,8 +399,8 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 }
 .dmls-win-name {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
-  font-size: clamp(44px, 15vw, 68px); line-height: 1.05;     padding-top: 63px;
-  overflow-wrap: anywhere;
+  font-size: clamp(44px, 15vw, 68px); line-height: .8;     padding-top: 63px;
+  overflow-wrap: anywhere; padding:10px;
 }
 .dmls-win-points { font-size: 1.375em; color: white;     margin: 0;
     margin-top: -10px; }
@@ -877,7 +877,7 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
 
 #dmls-screen-achievements { padding-top: 55px; }
 
- .dmls-widget-guest-cta .dmls-widget p {    color: white;margin-bottom: 18px;
+ .dmls-widget-guest-cta  p {    color: white;margin-bottom: 18px;
     max-width: 259px;
     margin: 0 auto;
     font-size: 1.2em;
