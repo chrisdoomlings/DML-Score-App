@@ -204,14 +204,14 @@ export const DEFAULT_ACHIEVEMENTS: AchievementConfig = {
   valentines: {
     enabled: true,
     name: "Date Night",
-    description: "Played on Feb 14 (local date).",
+    description: "Played on Feb 14.",
     iconUrl: null,
     iconUrlLocked: null,
   },
   halloween: {
     enabled: true,
     name: "Trick or Treat",
-    description: "Played on Oct 31 (local date).",
+    description: "Played on Oct 31.",
     iconUrl: null,
     iconUrlLocked: null,
   },
