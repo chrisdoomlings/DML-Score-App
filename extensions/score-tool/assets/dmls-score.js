@@ -808,9 +808,19 @@
           '<button type="submit" class="dmls-bday-submit">Save birthday</button>' +
           "</form>"
         : "";
-      var lockedIconStyle = a.iconUrl ? ' style="background-image:url(\'' + a.iconUrl.replace(/'/g, "%27") + '\')"' : "";
+      // A custom locked-state icon (admin-uploaded, e.g. a purple-recolored
+      // version of the real icon) is shown as-is, full opacity, no
+      // .dmls-achv-icon-locked override — that class only kicks in as a
+      // fallback (flat purple fill, real icon hidden) when the admin hasn't
+      // set one, so unlocking still has something to reveal.
+      var hasCustomLocked = !!a.iconUrlLocked;
+      var lockedUrl = a.iconUrlLocked || a.iconUrl;
+      var lockedIconStyle = lockedUrl ? ' style="background-image:url(\'' + lockedUrl.replace(/'/g, "%27") + '\')"' : "";
+      var lockedIconClass = "dmls-achv-icon" +
+        (hasCustomLocked ? "" : " dmls-achv-icon-locked") +
+        (lockedUrl ? "" : " dmls-achv-icon-empty");
       return '<div class="dmls-achv-tile dmls-achv-locked">' +
-        '<div class="dmls-achv-icon dmls-achv-icon-locked' + (a.iconUrl ? "" : " dmls-achv-icon-empty") + '"' + lockedIconStyle + ' aria-hidden="true"></div>' +
+        '<div class="' + lockedIconClass + '"' + lockedIconStyle + ' aria-hidden="true"></div>' +
         '<p class="dmls-achv-name">' + esc(a.name) + "</p>" +
         '<p class="dmls-achv-desc">??????</p>' +
         bday +

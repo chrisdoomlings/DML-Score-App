@@ -101,7 +101,9 @@ export function GlobalStyle() {
       }
       .dml-achv-row:first-child { border-top: 0; }
       .dml-achv-row > input[type="checkbox"] { margin-top: 11px; }
-      .dml-achv-icon { width: 72px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+      .dml-achv-icon { width: 72px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
+      .dml-achv-icon-slot { display: flex; flex-direction: column; gap: 6px; }
+      .dml-achv-icon-slot-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #8a8d91; }
       .dml-achv-icon-thumb {
         width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
         background: #f6f6f7; border: 1px solid #e1e3e5; display: flex; align-items: center; justify-content: center;
@@ -260,7 +262,7 @@ export function GlobalStyle() {
         .dml-milestone-row input[type="number"] { grid-column: 2; width: 90px; }
         .dml-achv-row { grid-template-columns: 24px 1fr; row-gap: 10px; }
         .dml-achv-row > input[type="checkbox"] { grid-row: 1; }
-        .dml-achv-icon { grid-column: 2; flex-direction: row; align-items: center; width: auto; }
+        .dml-achv-icon { grid-column: 2; flex-direction: row; align-items: flex-start; gap: 12px; width: auto; }
         .dml-achv-fields { grid-column: 1 / -1; }
         .dml-bar-label { width: 90px; }
       }

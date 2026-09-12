@@ -35,6 +35,7 @@ export interface AchievementUnlock {
 }
 
 export interface AchievementStatus extends AchievementUnlock {
+  iconUrlLocked: string | null;
   unlocked: boolean;
   unlockedAt: string | null;
   gameId: string | null;
@@ -198,6 +199,7 @@ export async function getCustomerAchievements(shop: string, customerId: string):
       name: def.name,
       description: def.description,
       iconUrl: def.iconUrl,
+      iconUrlLocked: def.iconUrlLocked,
       unlocked: Boolean(u),
       unlockedAt: u?.unlockedAt ?? null,
       gameId: u?.gameId ?? null,

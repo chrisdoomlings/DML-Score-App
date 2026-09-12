@@ -240,9 +240,9 @@ export default function SettingsPage() {
     });
   }
 
-  async function uploadAchievementIcon(key: AchievementKey, file: File) {
+  async function uploadAchievementIcon(key: AchievementKey, file: File, field: "iconUrl" | "iconUrlLocked") {
     if (!settings) return;
-    const uploadId = `achv:${key}`;
+    const uploadId = `achv:${field}:${key}`;
     setUploading(uploadId);
     setUploadErr("");
     const fd = new FormData();
@@ -252,14 +252,60 @@ export default function SettingsPage() {
     const d = await res.json();
     setUploading(null);
     if (d.url) {
-      patchAchievement(key, { iconUrl: d.url });
+      patchAchievement(key, { [field]: d.url });
     } else {
       setUploadErr(d.error ?? "Upload failed.");
     }
   }
 
-  function clearAchievementIcon(key: AchievementKey) {
-    patchAchievement(key, { iconUrl: null });
+  function clearAchievementIcon(key: AchievementKey, field: "iconUrl" | "iconUrlLocked") {
+    patchAchievement(key, { [field]: null });
+  }
+
+  // One upload/browse/reset icon slot, reused for both the unlocked
+  // (iconUrl) and locked-state (iconUrlLocked) art on each achievement row.
+  // Locked has no icon set by default — the storefront falls back to a flat
+  // purple fill (see .dmls-achv-icon-locked in dmls-score.css) rather than
+  // showing a placeholder, so leaving it unset is a real, supported choice.
+  function renderAchvIconSlot(key: AchievementKey, achv: AchievementDef, field: "iconUrl" | "iconUrlLocked", label: string) {
+    const url = achv[field];
+    const uploadId = `achv:${field}:${key}`;
+    const pickerKey = `${field === "iconUrlLocked" ? "achvLocked" : "achv"}:${key}`;
+    return (
+      <div className="dml-achv-icon-slot">
+        <span className="dml-achv-icon-slot-label">{label}</span>
+        <div className="dml-achv-icon-thumb">
+          {url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={url} alt="" />
+          ) : (
+            <span className="dml-image-placeholder">?</span>
+          )}
+        </div>
+        <div className="dml-achv-icon-actions">
+          <label className="dml-btn-secondary dml-btn-sm">
+            {uploading === uploadId ? "…" : "Upload"}
+            <input
+              type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
+              disabled={uploading !== null}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadAchievementIcon(key, f, field);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(pickerKey)}>
+            Browse
+          </button>
+          {url && (
+            <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => clearAchievementIcon(key, field)}>
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   function loadLibrary() {
@@ -307,7 +353,9 @@ export default function SettingsPage() {
   }
 
   function selectFromLibrary(url: string) {
-    if (pickerFor?.startsWith("achv:")) {
+    if (pickerFor?.startsWith("achvLocked:")) {
+      patchAchievement(pickerFor.slice(11) as AchievementKey, { iconUrlLocked: url });
+    } else if (pickerFor?.startsWith("achv:")) {
       patchAchievement(pickerFor.slice(5) as AchievementKey, { iconUrl: url });
     } else if (pickerFor === "trophyTopPool" && settings) {
       setSettings({ ...settings, trophyTopImages: [...settings.trophyTopImages, url] });
@@ -815,13 +863,15 @@ export default function SettingsPage() {
                 <p className="dml-card-hint">
                   21 fixed achievement triggers. Toggle which are active and customize the name, icon, and
                   description &mdash; description is an admin-only reminder of the trigger condition, players
-                  never see it (names/icons stay hidden until unlocked).
+                  never see it until they unlock it (locked tiles show &ldquo;??????&rdquo; instead). The
+                  &ldquo;Locked&rdquo; icon is optional art for the not-yet-earned state (e.g. a purple-recolored
+                  version of the real icon) &mdash; leave it blank and the storefront shows a plain purple circle
+                  instead of the real icon until it&rsquo;s unlocked.
                 </p>
                 {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
                 <div className="dml-achv-list">
                   {ACHIEVEMENT_KEYS.map((key) => {
                     const achv = settings.achievements[key] ?? DEFAULT_ACHIEVEMENTS[key];
-                    const uploadId = `achv:${key}`;
                     return (
                       <div className="dml-achv-row" key={key}>
                         <input
@@ -829,39 +879,8 @@ export default function SettingsPage() {
                           onChange={(e) => patchAchievement(key, { enabled: e.target.checked })}
                         />
                         <div className="dml-achv-icon">
-                          <div className="dml-achv-icon-thumb">
-                            {achv.iconUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={achv.iconUrl} alt="" />
-                            ) : (
-                              <span className="dml-image-placeholder">?</span>
-                            )}
-                          </div>
-                          <div className="dml-achv-icon-actions">
-                            <label className="dml-btn-secondary dml-btn-sm">
-                              {uploading === uploadId ? "…" : "Upload"}
-                              <input
-                                type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }}
-                                disabled={uploading !== null}
-                                onChange={(e) => {
-                                  const f = e.target.files?.[0];
-                                  if (f) uploadAchievementIcon(key, f);
-                                  e.target.value = "";
-                                }}
-                              />
-                            </label>
-                            <button type="button" className="dml-btn-ghost dml-btn-sm" onClick={() => openPicker(`achv:${key}`)}>
-                              Browse
-                            </button>
-                            {achv.iconUrl && (
-                              <button
-                                type="button" className="dml-btn-ghost dml-btn-sm"
-                                onClick={() => clearAchievementIcon(key)}
-                              >
-                                Reset
-                              </button>
-                            )}
-                          </div>
+                          {renderAchvIconSlot(key, achv, "iconUrl", "Unlocked")}
+                          {renderAchvIconSlot(key, achv, "iconUrlLocked", "Locked")}
                         </div>
                         <div className="dml-achv-fields">
                           <span className="dml-achv-key">{key}</span>

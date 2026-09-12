@@ -73,6 +73,10 @@ export interface AchievementDef {
   name: string;
   description: string;
   iconUrl: string | null;
+  /** Optional separate art for the locked/pre-unlock tile. When unset, the
+   *  storefront falls back to a flat purple fill instead of showing (or
+   *  dimming) iconUrl — see .dmls-achv-icon-locked in dmls-score.css. */
+  iconUrlLocked: string | null;
 }
 
 export type AchievementConfig = Record<AchievementKey, AchievementDef>;
@@ -83,126 +87,147 @@ export const DEFAULT_ACHIEVEMENTS: AchievementConfig = {
     name: "Babies First Doomlings",
     description: "First game logged ever (any device).",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   first_game_mobile: {
     enabled: true,
     name: "You Have Games on Your Phone?",
     description: "First game logged on a mobile device.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   first_game_desktop: {
     enabled: true,
     name: "Hackerman",
     description: "First game logged on desktop/tablet.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   score_50_plus: {
     enabled: true,
     name: "Get That Bread",
     description: "Any player scores more than 50 points in a game.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   score_100_plus: {
     enabled: true,
     name: "High Roller",
     description: "Any player scores more than 100 points in a game.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   players_2: {
     enabled: true,
     name: "Twinning",
     description: "Game has exactly 2 players.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   players_3: {
     enabled: true,
     name: "Three's a Charm",
     description: "Game has exactly 3 players.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   players_4: {
     enabled: true,
     name: "Quartet",
     description: "Game has exactly 4 players.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   players_5: {
     enabled: true,
     name: "Five's A Party",
     description: "Game has exactly 5 players.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   players_6: {
     enabled: true,
     name: "Wow So Popular",
     description: "Game has exactly 6 players.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   players_7_plus: {
     enabled: true,
     name: "Game Breaker",
     description: "Game has more than 6 players.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   first_tie: {
     enabled: true,
     name: "Besties",
     description: "First game where 2+ players share the top score.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   blowout_gap_30: {
     enabled: true,
     name: "F in Chat",
     description: "Gap between the winner's score and the lowest scorer is more than 30 points.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   close_one_gap_5: {
     enabled: true,
     name: "Close One",
     description: "Every player's score is within 5 points of each other.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   streak_7_day: {
     enabled: true,
     name: "Biggest Fan",
     description: "Played once a day, 7 days straight (consecutive local calendar dates).",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   new_year: {
     enabled: true,
     name: "Happy Doom Year!",
     description: "Played on Dec 31 or Jan 1 (local date).",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   christmas: {
     enabled: true,
     name: "Ho ho ho",
     description: "Played on Dec 25 (local date).",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   valentines: {
     enabled: true,
     name: "Date Night",
     description: "Played on Feb 14 (local date).",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   halloween: {
     enabled: true,
     name: "Trick or Treat",
     description: "Played on Oct 31 (local date).",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   birthday: {
     enabled: true,
     name: "Birthdoom",
     description: "Played on the customer's self-reported birthday.",
     iconUrl: null,
+    iconUrlLocked: null,
   },
   st_patricks: {
     enabled: true,
     name: "Pot 'O Gold",
     description: "Played on St. Patrick's Day (local date).",
     iconUrl: null,
+    iconUrlLocked: null,
   },
 };
 
@@ -221,6 +246,7 @@ export function mergeAchievementConfig(stored: unknown): AchievementConfig {
       name: sanitizeText(s.name, 60) ?? d.name,
       description: sanitizeText(s.description, 200) ?? d.description,
       iconUrl: typeof s.iconUrl === "string" ? sanitizeImageUrl(s.iconUrl) || null : d.iconUrl,
+      iconUrlLocked: typeof s.iconUrlLocked === "string" ? sanitizeImageUrl(s.iconUrlLocked) || null : d.iconUrlLocked,
     };
   }
   return out;

@@ -794,14 +794,18 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
   
 }
 .dmls-achv-icon-locked {
-  /* Locked tiles no longer show a dimmed/desaturated version of the real
-     icon — hide it entirely and fill with a flat purple instead, so
-     unlocking reveals the icon for the first time. background-image needs
-     !important to beat the inline style="background-image:url(...)" that
-     dmls-score.js sets when the admin has configured an iconUrl (this
-     doesn't affect .dmls-achv-icon-empty below — no iconUrl means no
-     inline style to override, and its own background-color wins on source
-     order since it isn't !important either). */
+  /* Fallback only — achvTileHTML() in dmls-score.js skips this class
+     entirely when the admin has set a per-achievement locked-state icon
+     (Settings → Achievements → "Locked icon"), showing that custom art
+     as-is instead. Without one, hide the real (unlocked) icon entirely and
+     fill with a flat purple, so unlocking still reveals something new
+     rather than just sharpening an already-visible dimmed version.
+     background-image needs !important to beat the inline
+     style="background-image:url(...)" that dmls-score.js sets when the
+     admin has configured an iconUrl (this doesn't affect
+     .dmls-achv-icon-empty below — no iconUrl means no inline style to
+     override, and its own background-color wins on source order since it
+     isn't !important either). */
   background-image: none !important;
   background-color: var(--dmls-locked);
 }
