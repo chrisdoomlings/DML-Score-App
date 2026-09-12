@@ -424,12 +424,12 @@ export default function SettingsPage() {
               </section>
 
               <section className="dml-card">
-                <h2 className="dml-card-title">Screen size cap</h2>
+                <h2 className="dml-card-title">Screen size</h2>
                 <p className="dml-card-hint">
-                  Height applies to every screen of the tool (welcome, Add Names, scoring steps, winner,
-                  Achievements, trophy) — none of them grow taller than this, and content that doesn&rsquo;t fit
-                  scrolls inside instead. Width only caps how wide the Add-Names-through-Achievements panel
-                  gets on desktop/tablet.
+                  The actual width and height of the tool&rsquo;s panel, in both inline and full-screen-modal
+                  display mode — every screen (welcome, Add Names, scoring steps, winner, Achievements,
+                  trophy) is this exact size, not just capped by it, so short screens don&rsquo;t shrink and tall
+                  ones don&rsquo;t grow. Content that doesn&rsquo;t fit scrolls inside instead.
                 </p>
                 <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
                   <div>

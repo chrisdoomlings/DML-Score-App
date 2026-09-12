@@ -81,19 +81,16 @@
    On-page welcome (#dmls-root) — renderPageWelcome() in dmls-score.js
    fills #dmls-welcome-page with the same .dmls-card markup every other
    screen uses (#dmls-modal included, right below it). Every one of those
-   cards gets its forced modal-era min-height turned off below, so a short
-   screen just sizes to its own content instead of a tall fixed-height
-   card — the tradeoff is the trophy screen's old "actions only appear once
-   you scroll past the trophy art" effect, which relied on that fixed
-   height; it now just flows straight into the actions.
-   max-height is the opposite direction: no screen (Achievements included)
-   grows past the admin's configured Settings → General → Modal size
-   height — loadConfig() in dmls-score.js sets --dmls-modal-height on
-   #dmls-root itself (not just the old #dmls-modal panel) so welcome and
-   every other screen are capped identically. Past that height, the
-   .dmls-scroll-mid middle section scrolls (Add Names/steps/achievements),
-   or .dmls-card-body itself does (welcome/winner/trophy, which don't split
-   out a separate scrolling middle). */
+   cards is sized to exactly the admin's configured Settings → General →
+   Screen size cap width/height (both are set as actual width/height, not
+   just a max) — loadConfig() in dmls-score.js sets --dmls-modal-height/
+   --dmls-modal-width on #dmls-root itself (not just the #dmls-modal panel)
+   so welcome and every other screen are the same fixed box regardless of
+   how much content they hold, matching how the classic full-screen modal
+   below has always behaved. Past that height, the .dmls-scroll-mid middle
+   section scrolls (Add Names/steps/achievements), or .dmls-card-body
+   itself does (welcome/winner/trophy, which don't split out a separate
+   scrolling middle). */
 /* Settings → General → "Lock page scroll" (default off, opt-in). Toggled
    on <html> by showModal()/hideModal() in dmls-score.js while the tool's
    card is open, so wheel/touch scrolling stays inside the card (its
@@ -102,8 +99,15 @@
 html.dmls-page-scroll-locked,
 html.dmls-page-scroll-locked body { overflow: hidden; }
 
-.dmls-launcher { max-width: 520px; margin: 36px auto 60px; padding: 0 1em; }
-#dmls-root .dmls-card { min-height: 0; max-height: min(96vh, var(--dmls-modal-height, 90vh)); }
+.dmls-launcher { width: min(100%, var(--dmls-modal-width, 520px)); margin: 36px auto 60px; padding: 0 1em; }
+/* Screen size cap (Settings → General) is the actual fixed size of every
+   #dmls-root card now, not just an upper bound — height is set (not just
+   max-height) so a short screen (e.g. welcome) still fills the configured
+   box instead of shrinking to its content, matching how the classic
+   full-screen modal below already behaves. .dmls-card-body's own
+   overflow-y:auto (or .dmls-scroll-mid's, for split layouts) handles
+   content that doesn't fit. */
+#dmls-root .dmls-card { min-height: 0; height: min(96vh, var(--dmls-modal-height, 90vh)); max-height: min(96vh, var(--dmls-modal-height, 90vh)); }
 
 .dmls-card {
   background-color: var(--dmls-panel);

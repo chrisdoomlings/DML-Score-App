@@ -102,11 +102,19 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   body-scroll-lock. One consequence: the trophy screen's old "actions only appear
   once you scroll past the trophy art" effect relied on the modal's fixed viewport
   height and no longer applies — it now flows straight into the actions.
-  Every `.dmls-card` under `#dmls-root` still has `min-height: 0` (grows to fit short
-  content instead of a tall fixed floor) but also a restored `max-height` — no screen
-  (Achievements included) grows past Settings → General → "Screen size cap" (the
-  admin field still named `modalHeight`/`modalHeightUnit`/`modalWidth` in code/DB);
-  content that doesn't fit scrolls inside it via `.dmls-scroll-mid` (Add Names/steps/
-  achievements) or `.dmls-card-body` directly (welcome/winner/trophy). `loadConfig()`
-  sets `--dmls-modal-height`/`--dmls-modal-width` on `#dmls-root` itself (not just the
-  `#dmls-modal` panel) so welcome is capped identically to every other screen.
+  **Screen size is fixed, not capped (September 2026)** — Settings → General →
+  "Screen size" (admin field still named `modalHeight`/`modalHeightUnit`/`modalWidth`
+  in code/DB) sets the actual width/height of the panel in both inline and classic
+  full-screen-modal display mode, not just an upper bound: every `.dmls-card` under
+  `#dmls-root` has both `height` and `max-height` set to that value (`min-height: 0`
+  is still there, but is now moot since height is explicit) — welcome no longer
+  shrinks to fit short content, it fills the configured box like every other screen
+  always did. `.dmls-launcher` (the welcome wrapper) uses `width: min(100%,
+  var(--dmls-modal-width, 520px))` instead of a hardcoded 520px, matching
+  `#dmls-modal`. Content that doesn't fit scrolls inside via `.dmls-scroll-mid` (Add
+  Names/steps/achievements) or `.dmls-card-body` directly (welcome/winner/trophy).
+  `loadConfig()` sets `--dmls-modal-height`/`--dmls-modal-width` on `#dmls-root` itself
+  (not just the `#dmls-modal` panel) so welcome is sized identically to every other
+  screen. The classic full-screen modal (`body > #dmls-modal .dmls-modal-card`) already
+  worked this way before this change — `width`/`height` (not just `max-height`) were
+  already explicit there; this change brought inline mode in line with it.
