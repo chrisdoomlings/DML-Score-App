@@ -51,7 +51,9 @@
         <p class="dmls-prod-note">{{ block.settings.products_note | escape }}</p>
       {% endif %}
       {% if block.settings.recs_collection.url %}
-        <a class="dmls-btn dmls-btn-ghost dmls-btn-full dmls-prod-more" href="{{ block.settings.recs_collection.url }}">Shop more</a>
+        <div class="dmls-prod-more-wrapper">
+          <a class="dmls-btn dmls-btn-ghost-revert " href="{{ block.settings.recs_collection.url }}">Shop more</a>
+        </div>
       {% endif %}
     </div>
   {% endif %}
@@ -95,7 +97,7 @@
       "type": "text",
       "id": "products_heading",
       "label": "Products heading",
-      "default": "Level up your next game"
+      "default": "Level up your game"
     },
     {
       "type": "text",
