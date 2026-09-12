@@ -45,6 +45,7 @@
   --dmls-gold: #ffd54a;
   --dmls-coral: #ff6a5c;
   --dmls-line: #655b86;
+  --dmls-locked: #8b5cf6;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--dmls-ink);
   /* Fluid base size — every font-size in this file below is in em, so it
@@ -271,8 +272,8 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-sub i { color: white; font-style: italic; }
 .dmls-inline-link { color: var(--dmls-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
 
-.dmls-dots { display: flex; gap: 7px; justify-content: center; margin: 16px 0 4px; }
-.dmls-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.22);margin-bottom:15px; }
+.dmls-dots { display: flex; gap: 7px; justify-content: center; margin: 24px 0 4px; }
+.dmls-dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.22);margin-bottom:15px; }
 .dmls-dots i.dmls-on { background: var(--dmls-green); }
 .dmls-btn {
   display: inline-flex;
@@ -295,9 +296,9 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
 .dmls-btn-ghost { border: solid 1px #9287b0;
     color: #9287b0;}
- #dmls-modal-card .dmls-btn-ghost   {border: solid 1px #9287b0;
-    color: #221946;
-    background: #9287b0;
+ #dmls-modal-card .dmls-btn-ghost   {    border: solid 1px #9287b0;
+    color: #9287b0;
+    background: transparent;
     font-weight: bold;}
 #dmls-screen-step-mp .dmls-btn-ghost { border: solid 1px #38909e;color: #38909e; }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
@@ -769,11 +770,15 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
 
 .dmls-achv-tabs { display: flex; gap: 8px; margin: 4px 0 16px; flex: none; }
 .dmls-achv-tab {
-  flex: 1; padding: 0.625em; border-radius: 12px; background: rgba(255, 255, 255, 0.08);
-  font-weight: 700; font-size: 0.8125em; letter-spacing: 0.04em; color: var(--dmls-ink-dim);
-  transition: background 0.15s ease, color 0.15s ease;
+  flex: 1; padding: 0.625em; border-radius: 999px; background: #8f83c9;
+  border: solid 1px transparent;
+  font-weight: 700; font-size: 0.8125em; letter-spacing: 0.04em; color: var(--dmls-night);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
-.dmls-achv-tab.dmls-achv-tab-on { background: var(--dmls-green); color: #0d1200; }
+/* Active and inactive tabs share the same pill look — no separate visual
+   state, just which is selected (aria-selected/data-tab still track that
+   for a11y/JS). */
+.dmls-achv-tab.dmls-achv-tab-on { background: #8f83c9; border-color: transparent; color: var(--dmls-night); }
 
 .dmls-achv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .dmls-achv-tile {
@@ -789,11 +794,16 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
   
 }
 .dmls-achv-icon-locked {
-  /* Show the real icon (once the admin sets one) dimmed/desaturated rather
-     than hiding it — only tiles with no iconUrl fall back to the empty
-     silhouette below. */
-  opacity: 0.35;
-  filter: grayscale(0.7);
+  /* Locked tiles no longer show a dimmed/desaturated version of the real
+     icon — hide it entirely and fill with a flat purple instead, so
+     unlocking reveals the icon for the first time. background-image needs
+     !important to beat the inline style="background-image:url(...)" that
+     dmls-score.js sets when the admin has configured an iconUrl (this
+     doesn't affect .dmls-achv-icon-empty below — no iconUrl means no
+     inline style to override, and its own background-color wins on source
+     order since it isn't !important either). */
+  background-image: none !important;
+  background-color: var(--dmls-locked);
 }
 .dmls-achv-icon-empty {
   background-color: rgba(255, 255, 255, 0.08);

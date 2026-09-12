@@ -11,7 +11,13 @@ interface Summary {
   gamesWithCustomer: number;
   totalAchievementsUnlocked: number;
   last7Days: { date: string; games: number }[];
-  recentGames: { playedAt: string; winnerNames: string[]; topScore: number; playerCount: number }[];
+  recentGames: {
+    playedAt: string;
+    winnerNames: string[];
+    topScore: number;
+    playerCount: number;
+    players: { name: string; total: number }[];
+  }[];
 }
 
 function TrendChart({ data }: { data: { date: string; games: number }[] }) {
@@ -36,19 +42,40 @@ function TrendChart({ data }: { data: { date: string; games: number }[] }) {
 }
 
 function RecentGames({ games }: { games: Summary["recentGames"] }) {
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
   if (games.length === 0) return <p className="dml-empty">No games logged yet.</p>;
   return (
     <ul className="dml-recent-list">
       {games.map((g, i) => {
         const d = new Date(g.playedAt);
-        const when = `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+        const when = `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}.${d.getFullYear()}`;
+        const players = g.players || [];
+        const isOpen = !!expanded[i];
         return (
           <li key={i} className="dml-recent-row">
-            <div className="dml-recent-main">
-              <strong>{g.winnerNames.join(" & ")}</strong> won with {g.topScore} pts
-              <span className="dml-recent-meta">{g.playerCount} players</span>
+            <p className="dml-recent-title">{g.winnerNames.join(" & ")} won with {g.topScore} pts.</p>
+            <div className="dml-recent-meta-row">
+              <span className="dml-recent-date">{when}</span>
+              <span>{g.playerCount} players</span>
+              {players.length > 1 && (
+                <button
+                  type="button" className="dml-recent-more"
+                  onClick={() => setExpanded((e) => ({ ...e, [i]: !e[i] }))}
+                >
+                  {isOpen ? "View less" : "View more"}
+                </button>
+              )}
             </div>
-            <span className="dml-recent-time">{when}</span>
+            {isOpen && players.length > 1 && (
+              <div className="dml-recent-detail">
+                {players.map((p, pi) => (
+                  <div key={pi} className="dml-recent-detail-row">
+                    <span>{p.name}</span>
+                    <b>{p.total} pts</b>
+                  </div>
+                ))}
+              </div>
+            )}
           </li>
         );
       })}

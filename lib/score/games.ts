@@ -247,9 +247,9 @@ export async function getShopSummary(shop: string) {
       FROM score_games WHERE shop = ${shop} AND played_at > NOW() - INTERVAL '7 days'
       GROUP BY day
     `,
-    db<{ playedAt: string; winnerNames: string[]; topScore: number; playerCount: number }[]>`
+    db<{ playedAt: string; winnerNames: string[]; topScore: number; playerCount: number; players: GamePlayer[] }[]>`
       SELECT played_at AS "playedAt", winner_names AS "winnerNames",
-             top_score AS "topScore", player_count AS "playerCount"
+             top_score AS "topScore", player_count AS "playerCount", players
       FROM score_games WHERE shop = ${shop} ORDER BY played_at DESC LIMIT 6
     `,
   ]);

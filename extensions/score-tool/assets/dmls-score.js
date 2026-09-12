@@ -831,7 +831,9 @@
 
   function historyRowHTML(g, idx) {
     var d = new Date(g.playedAt);
-    var when = isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    var when = isNaN(d.getTime()) ? "" : (
+      String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0") + "." + d.getFullYear()
+    );
     var expanded = !!achvExpanded[idx];
     var players = g.players || [];
     var detail = players.map(function (p) {

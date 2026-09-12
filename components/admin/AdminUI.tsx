@@ -236,14 +236,22 @@ export function GlobalStyle() {
       .dml-trend-bar { width: 100%; max-width: 28px; margin: 0 auto; background: #008060; border-radius: 4px 4px 0 0; }
       .dml-trend-day { font-size: 11px; color: #8a8d91; }
 
-      .dml-recent-list { display: flex; flex-direction: column; }
-      .dml-recent-row {
-        display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        padding: 10px 0; border-top: 1px solid #f1f2f3; font-size: 13px; color: #202223;
+      .dml-recent-list { display: flex; flex-direction: column; gap: 10px; }
+      .dml-recent-row { border: 1px solid #e1e3e5; border-radius: 10px; padding: 12px 14px; }
+      .dml-recent-title { font-size: 13px; font-weight: 700; color: #202223; margin: 0 0 6px; }
+      .dml-recent-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: #6d7175; }
+      .dml-recent-date { color: #8a8d91; font-weight: 600; }
+      .dml-recent-more {
+        font-size: 12px; font-weight: 600; color: #008060; background: none; border: 0; cursor: pointer;
+        text-decoration: underline; text-underline-offset: 2px; padding: 0;
       }
-      .dml-recent-row:first-child { border-top: 0; }
-      .dml-recent-meta { color: #6d7175; margin-left: 8px; }
-      .dml-recent-time { color: #8a8d91; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+      .dml-recent-more:hover { color: #006e52; }
+      .dml-recent-detail {
+        margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e1e3e5;
+        display: flex; flex-direction: column; gap: 4px;
+      }
+      .dml-recent-detail-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: #6d7175; }
+      .dml-recent-detail-row b { color: #202223; font-weight: 700; }
 
       @media (max-width: 700px) {
         .dml-field-row { grid-template-columns: 1fr; }
