@@ -35,6 +35,7 @@
 
 #dmls-root,
 #dmls-modal {
+  --dmls-main: #2a1f53;
   --dmls-night: #10153f;
   --dmls-panel: #3d266b;
   --dmls-panel-2: #3d266b;
@@ -294,8 +295,9 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   box-shadow: 0 0 18px rgba(128, 210, 53, 0.55);
 }
 .dmls-btn-go:hover:not(:disabled) { filter: brightness(1.05); }
-.dmls-btn-ghost { border: solid 1px #9287b0;
-    color: #9287b0;}
+.dmls-btn-ghost { border: solid 1px #9287b0;color: #9287b0;}
+.dmls-btn-ghost-revert { background-color: var(--dmls-ink-dim); color: var(--dmls-main);}
+
  #dmls-modal-card .dmls-btn-ghost   {    border: solid 1px #9287b0;
     color: #9287b0;
     background: transparent;
