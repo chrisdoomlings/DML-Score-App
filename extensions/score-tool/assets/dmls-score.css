@@ -457,7 +457,17 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
     border: solid 2px #9287b0;}
 
 
-.dmls-trophy-scene { position: relative; padding-top: 40px; }
+/* The outer card's own background (plain --dmls-panel purple, or the shared
+   --dmls-bg-url if the admin set one) would otherwise still show through the
+   card's own side/bottom padding (.dmls-card's padding: 0 20px 20px) as a
+   visible border around the trophy image filling .dmls-card-body inside it —
+   this makes the whole card, padding gutter included, use the same trophy
+   image so there's no mismatched purple frame around it. */
+.dmls-trophy-scene {
+  position: relative; padding-top: 40px;
+  background-image: var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none)));
+  background-size: cover; background-position: center;
+}
 
 /* Wrapper positions the Share/Download pair as a unit — was a single
    position:absolute button before a second (Download) action was added. */
