@@ -244,7 +244,7 @@ export function GlobalStyle() {
       .dml-trend-bar { width: 100%; max-width: 28px; margin: 0 auto; background: #008060; border-radius: 4px 4px 0 0; }
       .dml-trend-day { font-size: 11px; color: #8a8d91; }
 
-      .dml-recent-list { display: flex; flex-direction: column; gap: 10px; }
+      .dml-recent-list { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
       .dml-recent-row { border: 1px solid #e1e3e5; border-radius: 10px; padding: 12px 14px; }
       .dml-recent-title { font-size: 13px; font-weight: 700; color: #202223; margin: 0 0 6px; }
       .dml-recent-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: #6d7175; }
