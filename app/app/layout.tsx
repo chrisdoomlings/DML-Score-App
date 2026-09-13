@@ -7,6 +7,7 @@ import { GlobalStyle } from "@/components/admin/AdminUI";
 
 const TABS = [
   { href: "/app/dashboard", label: "Dashboard" },
+  { href: "/app/games", label: "Games" },
   { href: "/app/analytics", label: "Analytics" },
   { href: "/app/settings", label: "Settings" },
 ];

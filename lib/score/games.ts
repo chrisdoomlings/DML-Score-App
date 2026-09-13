@@ -231,6 +231,39 @@ export async function getCustomerHistory(shop: string, customerId: string, limit
   return rows.map((g) => ({ ...g }));
 }
 
+export interface GamesPage {
+  games: SavedGame[];
+  total: number;
+}
+
+/** Paginated, full-shop game history (not filtered by customer) — backs the
+ *  admin "All games" page, distinct from getShopSummary()'s fixed 6-row
+ *  preview and getCustomerHistory()'s per-customer list. */
+export async function getGamesPage(shop: string, limit: number, offset: number): Promise<GamesPage> {
+  const db = getDb();
+  const [rows, countRows] = await Promise.all([
+    db<
+      {
+        id: string;
+        playedAt: string;
+        playerCount: number;
+        winnerNames: string[];
+        topScore: number;
+        customerWon: boolean;
+        players: GamePlayer[];
+      }[]
+    >`
+      SELECT id, played_at AS "playedAt", player_count AS "playerCount",
+             winner_names AS "winnerNames", top_score AS "topScore",
+             customer_won AS "customerWon", players
+      FROM score_games WHERE shop = ${shop}
+      ORDER BY played_at DESC LIMIT ${limit} OFFSET ${offset}
+    `,
+    db<{ total: number }[]>`SELECT COUNT(*)::int AS total FROM score_games WHERE shop = ${shop}`,
+  ]);
+  return { games: rows.map((g) => ({ ...g })), total: countRows[0]?.total ?? 0 };
+}
+
 export async function getShopSummary(shop: string) {
   const db = getDb();
   const [games, achievementsRow, dailyRows, recentGames] = await Promise.all([

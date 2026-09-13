@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { authedFetch } from "@/lib/hooks/useAuthedFetch";
 import { Stat, CenteredMessage } from "@/components/admin/AdminUI";
 
@@ -128,6 +129,12 @@ export default function DashboardPage() {
           <h2 className="dml-card-title">Recent games</h2>
           <p className="dml-card-hint">The latest games logged through the tool.</p>
           <RecentGames games={summary.recentGames} />
+          <Link
+            href="/app/games" className="dml-btn-secondary dml-btn-sm"
+            style={{ display: "inline-block", textDecoration: "none", marginTop: 14 }}
+          >
+            See all games
+          </Link>
         </section>
 
         <section className="dml-card">
