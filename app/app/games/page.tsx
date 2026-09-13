@@ -54,7 +54,7 @@ export default function GamesPage() {
           {data.games.length === 0 ? (
             <p className="dml-empty">No games logged yet.</p>
           ) : (
-            <ul className="dml-recent-list">
+            <ul className="dml-recent-list dml-recent-list-2col">
               {data.games.map((g) => {
                 const d = new Date(g.playedAt);
                 const when = `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}.${d.getFullYear()}`;

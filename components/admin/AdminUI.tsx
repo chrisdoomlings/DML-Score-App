@@ -245,6 +245,10 @@ export function GlobalStyle() {
       .dml-trend-day { font-size: 11px; color: #8a8d91; }
 
       .dml-recent-list { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
+      /* Wider variant used by the "All games" page (a full dml-card-wide card,
+         unlike the dashboard's narrower Recent games widget) — two columns of
+         cards instead of one long single-column list. */
+      .dml-recent-list-2col { display: grid; grid-template-columns: repeat(2, 1fr); align-items: start; }
       .dml-recent-row { border: 1px solid #e1e3e5; border-radius: 10px; padding: 12px 14px; }
       .dml-recent-title { font-size: 13px; font-weight: 700; color: #202223; margin: 0 0 6px; }
       .dml-recent-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: #6d7175; }
@@ -262,6 +266,7 @@ export function GlobalStyle() {
       .dml-recent-detail-row b { color: #202223; font-weight: 700; }
 
       @media (max-width: 700px) {
+        .dml-recent-list-2col { grid-template-columns: 1fr; }
         .dml-field-row { grid-template-columns: 1fr; }
         .dml-milestone-head { display: none; }
         .dml-milestone-row { grid-template-columns: 24px 1fr; row-gap: 8px; }
