@@ -162,6 +162,34 @@ export async function saveGame(
   };
 }
 
+export interface CustomerResetResult {
+  gamesDeleted: number;
+  achievementsDeleted: number;
+  profileDeleted: number;
+}
+
+/** Wipes one customer's game history, unlocked achievements, and self-reported
+ *  profile (birthday) for this shop — irreversible. Backs the admin Games
+ *  page's "Reset customer data" action (e.g. clearing a support/test account
+ *  so achievements can be re-earned). Guest games (customer_id IS NULL) are
+ *  never touched — there's no customer_id to scope them to. Wrapped in a
+ *  transaction so a dropped connection mid-way can't leave it half-done. */
+export async function resetCustomerData(shop: string, customerId: string): Promise<CustomerResetResult> {
+  const db = getDb();
+  return db.begin(async (sql) => {
+    const games = await sql<{ id: string }[]>`
+      DELETE FROM score_games WHERE shop = ${shop} AND customer_id = ${customerId} RETURNING id
+    `;
+    const achievements = await sql<{ id: string }[]>`
+      DELETE FROM score_achievements_unlocked WHERE shop = ${shop} AND customer_id = ${customerId} RETURNING id
+    `;
+    const profile = await sql<{ customer_id: string }[]>`
+      DELETE FROM score_customer_profile WHERE shop = ${shop} AND customer_id = ${customerId} RETURNING customer_id
+    `;
+    return { gamesDeleted: games.length, achievementsDeleted: achievements.length, profileDeleted: profile.length };
+  });
+}
+
 /** Total games logged under this customer_id — a real COUNT, unlike saveGame()'s
  *  returned `gamesPlayed` which is only ever accurate for a game that was itself
  *  saved while the customer was authenticated. A game saved as a guest (no

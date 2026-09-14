@@ -1082,7 +1082,16 @@
     // arbitrary single pick — joined the same way the achievements/history
     // list already joins winnerNames (see the `& ` join above).
     var winners = ranked.filter(function (p) { return total(p) === top; });
-    var winnerName = catastropheSafeHTML(winners.map(function (p) { return p.name; }).join(" & "));
+    var winnerNameRaw = winners.map(function (p) { return p.name; }).join(" & ");
+    var winnerName = catastropheSafeHTML(winnerNameRaw);
+    // A 3+ way tie (or just a couple of long names) makes the combined
+    // string too long for the headline's default oversized clamp() to hold
+    // gracefully — overflow-wrap keeps it from breaking layout, but it reads
+    // as a wall of text. Step the font size down in tiers based on raw
+    // (pre-HTML) length instead of adding a "+N more"/modal, since every
+    // tied name is already listed just below in .dmls-win-scores anyway.
+    var winnerNameSizeClass =
+      winnerNameRaw.length > 24 ? " dmls-win-name-sm" : winnerNameRaw.length > 12 ? " dmls-win-name-md" : "";
     var meWon = winners.some(function (p) { return p.isCustomer; });
 
     // Three states for the logged-in customer's widget, per the winner-screen
@@ -1174,11 +1183,11 @@
           '<img class="dmls-win-art" src="' + ICONS.winner + '" alt="" loading="lazy">' +
           '<div class="dmls-win-art-caption">' +
           '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
-          '<h1 class="dmls-win-name">' + winnerName + "</h1>" +
+          '<h1 class="dmls-win-name' + winnerNameSizeClass + '">' + winnerName + "</h1>" +
           '<p class="dmls-win-points">' + top + " points</p>" +
           "</div></div>"
         : '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
-          '<h1 class="dmls-win-name">' + winnerName + "</h1>" +
+          '<h1 class="dmls-win-name' + winnerNameSizeClass + '">' + winnerName + "</h1>" +
           '<p class="dmls-win-points">' + top + " points</p>") +
       (meWon ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
       '<ul class="dmls-win-scores">' +
