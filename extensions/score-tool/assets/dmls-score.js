@@ -992,6 +992,9 @@
       : '<p class="dmls-hist-empty">No games logged yet — play one to get started!</p>';
 
     achvChromeSplit(
+      '<div class="dmls-achv-head-top">' +
+      '<button type="button" class="dmls-btn-link" id="dmls-achv-back">&larr; Back</button>' +
+      "</div>" +
       '<div class="dmls-achv-tabs" role="tablist">' +
       '<button type="button" class="dmls-achv-tab" data-tab="achv" role="tab">ACHV.</button>' +
       '<button type="button" class="dmls-achv-tab" data-tab="history" role="tab">HISTORY</button>' +
@@ -1003,6 +1006,26 @@
     );
 
     applyAchvTab();
+
+    // "← Back" returns to the screen the modal was opened from — the winner
+    // screen, most commonly, since that's this button's only reachable
+    // entry point (the welcome page's own "Achievements" link goes through
+    // here too, but with no game in progress there's no game screen to
+    // return to, so this falls back to the same full close as the X/
+    // backdrop/Escape). Unlike those, this skips the trip back through the
+    // welcome page entirely when a game screen IS there to return to.
+    var backBtn = document.getElementById("dmls-achv-back");
+    if (backBtn) backBtn.addEventListener("click", function () {
+      if (state.screen >= 1) {
+        achvEl.hidden = true;
+        app.hidden = false;
+        view = "game";
+        syncHash(true);
+        render();
+      } else {
+        closeModal();
+      }
+    });
 
     var tabs = achvEl.querySelectorAll(".dmls-achv-tab");
     Array.prototype.forEach.call(tabs, function (t) {

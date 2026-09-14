@@ -861,6 +861,11 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
    link, replacing the old in-place "My Stats" screen 7). */
 .dmls-welcome-links { margin-top: 14px; text-align: center; }
 
+/* Return-to-winner-screen link, sits above the ACHV./HISTORY tab row —
+   the only other way out of this screen was the whole modal's X (back to
+   the welcome page, losing the direct "came from the winner screen"
+   context). See the #dmls-achv-back click handler in dmls-score.js. */
+.dmls-achv-head-top { text-align: left; margin: 0 0 10px; flex: none; }
 .dmls-achv-tabs { display: flex; gap: 8px; margin: 4px 0 16px; flex: none; justify-content: space-around;}
 .dmls-achv-tab {
   flex: 1; padding: 0.625em; border-radius: 999px; background: #8f83c9;
