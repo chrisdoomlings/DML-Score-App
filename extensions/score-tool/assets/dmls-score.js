@@ -1106,7 +1106,17 @@
       if (lastResult) {
         var unlocked = lastResult.achievementsUnlocked || [];
         if (unlocked.length) {
-          var achvItems = unlocked.map(function (a) {
+          // More than 2 unlocked at once reads better as a 2-column grid than
+          // one long stacked list; a 1-2 unlock stays the original single
+          // column (a lone tile centered in a 2-column grid looks stranded).
+          // Beyond 6, stop listing tiles inline entirely and point at the
+          // full Achievements modal instead of letting the widget grow
+          // without bound — data-achv-link already opens it (see
+          // winnerClicks() below), same as the plain "Achievements" button.
+          var MAX_INLINE_ACHV = 6;
+          var shownUnlocked = unlocked.slice(0, MAX_INLINE_ACHV);
+          var extraCount = unlocked.length - shownUnlocked.length;
+          var achvItems = shownUnlocked.map(function (a) {
             return '<div class="dmls-win-achv-item">' +
               '<div class="dmls-achv-icon"' +
               (a.iconUrl ? ' style="background-image:url(\'' + a.iconUrl.replace(/'/g, "%27") + '\')"' : "") +
@@ -1115,8 +1125,10 @@
           loyaltyHTML =
             '<div class="dmls-widget dmls-widget-center dmls-widget-new-achievement">' +
             '<h3 class="dmls-widget-title">' + (unlocked.length > 1 ? "New Achievements!" : "New Achievement!") + "</h3>" +
-            achvItems +
-            '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
+            '<div class="dmls-win-achv-list' + (unlocked.length > 2 ? " dmls-win-achv-grid" : "") + '">' + achvItems + "</div>" +
+            '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>' +
+            (extraCount > 0 ? "+" + extraCount + " more" : "Achievements") +
+            "</button></div>";
         } else {
           loyaltyHTML =
             '<div class="dmls-widget dmls-widget-center dmls-widget-games-played">' +
