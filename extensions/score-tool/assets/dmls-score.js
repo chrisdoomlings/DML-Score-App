@@ -1521,9 +1521,37 @@
       })
         .then(function (r) {
           if (!r.ok) throw new Error("cart");
+          return r.json();
+        })
+        .then(function (item) {
           buy.textContent = "✓"; // circular icon button — no room for "Added ✓"; the toast says the rest
           toast(buy.getAttribute("data-title") + " added to cart");
-          document.dispatchEvent(new CustomEvent("dmls:cart:added"));
+          // Opens the theme's own cart drawer (theme/assets/cart-drawer.js's
+          // <cart-drawer-component auto-open>, present on this store) by
+          // replicating the shape of its own CartAddEvent (theme/assets/
+          // events.js) — dmls-score.js is a plain classic script, not an ES
+          // module, so it can't `import` that class directly and builds the
+          // same detail payload manually instead. Its handler explicitly
+          // supports this: "Third-party apps may dispatch bare cart:update
+          // events" is the one thing it guards against, so a full detail
+          // payload with a real itemCount is exactly what it expects.
+          // Omitting `data.sections` just skips its optional pre-morph step
+          // (we don't know this store's live section-id string from here) —
+          // the drawer still opens either way.
+          document.dispatchEvent(new CustomEvent("cart:update", {
+            bubbles: true,
+            detail: {
+              resource: item,
+              sourceId: "dmls-score-app",
+              data: {
+                source: "dmls-score-app",
+                itemCount: item.quantity,
+                variantId: String(item.variant_id),
+                productId: String(item.product_id),
+                isIncremental: true,
+              },
+            },
+          }));
         })
         .catch(function () {
           buy.disabled = false;
