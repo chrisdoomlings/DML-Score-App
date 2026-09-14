@@ -191,6 +191,26 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+  // The "DMLS Catastrophe" display font (dmls-score.css) has empty/invisible
+  // outlines for digits and several punctuation marks — confirmed by parsing
+  // its embedded cmap/CFF tables (see the @font-face comment at the top of
+  // that file). The CSS has a unicode-range @font-face that tries to borrow
+  // real glyphs from a local system font for just those characters, but that
+  // depends on the device actually having one of the named local() fonts
+  // installed, which isn't reliable (seen failing on real devices — a tied
+  // player's "&" and any digits in a name rendered as blank gaps). Player
+  // names are free text and hit this often (joint names, "&"-joined ties,
+  // "Player2", etc.), so anywhere a name renders in that font, wrap the
+  // unsafe characters in a plain safe-font span instead of trusting the CSS
+  // fallback alone. Must run on the raw string before esc() — the unsafe set
+  // includes & < > themselves, so escaping first would hide them from this
+  // regex (see dmls-cat-safe-font in dmls-score.css).
+  var CATASTROPHE_UNSAFE_RE = /([#$%&()*+0-9<>[\]^_`{|}]+)/;
+  function catastropheSafeHTML(s) {
+    return String(s).split(CATASTROPHE_UNSAFE_RE).map(function (part, i) {
+      return i % 2 === 1 ? '<span class="dmls-cat-safe-font">' + esc(part) + "</span>" : esc(part);
+    }).join("");
+  }
   function total(p) { return (p.we | 0) + (p.fv | 0) + (p.bp | 0) + (p.mp | 0); }
   // .dmls-scroll-mid reserves right-side padding for its scrollbar (see CSS)
   // — collapse it back to 0 when the list is short enough that nothing
@@ -1062,7 +1082,7 @@
     // arbitrary single pick — joined the same way the achievements/history
     // list already joins winnerNames (see the `& ` join above).
     var winners = ranked.filter(function (p) { return total(p) === top; });
-    var winnerName = esc(winners.map(function (p) { return p.name; }).join(" & "));
+    var winnerName = catastropheSafeHTML(winners.map(function (p) { return p.name; }).join(" & "));
     var meWon = winners.some(function (p) { return p.isCustomer; });
 
     // Three states for the logged-in customer's widget, per the winner-screen
@@ -1093,7 +1113,7 @@
             '<div class="dmls-widget dmls-widget-center dmls-widget-games-played">' +
             '<p class="dmls-win-stat-num">' + (lastResult.gamesPlayed != null ? lastResult.gamesPlayed : "—") + "</p>" +
             '<h3 class="dmls-widget-title">Games Played</h3>' +
-            '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>Achievements</button></div>';
+            '<button type="button" class="dmls-btn dmls-btn-ghost-revert" data-achv-link>Achievements</button></div>';
           // gamesPlayed is only ever null here when this exact game was saved
           // as a guest (no customer_id) — e.g. the player finished the game,
           // THEN logged in via "My Account" and landed back on this screen.
@@ -1164,7 +1184,7 @@
       '<ul class="dmls-win-scores">' +
       ranked.map(function (p) {
         return '<li class="dmls-win-score-row">' +
-          '<span class="dmls-win-score-name">' + esc(p.name) + "</span>" +
+          '<span class="dmls-win-score-name">' + catastropheSafeHTML(p.name) + "</span>" +
           '<span class="dmls-win-score-pts">' + total(p) + " points</span></li>";
       }).join("") +
       "</ul>" +
