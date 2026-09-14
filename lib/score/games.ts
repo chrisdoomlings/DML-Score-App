@@ -292,6 +292,51 @@ export async function getGamesPage(shop: string, limit: number, offset: number):
   return { games: rows.map((g) => ({ ...g })), total: countRows[0]?.total ?? 0 };
 }
 
+export interface CustomerRow {
+  customerId: string;
+  gamesPlayed: number;
+  achievementsUnlocked: number;
+  lastPlayedAt: string;
+}
+
+export interface CustomersPage {
+  customers: CustomerRow[];
+  total: number;
+}
+
+/** Paginated list of every customer_id that has logged at least one game in
+ *  this shop, newest-active first — backs the admin "Customers" page. Guests
+ *  (customer_id IS NULL) are excluded; there's no identity to list them
+ *  under. achievementsUnlocked is a live COUNT of score_achievements_unlocked
+ *  rows, not anything cached on score_games. */
+export async function getCustomersPage(shop: string, limit: number, offset: number): Promise<CustomersPage> {
+  const db = getDb();
+  const [rows, countRows] = await Promise.all([
+    db<{ customerId: string; gamesPlayed: number; lastPlayedAt: string; achievementsUnlocked: number }[]>`
+      SELECT g.customer_id AS "customerId",
+             COUNT(*)::int AS "gamesPlayed",
+             MAX(g.played_at) AS "lastPlayedAt",
+             COALESCE(a.n, 0)::int AS "achievementsUnlocked"
+      FROM score_games g
+      LEFT JOIN (
+        SELECT customer_id, COUNT(*)::int AS n
+        FROM score_achievements_unlocked
+        WHERE shop = ${shop}
+        GROUP BY customer_id
+      ) a ON a.customer_id = g.customer_id
+      WHERE g.shop = ${shop} AND g.customer_id IS NOT NULL
+      GROUP BY g.customer_id, a.n
+      ORDER BY "lastPlayedAt" DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `,
+    db<{ total: number }[]>`
+      SELECT COUNT(DISTINCT customer_id)::int AS total
+      FROM score_games WHERE shop = ${shop} AND customer_id IS NOT NULL
+    `,
+  ]);
+  return { customers: rows, total: countRows[0]?.total ?? 0 };
+}
+
 export async function getShopSummary(shop: string) {
   const db = getDb();
   const [games, achievementsRow, dailyRows, recentGames] = await Promise.all([

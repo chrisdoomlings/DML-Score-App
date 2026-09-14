@@ -27,46 +27,6 @@ export default function GamesPage() {
   const [authError, setAuthError] = useState(false);
   const [loadError, setLoadError] = useState("");
 
-  const [resetCustomerId, setResetCustomerId] = useState("");
-  const [resetting, setResetting] = useState(false);
-  const [resetMsg, setResetMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const [confirmingReset, setConfirmingReset] = useState(false);
-
-  function resetCustomer() {
-    const id = resetCustomerId.trim();
-    if (!id) return;
-    setResetting(true);
-    setResetMsg(null);
-    authedFetch("/api/admin/customer-reset", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customerId: id }),
-    })
-      .then(async (r) => {
-        const d = await r.json().catch(() => null);
-        if (r.ok && d?.ok) {
-          setResetMsg({
-            ok: true,
-            text: `Deleted ${d.gamesDeleted} game${d.gamesDeleted === 1 ? "" : "s"}, ${d.achievementsDeleted} achievement${d.achievementsDeleted === 1 ? "" : "s"}, and ${d.profileDeleted ? "the saved profile" : "no profile"}.`,
-          });
-          setResetCustomerId("");
-          setPage(0);
-          // Re-fetch page 0 so a reset customer's games disappear from the list immediately.
-          authedFetch("/api/admin/games?page=0").then(async (r2) => {
-            const d2 = await r2.json().catch(() => null);
-            if (d2?.games) setData(d2);
-          });
-        } else {
-          setResetMsg({ ok: false, text: d?.error ?? `Server returned ${r.status}` });
-        }
-      })
-      .catch((e) => setResetMsg({ ok: false, text: String(e?.message ?? e) }))
-      .finally(() => {
-        setResetting(false);
-        setConfirmingReset(false);
-      });
-  }
-
   useEffect(() => {
     setLoadError("");
     authedFetch(`/api/admin/games?page=${page}`).then(async (r) => {
@@ -147,44 +107,6 @@ export default function GamesPage() {
               </button>
             </div>
           )}
-        </section>
-
-        <section className="dml-card dml-card-wide">
-          <h2 className="dml-card-title">Reset customer data</h2>
-          <p className="dml-card-hint">
-            Permanently deletes a customer&rsquo;s logged games, unlocked achievements, and saved birthday for this
-            shop &mdash; e.g. to clear a support or test account so achievements can be earned again. This does not
-            affect guest games (no customer account attached). Irreversible.
-          </p>
-          {resetMsg && <p className={resetMsg.ok ? "dml-msg-ok" : "dml-msg-err"} style={{ marginBottom: 12 }}>{resetMsg.text}</p>}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <input
-              className="dml-input dml-input-sm" style={{ maxWidth: 260 }}
-              placeholder="Customer ID (e.g. 6171257372881)"
-              value={resetCustomerId}
-              onChange={(e) => { setResetCustomerId(e.target.value); setConfirmingReset(false); setResetMsg(null); }}
-              disabled={resetting}
-            />
-            {!confirmingReset ? (
-              <button
-                type="button" className="dml-btn-secondary dml-btn-sm"
-                disabled={!resetCustomerId.trim() || resetting}
-                onClick={() => setConfirmingReset(true)}
-              >
-                Reset&hellip;
-              </button>
-            ) : (
-              <>
-                <span style={{ fontSize: 13, color: "#d72c0d", fontWeight: 600 }}>Delete everything for this customer?</span>
-                <button type="button" className="dml-btn-primary dml-btn-sm" style={{ background: "#d72c0d" }} disabled={resetting} onClick={resetCustomer}>
-                  {resetting ? "Deleting…" : "Yes, delete"}
-                </button>
-                <button type="button" className="dml-btn-ghost dml-btn-sm" disabled={resetting} onClick={() => setConfirmingReset(false)}>
-                  Cancel
-                </button>
-              </>
-            )}
-          </div>
         </section>
       </div>
     </main>
