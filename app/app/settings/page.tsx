@@ -435,8 +435,17 @@ export default function SettingsPage() {
         {fields.map(({ key, label: fieldLabel, fallbackSrc, wide }) => (
           <div className="dml-image-tile" key={key}>
             <div
-              className={"dml-image-thumb" + (wide ? " dml-image-thumb-wide" : "")}
+              className={"dml-image-thumb" + (wide ? " dml-image-thumb-wide" : "") + (settings!.images[key] ? " dml-image-thumb-clickable" : "")}
               style={wide && fallbackSrc ? { backgroundImage: `url(${fallbackSrc})` } : undefined}
+              role={settings!.images[key] ? "button" : undefined}
+              tabIndex={settings!.images[key] ? 0 : undefined}
+              title={settings!.images[key] ? "View full image" : undefined}
+              onClick={settings!.images[key] ? () => setViewingImage({ key, url: settings!.images[key] }) : undefined}
+              onKeyDown={
+                settings!.images[key]
+                  ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewingImage({ key, url: settings!.images[key] }); } }
+                  : undefined
+              }
             >
               {wide ? (
                 // Overlay preview: shared background fills the wide frame

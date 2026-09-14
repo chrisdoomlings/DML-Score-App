@@ -127,6 +127,11 @@ export function GlobalStyle() {
          aspect ratio preserved (not stretched/cropped like a cover photo). */
       .dml-image-thumb-wide { aspect-ratio: 3 / 1; background-size: cover; background-position: center; background-repeat: no-repeat; }
       .dml-image-thumb-wide .dml-image-overlay-img { position: absolute; top: 0; left: 0; width: 100%; height: auto; object-fit: contain; }
+      /* Only applied when the tile actually has its own image set (not just
+         showing a placeholder or a borrowed fallback preview) — click/Enter
+         opens it in the same lightbox as the Media library tab. */
+      .dml-image-thumb-clickable { cursor: pointer; transition: border-color 0.15s; }
+      .dml-image-thumb-clickable:hover, .dml-image-thumb-clickable:focus-visible { border-color: #008060; }
       /* Clickable "add another" tile for open-ended image pools (e.g. the
          trophy design pool) — dashed border instead of a solid thumb frame
          so it reads as an action, not a filled-in image slot. */
