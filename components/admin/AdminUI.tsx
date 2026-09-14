@@ -125,7 +125,11 @@ export function GlobalStyle() {
          the preview shows the shared bg filling this wider frame with the
          character image (if set) composited over it, width-fit with its own
          aspect ratio preserved (not stretched/cropped like a cover photo). */
-      .dml-image-thumb-wide { aspect-ratio: 3 / 1; background-size: cover; background-position: center; background-repeat: no-repeat; }
+      .dml-image-thumb-wide { aspect-ratio: 1; background-size: cover; background-position: center; background-repeat: no-repeat; }
+      /* Character/background preview tiles run a bit bigger than the plain
+         square thumbs (logo, welcome art, etc.) above — there's more detail
+         to make out once they're square instead of the old 3:1 strip. */
+      .dml-image-grid:has(.dml-image-thumb-wide) { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
       .dml-image-thumb-wide .dml-image-overlay-img { position: absolute; top: 0; left: 0; width: 100%; height: auto; object-fit: contain; }
       /* Only applied when the tile actually has its own image set (not just
          showing a placeholder or a borrowed fallback preview) — click/Enter
