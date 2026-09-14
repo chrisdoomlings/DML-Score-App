@@ -205,9 +205,15 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    siblings instead of being covered by them. */
 .dmls-card-character-left,
 .dmls-card-character-right {
-  position: absolute; top: 30px; max-width: 29%; width: auto; height: auto;
+  position: absolute; top: 30px;  width: auto; height: auto;
   pointer-events: none; display: block;
 }
+
+.dmls-card-character-left,
+.dmls-card-character-right {
+  max-width: 22%; 
+}
+
 .dmls-card-character-left { left: 0; }
 .dmls-card-character-right { right: 0; }
 .dmls-card-body, .dmls-nav { position: relative; }
