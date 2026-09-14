@@ -213,7 +213,10 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-card-character-right {
   max-width: 22%; 
 }
-
+#dmls-screen-step-mp .dmls-card-character-left,
+#dmls-screen-step-mp .dmls-card-character-right {
+  max-width: 25%; 
+}
 .dmls-card-character-left { left: 0; }
 .dmls-card-character-right { right: 0; }
 .dmls-card-body, .dmls-nav { position: relative; }
