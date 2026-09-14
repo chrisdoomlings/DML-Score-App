@@ -325,6 +325,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
     color: #9287b0;
     background: #241949d9;
     font-weight: bold;}
+    #dmls-screen-step-mp .dmls-btn-ghost{ background: #05272a;}
 #dmls-screen-step-mp .dmls-btn-ghost { border: solid 1px #38909e;color: #38909e; }
 .dmls-btn-ghost:hover { border-color: var(--dmls-ink-faint); color: var(--dmls-ink); }
 .dmls-btn:disabled { opacity: 0.4; cursor: not-allowed; }
