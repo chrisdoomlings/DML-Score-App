@@ -205,7 +205,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    siblings instead of being covered by them. */
 .dmls-card-character-left,
 .dmls-card-character-right {
-  position: absolute; top: 30px;  width: auto; height: auto;
+  position: absolute; top: 50px;  width: auto; height: auto;
   pointer-events: none; display: block;
 }
 
@@ -737,6 +737,14 @@ display: flex;
 #dmls-modal.dmls-modal-open { display: block; }
 #dmls-modal .dmls-modal-card { position: relative; }
 #dmls-modal .dmls-modal-backdrop { display: none; } /* only ever shown in modal mode below */
+
+/* render() in dmls-score.js keeps exactly one of these on #dmls-modal-card
+   at a time, in sync with state.screen — dmls-modal-step-players,
+   -we, -fv, -bp, -mp, -winner. Lets you style the whole card shell (not
+   just the inner .dmls-card content swapped into #dmls-app) differently
+   per step, e.g.:
+   .dmls-modal-card.dmls-modal-step-mp { border-color: gold; }
+   No rules target them by default — this is just the hook. */
 
 /* ---------------------------------------------------------------------
    Settings → General → "Display mode" = "Full-screen modal (classic)".

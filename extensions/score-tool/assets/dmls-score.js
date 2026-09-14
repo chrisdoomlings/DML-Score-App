@@ -278,6 +278,24 @@
   var achvEl = document.getElementById("dmls-achv");
   var trophyEl = document.getElementById("dmls-trophy");
   var productsEl = document.getElementById("dmls-products");
+  var modalCardEl = document.getElementById("dmls-modal-card");
+  // #dmls-modal-card itself is created once at boot and never re-rendered
+  // (unlike #dmls-app's innerHTML, swapped per screen by render() below), so
+  // it needs its own step class kept in sync separately — lets CSS style the
+  // whole card shell (not just the inner .dmls-card content) differently per
+  // step, e.g. `.dmls-modal-card.dmls-modal-step-mp`. Deliberately uses one
+  // consistent key per step (including "players" and "winner" for the
+  // non-STEPS screens) rather than reusing the inner .dmls-card classes,
+  // which have their own historical quirk (mp's is "dmls-card-exp").
+  var modalCardStepClass = null;
+  function setModalCardStep(key) {
+    if (!modalCardEl) return;
+    var next = "dmls-modal-step-" + key;
+    if (modalCardStepClass === next) return;
+    if (modalCardStepClass) modalCardEl.classList.remove(modalCardStepClass);
+    modalCardEl.classList.add(next);
+    modalCardStepClass = next;
+  }
 
   var view = "game"; // "game" | "achv"
   var modalOpen = false;
@@ -447,8 +465,9 @@
     // statically on the page (see renderPageWelcome()); the modal only ever
     // opens straight onto screen 1+ (openGameModal()/the deep-link restore
     // at boot both guarantee that).
-    if (state.screen === 1) renderPlayers();
+    if (state.screen === 1) { setModalCardStep("players"); renderPlayers(); }
     else if (state.screen >= 2 && state.screen <= 5) {
+      setModalCardStep(STEPS[state.screen].key);
       // stepContent (heading/preHeading/description) is only ever populated
       // by /config — nothing hardcoded to fall back to (see stepContent
       // above) — so on a slow connection this can be reached before it's
@@ -457,7 +476,7 @@
       if (serverConfig) renderStep(state.screen);
       else renderStepPending();
     }
-    else renderWinner();
+    else { setModalCardStep("winner"); renderWinner(); }
   }
   function renderStepPending() {
     app.innerHTML =
