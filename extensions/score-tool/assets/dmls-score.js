@@ -1007,19 +1007,25 @@
 
     applyAchvTab();
 
-    // "← Back" returns to the screen the modal was opened from — the winner
-    // screen, most commonly, since that's this button's only reachable
-    // entry point (the welcome page's own "Achievements" link goes through
-    // here too, but with no game in progress there's no game screen to
-    // return to, so this falls back to the same full close as the X/
-    // backdrop/Escape). Unlike those, this skips the trip back through the
-    // welcome page entirely when a game screen IS there to return to.
+    // "← Back" always returns to the winner screen specifically — every real
+    // entry point into this screen (the winner widget's own Achievements/
+    // "+N more" button, the trophy screen's Achievements button, the
+    // welcome page's Achievements link for a customer who's played before)
+    // is reachable only once state.players actually holds a finished game,
+    // so force state.screen rather than trusting whatever it happened to be
+    // when this modal opened (e.g. still mid-game if reached via a stale
+    // #achievements deep link). No players at all (never-played customer,
+    // opened straight from a fresh welcome page) has no winner screen to
+    // show, so that one case still falls back to the same full close as the
+    // X/backdrop/Escape.
     var backBtn = document.getElementById("dmls-achv-back");
     if (backBtn) backBtn.addEventListener("click", function () {
-      if (state.screen >= 1) {
+      if (state.players && state.players.length) {
+        state.screen = 6;
         achvEl.hidden = true;
         app.hidden = false;
         view = "game";
+        save();
         syncHash(true);
         render();
       } else {
