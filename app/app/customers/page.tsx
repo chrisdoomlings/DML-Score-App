@@ -9,6 +9,8 @@ interface CustomerRow {
   gamesPlayed: number;
   achievementsUnlocked: number;
   lastPlayedAt: string;
+  displayName: string | null;
+  email: string | null;
 }
 
 interface CustomersResponse {
@@ -79,10 +81,11 @@ export default function CustomersPage() {
         <section className="dml-card dml-card-wide">
           <h2 className="dml-card-title">Customers</h2>
           <p className="dml-card-hint">
-            Every logged-in customer who has played, newest-active first. Guest games (no customer account) aren&rsquo;t
-            attributed to anyone and don&rsquo;t appear here. Reset permanently deletes a customer&rsquo;s games,
-            unlocked achievements, and saved birthday for this shop &mdash; e.g. to clear a support or test account so
-            achievements can be earned again.
+            Every logged-in customer who has played, newest-active first &mdash; name and email are looked up live from
+            Shopify, falling back to the bare customer ID if that lookup isn&rsquo;t available. Guest games (no
+            customer account) aren&rsquo;t attributed to anyone and don&rsquo;t appear here. Reset permanently deletes
+            a customer&rsquo;s games, unlocked achievements, and saved birthday for this shop &mdash; e.g. to clear a
+            support or test account so achievements can be earned again.
           </p>
           {data.customers.length === 0 ? (
             <p className="dml-empty">No customers have played yet.</p>
@@ -98,8 +101,11 @@ export default function CustomersPage() {
                   <li key={c.customerId} className="dml-recent-row">
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                       <div>
-                        <p className="dml-recent-title" style={{ marginBottom: 2 }}>Customer {c.customerId}</p>
+                        <p className="dml-recent-title" style={{ marginBottom: 2 }}>
+                          {c.displayName || `Customer ${c.customerId}`}
+                        </p>
                         <span className="dml-recent-date">
+                          {c.displayName ? `${c.email || c.customerId} · ` : ""}
                           {c.gamesPlayed} game{c.gamesPlayed === 1 ? "" : "s"} &middot; {c.achievementsUnlocked} achievement{c.achievementsUnlocked === 1 ? "" : "s"} &middot; last played {when}
                         </span>
                       </div>
