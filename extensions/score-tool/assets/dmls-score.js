@@ -396,14 +396,19 @@
     { key: "bp", min: 0 },
     { key: "mp", min: 0, exp: true },
   ];
-  // Per-step character image lives at serverConfig.images[CHAR_IMAGE_KEY[key]]
-  // — "mp" (Expansion Points) keeps its original "bgExp" slot name from
-  // before the other 3 steps got their own (see 019_step_content.sql).
-  var CHAR_IMAGE_KEY = { we: "bgWe", fv: "bgFv", bp: "bgBp", mp: "bgExp" };
-  // Sole purpose: tell renderStep() which way to slide the character image
-  // in — set right before render() by whichever Back/Next handler is
+  // Per-step character images live at serverConfig.images[CHAR_IMAGE_KEY_LEFT/
+  // RIGHT[key]] — two independent slots per step (see
+  // 030_step_character_left_right.sql) so the left one can fly in from the
+  // left edge while the right one flies in from the right, instead of one
+  // combined graphic sliding in as a unit. "mp" (Expansion Points) keeps its
+  // original "bgExp" slot-name prefix from before the other 3 steps got
+  // their own (see 019_step_content.sql).
+  var CHAR_IMAGE_KEY_LEFT = { we: "bgWeLeft", fv: "bgFvLeft", bp: "bgBpLeft", mp: "bgExpLeft" };
+  var CHAR_IMAGE_KEY_RIGHT = { we: "bgWeRight", fv: "bgFvRight", bp: "bgBpRight", mp: "bgExpRight" };
+  // Sole purpose: tell renderStep() whether to play the characters' fly-in
+  // animation — set right before render() by whichever Back/Next handler is
   // moving into a step screen, read once and cleared so an unrelated
-  // re-render (e.g. a live config reload) never replays the animation.
+  // re-render (e.g. a live config reload) never replays it.
   var stepNavDirection = null;
   // Admin-editable heading/description per step (Settings → Steps). No copy
   // is duplicated here — lib/score/steps.ts's DEFAULT_STEPS is the single
@@ -630,6 +635,27 @@
   }
 
   /* --- score steps --- */
+  // Step descriptions embed a few game-symbol Unicode glyphs directly (see
+  // DEFAULT_STEPS in lib/score/steps.ts) — Unicode rendering isn't
+  // consistent enough across devices/fonts, so Settings → Steps → "Inline
+  // description icons" lets the admin swap in a real image for any of them.
+  // Splitting the already-escaped string on the raw glyph and rejoining
+  // with an <img> is safe here because none of these symbols are HTML
+  // metacharacters, so esc() never touches them.
+  var STEP_SUB_ICONS = [
+    { glyph: "➹", key: "worldsend" },
+    { glyph: "⊕", key: "iconBonus" },
+    { glyph: "💧", key: "drop" },
+  ];
+  function stepSubHTML(sub) {
+    var html = esc(sub);
+    STEP_SUB_ICONS.forEach(function (icon) {
+      var url = ICONS[icon.key];
+      if (!url) return;
+      html = html.split(icon.glyph).join('<img class="dmls-step-icon" src="' + url.replace(/"/g, "%22") + '" alt="">');
+    });
+    return html;
+  }
   // Admin-editable small tag (Settings → Steps → "Pre-heading") rendered
   // above the big display-font heading — e.g. "RESOLVE" over "WORLD'S END
   // EFFECTS", or "OPTIONAL" over "EXPANSION POINTS". Empty = no tag line.
@@ -652,17 +678,24 @@
         "</span></li>";
     }).join("");
 
-    // Character image slides in from the right on Next, from the left on
-    // Back — direction was set by whichever handler kicked off this
-    // navigation (see stepNavDirection above); any other trigger (e.g. a
-    // live config reload re-rendering the same step) leaves it null, so
-    // the image just appears with no animation instead of replaying one.
-    var charUrl = (serverConfig && serverConfig.images && serverConfig.images[CHAR_IMAGE_KEY[st.key]]) || "";
-    var charAnimClass = stepNavDirection === "next" ? " dmls-char-in-right" : stepNavDirection === "back" ? " dmls-char-in-left" : "";
+    // Left character always flies in from the left edge, right character
+    // always flies in from the right edge — independent of each other and
+    // of Back/Next nav direction. stepNavDirection just gates *whether* to
+    // animate at all: set by whichever handler kicked off this navigation
+    // (see stepNavDirection above), null on any other trigger (e.g. a live
+    // config reload re-rendering the same step), so those don't replay it.
+    var images = (serverConfig && serverConfig.images) || {};
+    var charLeftUrl = images[CHAR_IMAGE_KEY_LEFT[st.key]] || "";
+    var charRightUrl = images[CHAR_IMAGE_KEY_RIGHT[st.key]] || "";
+    var animateChars = stepNavDirection !== null;
     stepNavDirection = null;
-    var charHTML = charUrl
-      ? '<img class="dmls-card-character' + charAnimClass + '" src="' + charUrl.replace(/"/g, "%22") + '" alt="" loading="lazy">'
-      : "";
+    var charHTML =
+      (charLeftUrl
+        ? '<img class="dmls-card-character-left' + (animateChars ? " dmls-char-in-left" : "") + '" src="' + charLeftUrl.replace(/"/g, "%22") + '" alt="" loading="lazy">'
+        : "") +
+      (charRightUrl
+        ? '<img class="dmls-card-character-right' + (animateChars ? " dmls-char-in-right" : "") + '" src="' + charRightUrl.replace(/"/g, "%22") + '" alt="" loading="lazy">'
+        : "");
 
     app.innerHTML =
       '<div class="dmls-card' + (st.exp ? " dmls-card-exp" : " dmls-card-step-" + st.key) + '" id="dmls-screen-step-' + st.key + '">' +
@@ -671,7 +704,7 @@
       '<div class="dmls-card-head">' +
       dots(stepNo) +
       '<h2 class="dmls-title">' + stepHeadingHTML(content) + "</h2>" +
-      '<p class="dmls-sub">' + esc(content.sub) + "</p>" +
+      '<p class="dmls-sub">' + stepSubHTML(content.sub) + "</p>" +
       "</div>" +
       '<div class="dmls-scroll-mid" id="dmls-rows-scroll"><ul class="dmls-scores" id="dmls-rows">' + rows + "</ul></div>" +
       "</div>" +
@@ -1006,15 +1039,12 @@
   function renderWinner() {
     var ranked = state.players.slice().sort(function (a, b) { return total(b) - total(a); });
     var top = ranked.length ? total(ranked[0]) : 0;
-    // The hero spotlight always names exactly one winner, even on a tie —
-    // showing every tied name turned into an unreadable wall of text with
-    // more than a couple of players. ranked[0] is always a top scorer by
-    // construction (stable sort keeps the players' original order among
-    // ties), so it's a reasonable single pick. The full score list below
-    // still shows and gold-highlights everyone who actually tied for first.
-    var winner = ranked[0];
-    var winnerName = winner ? esc(winner.name) : "";
-    var meWon = !!(winner && winner.isCustomer);
+    // On a tie, the hero spotlight names every tied player instead of an
+    // arbitrary single pick — joined the same way the achievements/history
+    // list already joins winnerNames (see the `& ` join above).
+    var winners = ranked.filter(function (p) { return total(p) === top; });
+    var winnerName = esc(winners.map(function (p) { return p.name; }).join(" & "));
+    var meWon = winners.some(function (p) { return p.isCustomer; });
 
     // Three states for the logged-in customer's widget, per the winner-screen
     // mock: still saving / failed to save (unchanged), then once lastResult
@@ -1500,10 +1530,11 @@
       // Backgrounds are pure CSS (custom properties) — safe to apply any time,
       // no re-render needed, the browser repaints whatever's on screen.
       if (images.bg) modalEl.style.setProperty("--dmls-bg-url", 'url("' + images.bg + '")');
-      // bgExp/bgWe/bgFv/bgBp (the per-step CHARACTER image) are no longer
-      // CSS custom properties — renderStep() reads them straight off
-      // serverConfig.images and renders a real <img> so it can be animated
-      // in; only the background layers stay pure-CSS here.
+      // bgExpLeft/Right, bgWeLeft/Right, bgFvLeft/Right, bgBpLeft/Right (the
+      // per-step CHARACTER images) are no longer CSS custom properties —
+      // renderStep() reads them straight off serverConfig.images and renders
+      // real <img>s so each can be animated in independently; only the
+      // background layers stay pure-CSS here.
       if (images.bgWeCustom) modalEl.style.setProperty("--dmls-bg-we-custom-url", 'url("' + images.bgWeCustom + '")');
       if (images.bgFvCustom) modalEl.style.setProperty("--dmls-bg-fv-custom-url", 'url("' + images.bgFvCustom + '")');
       if (images.bgBpCustom) modalEl.style.setProperty("--dmls-bg-bp-custom-url", 'url("' + images.bgBpCustom + '")');
@@ -1522,7 +1553,7 @@
       // moment "Next" is clicked, and fast clicking through steps outruns
       // the download. Warm the browser's cache for all of them right away,
       // while the player is still on Welcome/Add Names.
-      [images.bg, images.bgExp, images.bgWe, images.bgFv, images.bgBp, images.bgWeCustom, images.bgFvCustom, images.bgBpCustom, images.bgExpCustom, images.bgWinner, images.trophyBg].forEach(function (url) {
+      [images.bg, images.bgExpLeft, images.bgExpRight, images.bgWeLeft, images.bgWeRight, images.bgFvLeft, images.bgFvRight, images.bgBpLeft, images.bgBpRight, images.bgWeCustom, images.bgFvCustom, images.bgBpCustom, images.bgExpCustom, images.bgWinner, images.trophyBg].forEach(function (url) {
         if (url) new Image().src = url;
       });
       if (typeof c.cardMinHeight === "number") modalEl.style.setProperty("--dmls-card-min-height", c.cardMinHeight + "px");
@@ -1560,7 +1591,7 @@
       // (welcome) that already painted with the old default.
       var needsRerender = false;
       for (var key in images) {
-        if (key !== "bg" && key !== "bgExp" && key !== "bgWe" && key !== "bgFv" && key !== "bgBp" && key !== "bgWeCustom" && key !== "bgFvCustom" && key !== "bgBpCustom" && key !== "bgExpCustom" && key !== "bgWinner" && key !== "trophyBg" && images[key] && ICONS[key] !== images[key]) {
+        if (key !== "bg" && key !== "bgExpLeft" && key !== "bgExpRight" && key !== "bgWeLeft" && key !== "bgWeRight" && key !== "bgFvLeft" && key !== "bgFvRight" && key !== "bgBpLeft" && key !== "bgBpRight" && key !== "bgWeCustom" && key !== "bgFvCustom" && key !== "bgBpCustom" && key !== "bgExpCustom" && key !== "bgWinner" && key !== "trophyBg" && images[key] && ICONS[key] !== images[key]) {
           ICONS[key] = images[key];
           needsRerender = true;
         }

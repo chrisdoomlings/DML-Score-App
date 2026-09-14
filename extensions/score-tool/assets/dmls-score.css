@@ -173,10 +173,11 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    background, but Settings → Steps → "Background" lets a step override it
    with its own image instead; when that per-step override is unset,
    --dmls-bg-*-custom-url is unset too and the chain falls through to the
-   shared --dmls-bg-url. (The per-step CHARACTER image — Settings → Steps →
-   "Character image" — used to be a second background-image layer here, but
-   is now the separate .dmls-card-character <img> below, so it can slide in
-   on arrival instead of just appearing.) */
+   shared --dmls-bg-url. (The per-step CHARACTER images — Settings → Steps →
+   "Character images" — used to be a single second background-image layer
+   here, but are now the separate .dmls-card-character-left/-right <img>s
+   below, so each can slide in independently on arrival instead of just
+   appearing as one static combined graphic.) */
 .dmls-card-exp {
   background-image: var(--dmls-bg-exp-custom-url, var(--dmls-bg-url, none));
 }
@@ -190,20 +191,25 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   background-image: var(--dmls-bg-bp-custom-url, var(--dmls-bg-url, none));
 }
 
-/* Per-step character art — a real <img> (not a background-image layer)
-   so it can slide in when you land on a step; renderStep() in
-   dmls-score.js sets dmls-char-in-right/-left depending on whether you
-   arrived via Next or Back. Sized/positioned to match how it looked as a
-   layered background before (full card width, natural aspect ratio,
-   pinned near the top). Sits behind the card's own head/rows/nav — DOM
-   order puts it first, and .dmls-card-body/.dmls-nav are given
-   position:relative below so, per normal CSS stacking rules, they paint
-   above this positioned-but-earlier sibling instead of being covered by
-   it. */
-.dmls-card-character {
-  position: absolute; left: 0; top: 30px; width: 100%; height: auto;
+/* Per-step character art — two independent real <img>s (not a single
+   background-image layer), each pinned to its own side so it can slide in
+   from that side when you land on a step; renderStep() in dmls-score.js
+   always applies dmls-char-in-left to the left one and dmls-char-in-right
+   to the right one (not tied to Back/Next direction — each side just flies
+   in from its own edge every time). Natural aspect ratio, pinned near the
+   top like the old single combined graphic; max-width caps each at roughly
+   half the card so the pair doesn't overlap awkwardly in the middle. Sits
+   behind the card's own head/rows/nav — DOM order puts them first, and
+   .dmls-card-body/.dmls-nav are given position:relative below so, per
+   normal CSS stacking rules, they paint above these positioned-but-earlier
+   siblings instead of being covered by them. */
+.dmls-card-character-left,
+.dmls-card-character-right {
+  position: absolute; top: 30px; max-width: 58%; width: auto; height: auto;
   pointer-events: none; display: block;
 }
+.dmls-card-character-left { left: 0; }
+.dmls-card-character-right { right: 0; }
 .dmls-card-body, .dmls-nav { position: relative; }
 @media (prefers-reduced-motion: no-preference) {
   .dmls-char-in-right { animation: dmls-char-in-right 0.32s ease-out both; }
@@ -216,6 +222,14 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
     from { opacity: 0; transform: translateX(-36px); }
     to { opacity: 1; transform: none; }
   }
+}
+
+/* Inline icon swapped in for a game-symbol glyph (➹/⊕/💧) inside a step
+   description — see stepSubHTML() in dmls-score.js. Sized to sit on the
+   text baseline like the character it replaces rather than as a block
+   image. */
+.dmls-step-icon {
+  height: 1em; width: auto; display: inline-block; vertical-align: -0.15em;
 }
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps

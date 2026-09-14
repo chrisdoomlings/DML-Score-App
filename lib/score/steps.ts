@@ -4,9 +4,9 @@
  * DEFAULT_STEPS the same way score_settings.achievements works (see
  * lib/score/achievements.ts's mergeAchievementConfig). Trigger order/logic
  * (STEPS in dmls-score.js: key/min/exp) is NOT here and NOT configurable —
- * this only covers the player-facing copy. Each step's background image is
- * a separate score_settings.images entry (bgWe/bgFv/bgBp/bgExp), not part
- * of this JSONB blob.
+ * this only covers the player-facing copy. Each step's left/right character
+ * images are separate score_settings.images entries (e.g. bgWeLeft/
+ * bgWeRight), not part of this JSONB blob.
  */
 
 export const STEP_KEYS = ["we", "fv", "bp", "mp"] as const;

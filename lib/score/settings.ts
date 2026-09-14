@@ -3,19 +3,30 @@ import { mergeAchievementConfig, type AchievementConfig } from "@/lib/score/achi
 import { mergeStepConfig, type StepConfig } from "@/lib/score/steps";
 import { sanitizeImageUrl } from "@/lib/score/imageUrl";
 
+// worldsend/drop/iconBonus are the inline icons the storefront swaps in for
+// the ➹/💧/⊕ Unicode glyphs embedded in the step descriptions (see
+// stepSubHTML() in dmls-score.js and 031_step_sub_icons.sql) — worldsend and
+// drop existed unused since 003_custom_images.sql and are reused here rather
+// than adding duplicate columns; compass/suppress remain unused. Empty =
+// keep rendering the plain Unicode character.
 export const IMAGE_KEYS = [
   "worldsend",
   "compass",
   "drop",
   "suppress",
+  "iconBonus",
   "characters",
   "winner",
   "winnerFooter",
   "bg",
-  "bgExp",
-  "bgWe",
-  "bgFv",
-  "bgBp",
+  "bgExpLeft",
+  "bgExpRight",
+  "bgWeLeft",
+  "bgWeRight",
+  "bgFvLeft",
+  "bgFvRight",
+  "bgBpLeft",
+  "bgBpRight",
   "bgWeCustom",
   "bgFvCustom",
   "bgBpCustom",
@@ -55,7 +66,7 @@ export interface ScoreSettings {
   trophySubheading: string; // trophy screen caption shown after the loser names (e.g. "Did Not.")
   trophyTagline: string; // optional second line shown between the loser names and trophySubheading; empty = hidden
   trophyActionsBg: string; // hex color behind the trophy screen's action buttons; empty = transparent (card's own default background)
-  steps: StepConfig; // per-step heading/description for the 4 scoring screens; character images are images.bgWe/bgFv/bgBp/bgExp; per-step background overrides are images.bgWeCustom/bgFvCustom/bgBpCustom/bgExpCustom (empty = falls back to the shared images.bg)
+  steps: StepConfig; // per-step heading/description for the 4 scoring screens; character images are images.bgWeLeft/bgWeRight/bgFvLeft/bgFvRight/bgBpLeft/bgBpRight/bgExpLeft/bgExpRight (left/right fly in from their own screen edge independently); per-step background overrides are images.bgWeCustom/bgFvCustom/bgBpCustom/bgExpCustom (empty = falls back to the shared images.bg)
   trophyTopImages: string[]; // pool of trophy-graphic designs; storefront picks one at random per "Generate Trophy" (client spec — variety, not a single fixed design)
   showProducts: boolean; // winner-screen recommended-products widget on/off
   recsCollectionId: string; // Shopify GID (gid://shopify/Collection/...), chosen via Settings → Products' Admin-API-backed picker; empty = widget stays hidden even if showProducts is true
@@ -93,8 +104,9 @@ const DEFAULTS = {
 };
 
 const EMPTY_IMAGES: ImageUrls = {
-  worldsend: "", compass: "", drop: "", suppress: "", characters: "", winner: "", winnerFooter: "", bg: "", bgExp: "", logo: "", bgWinner: "",
-  bgWe: "", bgFv: "", bgBp: "",
+  worldsend: "", compass: "", drop: "", suppress: "", iconBonus: "", characters: "", winner: "", winnerFooter: "", bg: "", logo: "", bgWinner: "",
+  bgExpLeft: "", bgExpRight: "",
+  bgWeLeft: "", bgWeRight: "", bgFvLeft: "", bgFvRight: "", bgBpLeft: "", bgBpRight: "",
   bgWeCustom: "", bgFvCustom: "", bgBpCustom: "", bgExpCustom: "",
   beeNormal: "", beeHover: "", fishNormal: "", fishHover: "",
   trophyBg: "",
@@ -110,14 +122,19 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       imageCompass: string;
       imageDrop: string;
       imageSuppress: string;
+      imageIconBonus: string;
       imageCharacters: string;
       imageWinner: string;
       imageWinnerFooter: string;
       imageBg: string;
-      imageBgExp: string;
-      imageBgWe: string;
-      imageBgFv: string;
-      imageBgBp: string;
+      imageBgExpLeft: string;
+      imageBgExpRight: string;
+      imageBgWeLeft: string;
+      imageBgWeRight: string;
+      imageBgFvLeft: string;
+      imageBgFvRight: string;
+      imageBgBpLeft: string;
+      imageBgBpRight: string;
       imageBgWeCustom: string;
       imageBgFvCustom: string;
       imageBgBpCustom: string;
@@ -163,14 +180,19 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            image_compass    AS "imageCompass",
            image_drop       AS "imageDrop",
            image_suppress   AS "imageSuppress",
+           image_icon_bonus AS "imageIconBonus",
            image_characters AS "imageCharacters",
            image_winner     AS "imageWinner",
            image_winner_footer AS "imageWinnerFooter",
            image_bg         AS "imageBg",
-           image_bg_exp     AS "imageBgExp",
-           image_bg_we      AS "imageBgWe",
-           image_bg_fv      AS "imageBgFv",
-           image_bg_bp      AS "imageBgBp",
+           image_bg_exp_left  AS "imageBgExpLeft",
+           image_bg_exp_right AS "imageBgExpRight",
+           image_bg_we_left  AS "imageBgWeLeft",
+           image_bg_we_right AS "imageBgWeRight",
+           image_bg_fv_left  AS "imageBgFvLeft",
+           image_bg_fv_right AS "imageBgFvRight",
+           image_bg_bp_left  AS "imageBgBpLeft",
+           image_bg_bp_right AS "imageBgBpRight",
            image_bg_we_custom  AS "imageBgWeCustom",
            image_bg_fv_custom  AS "imageBgFvCustom",
            image_bg_bp_custom  AS "imageBgBpCustom",
@@ -248,14 +270,19 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
           compass: r.imageCompass ?? "",
           drop: r.imageDrop ?? "",
           suppress: r.imageSuppress ?? "",
+          iconBonus: r.imageIconBonus ?? "",
           characters: r.imageCharacters ?? "",
           winner: r.imageWinner ?? "",
           winnerFooter: r.imageWinnerFooter ?? "",
           bg: r.imageBg ?? "",
-          bgExp: r.imageBgExp ?? "",
-          bgWe: r.imageBgWe ?? "",
-          bgFv: r.imageBgFv ?? "",
-          bgBp: r.imageBgBp ?? "",
+          bgExpLeft: r.imageBgExpLeft ?? "",
+          bgExpRight: r.imageBgExpRight ?? "",
+          bgWeLeft: r.imageBgWeLeft ?? "",
+          bgWeRight: r.imageBgWeRight ?? "",
+          bgFvLeft: r.imageBgFvLeft ?? "",
+          bgFvRight: r.imageBgFvRight ?? "",
+          bgBpLeft: r.imageBgBpLeft ?? "",
+          bgBpRight: r.imageBgBpRight ?? "",
           bgWeCustom: r.imageBgWeCustom ?? "",
           bgFvCustom: r.imageBgFvCustom ?? "",
           bgBpCustom: r.imageBgBpCustom ?? "",
@@ -326,8 +353,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
   await db`
     INSERT INTO score_settings (
       shop, achievements, steps,
-      image_worldsend, image_compass, image_drop, image_suppress, image_characters, image_winner, image_winner_footer, image_bg, image_bg_exp,
-      image_bg_we, image_bg_fv, image_bg_bp,
+      image_worldsend, image_compass, image_drop, image_suppress, image_icon_bonus, image_characters, image_winner, image_winner_footer, image_bg,
+      image_bg_exp_left, image_bg_exp_right,
+      image_bg_we_left, image_bg_we_right, image_bg_fv_left, image_bg_fv_right, image_bg_bp_left, image_bg_bp_right,
       image_bg_we_custom, image_bg_fv_custom, image_bg_bp_custom, image_bg_exp_custom,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, trophy_top_images,
@@ -338,8 +366,9 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
     )
     VALUES (
       ${shop}, ${jsonb(next.achievements)}, ${jsonb(next.steps)},
-      ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.characters}, ${next.images.winner}, ${next.images.winnerFooter}, ${next.images.bg}, ${next.images.bgExp},
-      ${next.images.bgWe}, ${next.images.bgFv}, ${next.images.bgBp},
+      ${next.images.worldsend}, ${next.images.compass}, ${next.images.drop}, ${next.images.suppress}, ${next.images.iconBonus}, ${next.images.characters}, ${next.images.winner}, ${next.images.winnerFooter}, ${next.images.bg},
+      ${next.images.bgExpLeft}, ${next.images.bgExpRight},
+      ${next.images.bgWeLeft}, ${next.images.bgWeRight}, ${next.images.bgFvLeft}, ${next.images.bgFvRight}, ${next.images.bgBpLeft}, ${next.images.bgBpRight},
       ${next.images.bgWeCustom}, ${next.images.bgFvCustom}, ${next.images.bgBpCustom}, ${next.images.bgExpCustom},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
@@ -355,14 +384,19 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_compass    = EXCLUDED.image_compass,
       image_drop       = EXCLUDED.image_drop,
       image_suppress   = EXCLUDED.image_suppress,
+      image_icon_bonus = EXCLUDED.image_icon_bonus,
       image_characters = EXCLUDED.image_characters,
       image_winner     = EXCLUDED.image_winner,
       image_winner_footer = EXCLUDED.image_winner_footer,
       image_bg         = EXCLUDED.image_bg,
-      image_bg_exp     = EXCLUDED.image_bg_exp,
-      image_bg_we      = EXCLUDED.image_bg_we,
-      image_bg_fv      = EXCLUDED.image_bg_fv,
-      image_bg_bp      = EXCLUDED.image_bg_bp,
+      image_bg_exp_left  = EXCLUDED.image_bg_exp_left,
+      image_bg_exp_right = EXCLUDED.image_bg_exp_right,
+      image_bg_we_left  = EXCLUDED.image_bg_we_left,
+      image_bg_we_right = EXCLUDED.image_bg_we_right,
+      image_bg_fv_left  = EXCLUDED.image_bg_fv_left,
+      image_bg_fv_right = EXCLUDED.image_bg_fv_right,
+      image_bg_bp_left  = EXCLUDED.image_bg_bp_left,
+      image_bg_bp_right = EXCLUDED.image_bg_bp_right,
       image_bg_we_custom  = EXCLUDED.image_bg_we_custom,
       image_bg_fv_custom  = EXCLUDED.image_bg_fv_custom,
       image_bg_bp_custom  = EXCLUDED.image_bg_bp_custom,

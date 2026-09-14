@@ -62,16 +62,33 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "media", label: "Media" },
 ];
 
-// Two image fields per step, keyed to its score_settings.images slots —
-// bgExp already existed (expansion-points screen); bgWe/bgFv/bgBp are new.
-// bgKey is the character image (layers on top of whichever background is
-// showing); bgCustomKey is an optional per-step background override (falls
-// back to the shared "General" background when empty).
-const STEP_META: { key: StepKey; label: string; imageKey: string; bgCustomKey: string }[] = [
-  { key: "we", label: "World's End", imageKey: "bgWe", bgCustomKey: "bgWeCustom" },
-  { key: "fv", label: "Face Value", imageKey: "bgFv", bgCustomKey: "bgFvCustom" },
-  { key: "bp", label: "Bonus Points", imageKey: "bgBp", bgCustomKey: "bgBpCustom" },
-  { key: "mp", label: "Expansion Points", imageKey: "bgExp", bgCustomKey: "bgExpCustom" },
+// Two character-image fields per step (left/right, keyed to its
+// score_settings.images slots), plus one background-override field.
+// leftImageKey/rightImageKey each fly in from their own screen edge
+// independently (see dmls-score.js/renderStep()) — split from a single
+// combined-graphic slot in 030_step_character_left_right.sql so a left-side
+// character can enter from the left while a right-side one enters from the
+// right, instead of one image sliding in as a unit. bgCustomKey is an
+// optional per-step background override (falls back to the shared
+// "General" background when empty).
+const STEP_META: { key: StepKey; label: string; leftImageKey: string; rightImageKey: string; bgCustomKey: string }[] = [
+  { key: "we", label: "World's End", leftImageKey: "bgWeLeft", rightImageKey: "bgWeRight", bgCustomKey: "bgWeCustom" },
+  { key: "fv", label: "Face Value", leftImageKey: "bgFvLeft", rightImageKey: "bgFvRight", bgCustomKey: "bgFvCustom" },
+  { key: "bp", label: "Bonus Points", leftImageKey: "bgBpLeft", rightImageKey: "bgBpRight", bgCustomKey: "bgBpCustom" },
+  { key: "mp", label: "Expansion Points", leftImageKey: "bgExpLeft", rightImageKey: "bgExpRight", bgCustomKey: "bgExpCustom" },
+];
+
+// Inline icons the storefront swaps in for the ➹/⊕/💧 Unicode glyphs
+// embedded directly in the step descriptions below (see DEFAULT_STEPS in
+// lib/score/steps.ts and stepSubHTML() in dmls-score.js) — Unicode glyph
+// rendering isn't consistent enough across devices/fonts, so each gets an
+// optional custom image. Shared across all 4 steps rather than per-step,
+// since the same glyph (e.g. 💧) can appear in more than one step's text.
+// Leave blank to keep showing the plain Unicode character.
+const STEP_ICON_FIELDS: { key: string; label: string }[] = [
+  { key: "worldsend", label: "World's End (➹)" },
+  { key: "iconBonus", label: "Bonus (⊕)" },
+  { key: "drop", label: "Drop of Life (💧)" },
 ];
 
 const GENERAL_IMAGE_FIELDS: { key: string; label: string }[] = [
@@ -691,6 +708,17 @@ export default function SettingsPage() {
           {tab === "steps" && (
             <>
               <section className="dml-card dml-card-wide">
+                <h2 className="dml-card-title">Inline description icons</h2>
+                <p className="dml-card-hint">
+                  The step descriptions below embed a few game-symbol characters directly (➹, ⊕, 💧). Upload a custom
+                  icon for any of them here to replace that character everywhere it appears across all 4 steps —
+                  leave blank to keep showing the plain character.
+                </p>
+                {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
+                {imageGrid(STEP_ICON_FIELDS)}
+              </section>
+
+              <section className="dml-card dml-card-wide">
                 <h2 className="dml-card-title">Scoring steps</h2>
                 <p className="dml-card-hint">
                   Heading, description, and an optional character image for each of the 4 scoring screens. All 4
@@ -729,10 +757,15 @@ export default function SettingsPage() {
                         onChange={(e) => patchStep(s.key, { sub: e.target.value })}
                       />
                       <label className="dml-label" style={{ marginTop: 14 }}>
-                        Character image (optional — layers on top of whichever background is showing below, not a replacement for it)
+                        Character images (optional — each layers on top of whichever background is showing below, not a
+                        replacement for it. The left image flies in from the left edge, the right image flies in from
+                        the right edge, independently.)
                       </label>
                       {uploadErr && <p className="dml-msg-err" style={{ marginBottom: 12 }}>{uploadErr}</p>}
-                      {imageGrid([{ key: s.imageKey, label: s.label + " character", fallbackSrc: settings.images[s.bgCustomKey] || settings.images.bg, wide: true }])}
+                      {imageGrid([
+                        { key: s.leftImageKey, label: s.label + " character — left", fallbackSrc: settings.images[s.bgCustomKey] || settings.images.bg, wide: true },
+                        { key: s.rightImageKey, label: s.label + " character — right", fallbackSrc: settings.images[s.bgCustomKey] || settings.images.bg, wide: true },
+                      ])}
                       <label className="dml-label" style={{ marginTop: 14 }}>
                         Background (optional — overrides the shared background above for this step only; leave blank to keep using it)
                       </label>
