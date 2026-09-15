@@ -119,7 +119,7 @@
       '<div class="dmls-prods">' + itemsHTML + "</div>" +
       (productsNoteText ? '<p class="dmls-prod-note">' + esc(productsNoteText) + "</p>" : "") +
       (productsCollectionUrl
-        ? '<a class="dmls-btn dmls-btn-ghost dmls-btn-full dmls-prod-more" href="' + esc(productsCollectionUrl) + '">Shop more</a>'
+        ? '<a class="dmls-btn dmls-btn-ghost-revert dmls-prod-more" href="' + esc(productsCollectionUrl) + '">Shop more</a>'
         : "");
   }
 

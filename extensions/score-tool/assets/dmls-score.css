@@ -669,7 +669,7 @@ display: flex;
     color: #ffffff; }
 .dmls-prod-note { font-size: 0.75em; color: var(--dmls-ink-faint); margin-top: 10px; line-height: 1.5; padding-top: 0.375em; }
 .dmls-prod-more { margin-top: 12px; }
-#dmls-products { margin: 0; }
+#dmls-products { margin: 0; text-align: center;}
 
 /* resume banner — sticky to the top of .dmls-card-body's own scroll (see
    overflow-y: auto there) so it stays on screen as the player scrolls the
@@ -966,7 +966,7 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
     background: #04201c !important;
     border-color: #37897b !important;
     color: #38897b !important;}
-    .dmls-trophy-action-btn2 {    width: 100%;
+    .dmls-trophy-action-btn2 {    width: 100%;margin-top: 20px;
     background: #04201c !important;
     border-color: #37897b !important;
     color: #38897b !important;}
