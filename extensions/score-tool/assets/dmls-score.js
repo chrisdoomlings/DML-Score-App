@@ -1159,7 +1159,7 @@
             '<div class="dmls-widget dmls-widget-center dmls-widget-new-achievement">' +
             '<h3 class="dmls-widget-title">' + (unlocked.length > 1 ? "New Achievements!" : "New Achievement!") + "</h3>" +
             '<div class="dmls-win-achv-list' + (unlocked.length > 2 ? " dmls-win-achv-grid" : "") + '">' + achvItems + "</div>" +
-            '<button type="button" class="dmls-btn dmls-btn-ghost" data-achv-link>' +
+            '<button type="button" class="dmls-btn dmls-btn-ghost-revert" data-achv-link>' +
             (extraCount > 0 ? "+" + extraCount + " more" : "Achievements") +
             "</button></div>";
         } else {

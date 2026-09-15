@@ -609,12 +609,8 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-win-stat-num { font-size: 2.75em; font-weight: 800; line-height: 1; color: #fff; margin: 0 0 4px; }
 .dmls-win-achv-item { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0 0 6px; }
 .dmls-win-achv-item .dmls-achv-icon { width: 150px; height: 150px; }
-.dmls-win-achv-item .dmls-achv-name { font-size: 0.9375em; }
-/* Only added by renderWinner() (dmls-score.js) once more than 2 achievements
-   unlock in the same game — a lone tile centered in a 2-column grid looks
-   stranded, so 1-2 unlocks keep the plain stacked layout above instead.
-   Smaller icon than the single-column default so two tiles fit per row
-   without the widget ballooning in width. */
+.dmls-win-achv-item .dmls-achv-name { font-size:1.5em; }
+
 .dmls-win-achv-list.dmls-win-achv-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 8px; width: 100%;
 }
