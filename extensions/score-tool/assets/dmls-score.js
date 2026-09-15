@@ -81,6 +81,7 @@
   var productsHeadingText = "";
   var productsNoteText = "";
   var productsList = [];
+  var productsCollectionUrl = ""; // populated from /config; empty = "Shop more" link hidden
   function logoHTML(cls) {
     // Width is merchant-set but centering is structural (margin:auto in CSS),
     // so any width the admin picks stays centered — never make this fill-width.
@@ -116,7 +117,10 @@
     productsEl.innerHTML =
       '<h3 class="dmls-widget-title">' + esc(productsHeadingText) + "</h3>" +
       '<div class="dmls-prods">' + itemsHTML + "</div>" +
-      (productsNoteText ? '<p class="dmls-prod-note">' + esc(productsNoteText) + "</p>" : "");
+      (productsNoteText ? '<p class="dmls-prod-note">' + esc(productsNoteText) + "</p>" : "") +
+      (productsCollectionUrl
+        ? '<a class="dmls-btn dmls-btn-ghost dmls-btn-full dmls-prod-more" href="' + esc(productsCollectionUrl) + '">Shop more</a>'
+        : "");
   }
 
   // Computed once at boot per spec — included on every POST /game.
@@ -1776,6 +1780,7 @@
       productsHeadingText = typeof c.productsHeading === "string" ? c.productsHeading : "";
       productsNoteText = typeof c.productsNote === "string" ? c.productsNote : "";
       productsList = Array.isArray(c.products) ? c.products : [];
+      productsCollectionUrl = typeof c.productsCollectionUrl === "string" ? c.productsCollectionUrl : "";
       renderProducts();
       // Also covers screen 6 (winner) — logoHTML() reads ICONS.logo, which (unlike
       // ICONS.winner, baked into the page at boot) only arrives via this /config

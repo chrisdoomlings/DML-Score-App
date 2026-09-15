@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     const images = Object.fromEntries(
       Object.entries(settings.images).filter(([, url]) => url)
     );
-    const products = await getRecommendedProducts(shop, settings);
+    const { products, collectionUrl } = await getRecommendedProducts(shop, settings);
     return NextResponse.json(
       {
         loggedIn: Boolean(params.logged_in_customer_id),
@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         productsHeading: settings.productsHeading,
         productsNote: settings.productsNote,
         products,
+        productsCollectionUrl: collectionUrl,
         tipText: settings.tipText,
         homeHeading: settings.homeHeading,
         homeSubheading: settings.homeSubheading,

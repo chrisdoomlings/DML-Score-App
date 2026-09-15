@@ -21,6 +21,7 @@ const CACHE_TTL_MS = 15 * 60 * 1000;
 const COLLECTION_PRODUCTS_QUERY = `
   query CollectionProducts($id: ID!) {
     collection(id: $id) {
+      handle
       products(first: 3) {
         edges {
           node {
@@ -38,6 +39,7 @@ const COLLECTION_PRODUCTS_QUERY = `
 
 interface CollectionProductsResponse {
   collection: {
+    handle: string;
     products: {
       edges: {
         node: {
@@ -50,6 +52,11 @@ interface CollectionProductsResponse {
       }[];
     } | null;
   } | null;
+}
+
+export interface RecommendedProducts {
+  products: ProductCard[];
+  collectionUrl: string; // storefront URL of the chosen collection ("Shop more" link); empty if unresolved
 }
 
 /** Numeric id from a Shopify GID (gid://shopify/ProductVariant/123) — what the
@@ -68,7 +75,7 @@ function formatPrice(amount: string, currencyCode: string): string {
   }
 }
 
-async function fetchFromAdminApi(shop: string, collectionId: string): Promise<ProductCard[] | null> {
+async function fetchFromAdminApi(shop: string, collectionId: string): Promise<RecommendedProducts | null> {
   const session = await getOfflineSession(shop);
   if (!session || !hasScope(session, "read_products")) return null;
 
@@ -84,7 +91,7 @@ async function fetchFromAdminApi(shop: string, collectionId: string): Promise<Pr
     return null;
   }
 
-  return edges.map(({ node }) => {
+  const products = edges.map(({ node }) => {
     const variant = node.variants.edges[0]?.node;
     return {
       id: node.handle,
@@ -96,21 +103,33 @@ async function fetchFromAdminApi(shop: string, collectionId: string): Promise<Pr
       available: variant?.availableForSale ?? false,
     };
   });
+  const collectionHandle = result.data?.collection?.handle;
+  return { products, collectionUrl: collectionHandle ? `/collections/${collectionHandle}` : "" };
 }
+
+const EMPTY_RECOMMENDED: RecommendedProducts = { products: [], collectionUrl: "" };
 
 /** Recommended products for the winner screen — cached in score_settings
  *  (products_cache/products_cache_at) in front of the Admin API call. Falls
  *  back to a stale cache (rather than an empty widget) if a live fetch fails,
- *  e.g. the scope was revoked or the collection was deleted. */
-export async function getRecommendedProducts(shop: string, settings: ScoreSettings): Promise<ProductCard[]> {
-  if (!settings.showProducts || !settings.recsCollectionId) return [];
+ *  e.g. the scope was revoked or the collection was deleted. products_cache
+ *  stores { products, collectionUrl } — collectionUrl backs the widget's
+ *  "Shop more" link and shares the same cache/TTL/invalidation as products
+ *  since both come off the one Admin GraphQL call. */
+export async function getRecommendedProducts(shop: string, settings: ScoreSettings): Promise<RecommendedProducts> {
+  if (!settings.showProducts || !settings.recsCollectionId) return EMPTY_RECOMMENDED;
 
   const db = getDb();
   const rows = await db<{ productsCache: unknown; productsCacheAt: string | null }[]>`
     SELECT products_cache AS "productsCache", products_cache_at AS "productsCacheAt"
     FROM score_settings WHERE shop = ${shop}
   `;
-  const cached = Array.isArray(rows[0]?.productsCache) ? (rows[0]!.productsCache as ProductCard[]) : [];
+  const rawCache = rows[0]?.productsCache;
+  const cached: RecommendedProducts = Array.isArray(rawCache)
+    ? { products: rawCache as ProductCard[], collectionUrl: "" } // pre-existing cache row written before collectionUrl was tracked
+    : rawCache && typeof rawCache === "object" && Array.isArray((rawCache as RecommendedProducts).products)
+      ? (rawCache as RecommendedProducts)
+      : EMPTY_RECOMMENDED;
   const cachedAt = rows[0]?.productsCacheAt ? new Date(rows[0].productsCacheAt).getTime() : 0;
   const isFresh = cachedAt > 0 && Date.now() - cachedAt < CACHE_TTL_MS;
   if (isFresh) return cached;

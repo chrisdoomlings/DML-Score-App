@@ -666,7 +666,8 @@ display: flex;
 .dmls-prod-buy span {     margin-top: -10px;
     color: white;
     font-weight: bold; } 
-.dmls-prod-buy[disabled] { background: rgba(255, 255, 255, 0.18); color: var(--dmls-ink); }
+.dmls-prod-buy[disabled] {     background: rgb(23 201 75);
+    color: #ffffff; }
 .dmls-prod-note { font-size: 0.75em; color: var(--dmls-ink-faint); margin-top: 10px; line-height: 1.5; padding-top: 0.375em; }
 .dmls-prod-more { margin-top: 12px; }
 #dmls-products { margin: 0; }
