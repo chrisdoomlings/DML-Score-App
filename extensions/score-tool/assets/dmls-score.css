@@ -562,21 +562,13 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   display: flex; flex-direction: column; justify-content: center; padding: 30px 0;
 }
 
-/* The trophy background image spans the whole screen — both the trophy art/
-   heading/names area (.dmls-trophy-fill) and the action-buttons row below it
-   (.dmls-trophy-actions-wrap) — by living on their shared parent
-   (.dmls-card-body, scoped to this screen only) instead of just
-   .dmls-trophy-fill. This only affects the on-screen render; the downloadable/
-   shareable trophy PNG is generated entirely separately, server-side, by
-   app/api/proxy/trophy — untouched by this. .dmls-trophy-actions-wrap's own
-   background (below) stays transparent by default so this shows through it
-   too; an admin-set Action buttons area color still paints over it there. */
-.dmls-trophy-scene .dmls-card-body {
+
+/* .dmls-trophy-scene .dmls-card-body {
   background-image:
     var(--dmls-bg-trophy-url, var(--dmls-bg-winner-url, var(--dmls-bg-url, none))),
     linear-gradient(180deg, var(--dmls-panel-2), var(--dmls-panel));
   background-size: cover; background-position: center;
-}
+} */
 
 .dmls-trophy-actions-wrap { background: var(--dmls-trophy-actions-bg, transparent); padding: 1.25em 0 0.125em; }
 .dmls-trophy-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto; width: 100%; max-width: 280px; }
