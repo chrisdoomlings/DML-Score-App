@@ -963,10 +963,10 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
 
     .dmls-prod-more-wrapper { text-align: center; margin-top: 12px; }
 .dmls-trophy-action-btn1 {    width: 100%;
-    background: #04201c;
-    border-color: #37897b;
-    color: #38897b;}
+    background: #04201c !important;
+    border-color: #37897b !important;
+    color: #38897b !important;}
     .dmls-trophy-action-btn2 {    width: 100%;
-    background: #04201c;
-    border-color: #37897b;
-    color: #38897b;}
+    background: #04201c !important;
+    border-color: #37897b !important;
+    color: #38897b !important;}
