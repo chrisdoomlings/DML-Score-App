@@ -574,7 +574,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-trophy-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto; width: 100%; max-width: 280px; }
 .dmls-trophy-action-btn { display: block;
     width: 100%;
-    padding: 10px;
+    padding: 6px;
     font-size: 1.4em;}
 
 
@@ -962,3 +962,11 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
     line-height: 1.3em;}
 
     .dmls-prod-more-wrapper { text-align: center; margin-top: 12px; }
+#dmls-trophy-action-btn1 {    width: 100%;
+    background: #04201c;
+    border-color: #37897b;
+    color: #38897b;}
+    #dmls-trophy-action-btn2 {    width: 100%;
+    background: #04201c;
+    border-color: #37897b;
+    color: #38897b;}
