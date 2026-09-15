@@ -572,7 +572,10 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 
 .dmls-trophy-actions-wrap { background: var(--dmls-trophy-actions-bg, transparent); padding: 1.25em 0 0.125em; }
 .dmls-trophy-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 auto; width: 100%; max-width: 280px; }
-.dmls-trophy-action-btn { display: block; width: 100%; padding: 0.8125em; font-size: 1em; }
+.dmls-trophy-action-btn { display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 1.4em;}
 
 
 .dmls-widgets { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; text-align: left; padding: 1.5em; }

@@ -1417,8 +1417,8 @@
       '<div class="dmls-trophy-actions-wrap">' +
       '<div class="dmls-trophy-actions">' +
       '<button type="button" class="dmls-btn dmls-btn-go dmls-trophy-action-btn" id="dmls-trophy-rematch">Rematch!</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn" id="dmls-trophy-new-players">Or New Players</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn" id="dmls-trophy-achv">Achievements</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn1" id="dmls-trophy-new-players">Or New Players</button>' +
+      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn2" id="dmls-trophy-achv">Achievements</button>' +
       "</div></div>" +
       "</div></div>";
 
