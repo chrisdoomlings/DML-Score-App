@@ -14,14 +14,15 @@ Reviews & Rewards** — never touch that repo from here; it is the client's crit
 - Admin UI is plain React (no Polaris) — one dashboard page.
 
 ## Layout
-- OAuth: `app/auth/` + `app/auth/callback/` (scope: `read_customers,read_products`, shared
-  constant in `lib/utils/scopes.ts`)
-- Proxy API: `app/api/proxy/` — `config` (GET), `game` (POST), `stats` (GET)
+- OAuth: `app/auth/` + `app/auth/callback/` (scope: `read_customers,read_products,read_orders`,
+  shared constant in `lib/utils/scopes.ts`)
+- Proxy API: `app/api/proxy/` — `config` (GET), `game` (POST), `stats` (GET), `product-click` (POST)
 - Admin API: `app/api/admin/` — `settings`, `summary`, `analytics`, `upload`, `collections`
   (App Bridge JWT-authed via `lib/utils/adminAuth.ts`; `collections` additionally needs the
   shop's offline session to carry `read_products`, via `lib/utils/adminGraphql.ts`)
-- Webhooks: `app/api/webhooks/` — `app/uninstalled`
-- Business logic: `lib/score/` — `games.ts` (save/stats), `settings.ts`
+- Webhooks: `app/api/webhooks/` — `app/uninstalled`, `orders/paid`
+- Business logic: `lib/score/` — `games.ts` (save/stats), `settings.ts`, `productAnalytics.ts`
+  (add-to-cart clicks + order/revenue attribution)
 - DB: `lib/supabase/client.ts` + `supabase/migrations/001_initial.sql` (5 tables, all `score_`-prefixed except sessions/shops)
 - Theme extension: `extensions/score-tool/` — block + `dmls-`prefixed assets (CSS namespaced under `#dmls-root`)
 
@@ -160,6 +161,46 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
     customization** — it must be re-entered in the app Settings page, theme editor values are
     no longer read at all.
   - The "Shop more" link the old Liquid version had (linking to the collection's own page)
-    was dropped rather than carried over — resolving it would've meant fetching+caching the
-    collection's handle/URL alongside the product list, not just re-plumbing existing data.
-    Revisit if a merchant asks for it back.
+    was dropped rather than carried over initially — resolving it would've meant
+    fetching+caching the collection's handle/URL alongside the product list, not just
+    re-plumbing existing data. **Re-added later in September 2026**: `lib/score/products.ts`'s
+    Admin GraphQL query now also fetches the collection `handle`, and `getRecommendedProducts()`
+    returns `{ products, collectionUrl }` — `collectionUrl` rides the same
+    `products_cache`/TTL/invalidation as the product list (no schema change needed, the column
+    was already JSONB). Exposed as `productsCollectionUrl` on `/apps/score/config`, rendered by
+    `renderProducts()` in `dmls-score.js` as `.dmls-btn.dmls-btn-ghost-revert.dmls-prod-more`
+    (same markup the pre-Phase-4 Liquid version used, styling since changed to
+    `dmls-btn-ghost-revert` and the `dmls-btn-full` width modifier dropped) — hidden when empty.
+    No theme editor or Liquid changes; the link is entirely a byproduct of whichever collection
+    the merchant already picks in Settings.
+
+## Phase 5 note (product click + order/revenue attribution, September 2026)
+- New "Recommended products" card on the admin Analytics page: how many times the winner-screen
+  widget's "add to cart" button is tapped, and how many of those taps turn into a paid order —
+  two independent counts populated by two very different paths.
+  - **Clicks** (`score_product_clicks`, `lib/score/productAnalytics.ts#logProductClick`): logged
+    synchronously the instant a `/cart/add.js` call succeeds, via a new proxy route
+    `POST /apps/score/product-click` (`app/api/proxy/product-click/route.ts`) called
+    fire-and-forget from `winnerClicks()` in `dmls-score.js`. Always known immediately; not tied
+    to checkout ever completing. A lost beacon just undercounts by one.
+  - **Orders/revenue** (`score_attributed_orders`,
+    `lib/score/productAnalytics.ts#recordAttributedOrder`): populated by a new `orders/paid`
+    webhook (`app/api/webhooks/route.ts`), not `orders/create` — cancelled/unpaid orders never
+    count toward revenue. Attribution works by tagging: every `/cart/add.js` call from the widget
+    now sets a `_dml_score_source: "recommended_products"` line-item property (underscore-
+    prefixed properties are hidden from the customer-facing cart UI by Shopify themes, so this is
+    invisible to the shopper). The webhook handler sums quantity/revenue only across line items
+    carrying that property, not the whole order — a cart mixing widget and non-widget items
+    doesn't overstate attribution. Insert is `ON CONFLICT (shop, order_id) DO NOTHING` since
+    `orders/paid` can redeliver.
+  - **New OAuth scope**: `read_orders`, added to the shared `lib/utils/scopes.ts` constant
+    (`read_customers,read_products,read_orders`) — required for Shopify to actually deliver the
+    `orders/paid` webhook at all, same "every installed shop must re-approve" situation as
+    `read_products` in Phase 4. Until a shop re-approves (`/auth?shop=<shop>`), no `orders/paid`
+    events arrive for it and only click counts show up in Analytics, never orders/revenue.
+  - `supabase/migrations/032_product_analytics.sql`: adds both tables, `score_-`prefixed like
+    everything else. Multi-currency shops get a per-currency revenue breakdown
+    (`revenueByCurrency`) rather than one summed total, since summing across currencies would be
+    meaningless.
+  - No admin-configurable settings for this feature — it's pure reporting, nothing to turn off
+    or tune from Settings.

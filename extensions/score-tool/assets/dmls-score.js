@@ -1518,10 +1518,20 @@
     var buy = e.target.closest("button[data-variant-id]");
     if (buy) {
       buy.disabled = true;
+      var variantId = Number(buy.getAttribute("data-variant-id"));
+      var productTitle = buy.getAttribute("data-title") || "";
       fetch("/cart/add.js", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: Number(buy.getAttribute("data-variant-id")), quantity: 1 }),
+        // _dml_score_source: invisible (underscore-prefixed properties are
+        // hidden from the cart UI by Shopify themes) tag read back by the
+        // orders/paid webhook (app/api/webhooks/route.ts) to attribute
+        // revenue to this widget — see lib/score/productAnalytics.ts.
+        body: JSON.stringify({
+          id: variantId,
+          quantity: 1,
+          properties: { _dml_score_source: "recommended_products" },
+        }),
       })
         .then(function (r) {
           if (!r.ok) throw new Error("cart");
@@ -1529,7 +1539,10 @@
         })
         .then(function (item) {
           buy.textContent = "✓"; // circular icon button — no room for "Added ✓"; the toast says the rest
-          toast(buy.getAttribute("data-title") + " added to cart");
+          toast(productTitle + " added to cart");
+          // Fire-and-forget click counter for the admin Analytics page — a
+          // lost beacon just undercounts by one, never blocks the cart add.
+          apiPost("/product-click", { variantId: variantId, productTitle: productTitle }).catch(function () {});
           // Opens the theme's own cart drawer (theme/assets/cart-drawer.js's
           // <cart-drawer-component auto-open>, present on this store) by
           // replicating the shape of its own CartAddEvent (theme/assets/

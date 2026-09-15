@@ -14,6 +14,14 @@ api_version = "2026-01"
   topics = ["app/uninstalled"]
   uri = "/api/webhooks"
 
+  [[webhooks.subscriptions]]
+  # Backs product-order/revenue attribution (lib/score/productAnalytics.ts) —
+  # paid, not create, so cancelled/unpaid orders never count toward revenue.
+  # Requires read_orders below; a shop that hasn't re-approved the app since
+  # this shipped won't have this delivered until it does.
+  topics = ["orders/paid"]
+  uri = "/api/webhooks"
+
 [access_scopes]
 # read_customers: the score tool identifies logged-in customers via the app
 # proxy; it does not write to customer records in phase 1.
@@ -22,7 +30,9 @@ api_version = "2026-01"
 # collection picker moved from the theme editor into the app admin — see
 # lib/utils/adminGraphql.ts. Existing installs must re-approve the app to pick
 # this scope up (Shopify requires re-consent whenever scopes are added).
-scopes = "read_customers,read_products"
+# read_orders: required for Shopify to deliver the orders/paid webhook above —
+# added in the same product-analytics change as the webhook subscription.
+scopes = "read_customers,read_products,read_orders"
 
 [auth]
 redirect_urls = [

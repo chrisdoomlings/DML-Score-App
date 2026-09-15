@@ -7,6 +7,21 @@ interface Analytics {
   achievements: { achievementKey: string; name: string; count: number }[];
   playerCounts: { playerCount: number; games: number }[];
   expansion: { withExpansion: number; total: number };
+  products: {
+    totalClicks: number;
+    clicksLast30Days: number;
+    topProducts: { productTitle: string; clicks: number }[];
+    attributedOrders: number;
+    revenueByCurrency: { currency: string; revenue: number; orders: number }[];
+  };
+}
+
+function formatMoney(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency}`;
+  }
 }
 
 function Bar({ label, value, max }: { label: string; value: number; max: number }) {
@@ -80,6 +95,51 @@ export default function AnalyticsPage() {
           ) : (
             data.playerCounts.map((p) => (
               <Bar key={p.playerCount} label={`${p.playerCount} players`} value={p.games} max={maxPlayers} />
+            ))
+          )}
+        </section>
+
+        <section className="dml-card">
+          <h2 className="dml-card-title">Recommended products</h2>
+          <p className="dml-card-hint">
+            Taps on the winner-screen &ldquo;add to cart&rdquo; buttons, and orders those taps actually turned into.
+          </p>
+          <div className="dml-stats">
+            <div className="dml-stat">
+              <div className="dml-stat-value">{data.products.totalClicks}</div>
+              <div className="dml-stat-label">Added to cart ({data.products.clicksLast30Days} last 30 days)</div>
+            </div>
+            <div className="dml-stat">
+              <div className="dml-stat-value">{data.products.attributedOrders}</div>
+              <div className="dml-stat-label">Orders containing a widget item</div>
+            </div>
+          </div>
+          {data.products.revenueByCurrency.length > 0 && (
+            <p className="dml-card-hint" style={{ marginTop: 8 }}>
+              Revenue attributed:{" "}
+              {data.products.revenueByCurrency
+                .map((r) => formatMoney(r.revenue, r.currency))
+                .join(" + ")}
+            </p>
+          )}
+          <p className="dml-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
+            Revenue counts only the widget-added line items in an order, not the whole cart, and only once an order
+            is paid.
+          </p>
+        </section>
+
+        <section className="dml-card dml-card-wide">
+          <h2 className="dml-card-title">Top products added to cart</h2>
+          {data.products.topProducts.length === 0 ? (
+            <p className="dml-empty">No add-to-cart taps yet.</p>
+          ) : (
+            data.products.topProducts.map((p) => (
+              <Bar
+                key={p.productTitle}
+                label={p.productTitle}
+                value={p.clicks}
+                max={Math.max(1, ...data.products.topProducts.map((t) => t.clicks))}
+              />
             ))
           )}
         </section>
