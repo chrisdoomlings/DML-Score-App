@@ -878,7 +878,7 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
   display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
 .dmls-achv-icon {
-  width: 104px; height: 104px; border-radius: 50%; margin-bottom: 4px;
+  width: 104px; height: 104px; margin-bottom: 4px;
    background-size: cover; background-position: center;
   
   
