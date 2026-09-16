@@ -96,13 +96,16 @@ export function GlobalStyle() {
 
       .dml-achv-list { display: flex; flex-direction: column; }
       .dml-achv-row {
-        display: grid; grid-template-columns: 24px 72px 1fr; gap: 14px; align-items: start;
+        display: grid; grid-template-columns: 24px auto 1fr; gap: 14px; align-items: start;
         padding: 16px 0; border-top: 1px solid #f1f2f3;
       }
       .dml-achv-row:first-child { border-top: 0; }
       .dml-achv-row > input[type="checkbox"] { margin-top: 11px; }
-      .dml-achv-icon { width: 72px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
-      .dml-achv-icon-slot { display: flex; flex-direction: column; gap: 6px; }
+      /* Unlocked and Locked slots sit side by side (not stacked) so the name/
+         description fields in the next column line up against the full icon
+         row instead of only the top ("Unlocked") slot. */
+      .dml-achv-icon { display: flex; flex-direction: row; gap: 12px; flex-shrink: 0; }
+      .dml-achv-icon-slot { display: flex; flex-direction: column; gap: 6px; width: 72px; }
       .dml-achv-icon-slot-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #8a8d91; }
       .dml-achv-icon-thumb {
         width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
