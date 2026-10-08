@@ -833,8 +833,21 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-card {
   left: 0; top: 0; transform: none;
   width: 100%; height: 100%; max-height: none;
 }
-body > #dmls-modal.dmls-fullscreen .dmls-card {
-  height: 100vh; height: 100dvh; max-height: none; min-height: 0;
+/* Exactly one scroll container per screen: .dmls-modal-body itself never
+   scrolls here — the visible #dmls-app/#dmls-achv/#dmls-trophy and its
+   .dmls-card are flexed to fill it exactly, so only .dmls-card-body /
+   .dmls-scroll-mid scroll. (Sizing the card to 100dvh inside a still-
+   scrollable .dmls-modal-body left a 1–2px outer overflow on phones whose
+   dvh rounds differently from the fixed box — iOS then latched swipes onto
+   that near-empty outer scroller and the list felt stuck mid-gesture.) */
+body > #dmls-modal.dmls-fullscreen .dmls-modal-body {
+  display: flex; flex-direction: column; overflow: hidden;
+}
+body > #dmls-modal.dmls-fullscreen .dmls-modal-body > :not([hidden]) {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+}
+body > #dmls-modal.dmls-fullscreen .dmls-modal-body > :not([hidden]) > .dmls-card {
+  flex: 1 1 auto; height: auto; max-height: none; min-height: 0;
   border-radius: 0;
 }
 @media (min-width: 768px) {
