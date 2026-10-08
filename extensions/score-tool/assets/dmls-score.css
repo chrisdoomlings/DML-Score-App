@@ -140,13 +140,9 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   overflow-x: hidden;
   overscroll-behavior: contain; /* stops wheel/touch scroll from chaining to the page once this hits its own top/bottom */
   padding-right: 0.125em; /* keeps the scrollbar (where visible) off the text */
-  scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12);
   /* -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%); */
 }
-.dmls-card-body::-webkit-scrollbar { width: 5px; }
-.dmls-card-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
-.dmls-card-body::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
 /* Opt-in "fixed header + fixed footer, only the middle list scrolls" layout
    used by the Add Names and 4 scoring-step screens — .dmls-nav (Back/Next)
    already lives outside .dmls-card-body as a flex:none sibling, so pairing
@@ -159,13 +155,20 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    doesn't actually overflow — no scrollbar, so no need to reserve room for one. */
 .dmls-card-body.dmls-split > .dmls-scroll-mid.dmls-scroll-fit { padding-right: 0; }
 .dmls-card-body.dmls-split > .dmls-hint { flex: none; }
-/* Custom scrollbar for every .dmls-scroll-mid list (Add Names, scoring
-   steps, achievements grid, history list) — thin green thumb instead of the
-   browser default, matching the mock. */
-.dmls-scroll-mid { scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12); }
-.dmls-scroll-mid::-webkit-scrollbar { width: 5px; }
-.dmls-scroll-mid::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
-.dmls-scroll-mid::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
+/* Custom scrollbar for .dmls-card-body and every .dmls-scroll-mid list (Add
+   Names, scoring steps, achievements grid, history list) — thin green thumb
+   instead of the browser default, matching the mock. Mouse/trackpad devices
+   only: on touch phones the OS already draws its own thin overlay
+   scrollbar, and a styled one can push Chrome on Android off its composited
+   (off-main-thread) scrolling path — swipes then stall or flings stop dead
+   whenever the main thread is busy, which read as scroll "getting stuck" in
+   every display mode (Oct 2026). */
+@media (hover: hover) and (pointer: fine) {
+  .dmls-card-body, .dmls-scroll-mid { scrollbar-width: thin; scrollbar-color: var(--dmls-green) rgba(255, 255, 255, 0.12); }
+  .dmls-card-body::-webkit-scrollbar, .dmls-scroll-mid::-webkit-scrollbar { width: 5px; }
+  .dmls-card-body::-webkit-scrollbar-track, .dmls-scroll-mid::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+  .dmls-card-body::-webkit-scrollbar-thumb, .dmls-scroll-mid::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
+}
 /* Bottom fade hint that there's more to scroll — same treatment on every
    .dmls-scroll-mid list (Add Names, scoring steps, achievements grid,
    history list), not just achievements, so scrolling reads the same
