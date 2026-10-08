@@ -150,7 +150,12 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    scrolling instead of the whole card body. */
 .dmls-card-body.dmls-split { display: flex; flex-direction: column; overflow: hidden; padding-right: 0; min-height: 0; }
 .dmls-card-body.dmls-split > .dmls-card-head { flex: none; }
-.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 0px 19px 0px 0px;  }
+/* No right-side gutter by default: phones draw a thin overlay scrollbar
+   that takes no space, and a reserved 19px gutter there just shifted every
+   list (history rows, score rows, achievement grid) visibly left of center
+   (Oct 2026). Mouse devices get the gutter back in the scrollbar media
+   query below, where the styled scrollbar actually occupies it. */
+.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 0;  }
 /* fitScrollMid() in dmls-score.js adds this once it measures that the list
    doesn't actually overflow — no scrollbar, so no need to reserve room for one. */
 .dmls-card-body.dmls-split > .dmls-scroll-mid.dmls-scroll-fit { padding-right: 0; }
@@ -168,6 +173,8 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   .dmls-card-body::-webkit-scrollbar, .dmls-scroll-mid::-webkit-scrollbar { width: 5px; }
   .dmls-card-body::-webkit-scrollbar-track, .dmls-scroll-mid::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
   .dmls-card-body::-webkit-scrollbar-thumb, .dmls-scroll-mid::-webkit-scrollbar-thumb { background: var(--dmls-green); border-radius: 4px; }
+  .dmls-card-body.dmls-split > .dmls-scroll-mid { padding-right: 19px; }
+  .dmls-card-body.dmls-split > .dmls-scroll-mid.dmls-scroll-fit { padding-right: 0; }
 }
 /* Bottom fade hint that there's more to scroll — same treatment on every
    .dmls-scroll-mid list (Add Names, scoring steps, achievements grid,
@@ -230,6 +237,10 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-card-character-left { left: 0; }
 .dmls-card-character-right { right: 0; }
 .dmls-card-body, .dmls-nav { position: relative; }
+/* Held hidden until startCharAnim() in dmls-score.js sees the image loaded
+   and swaps in the fly-in class below. */
+.dmls-card-character-left.dmls-char-pending,
+.dmls-card-character-right.dmls-char-pending { opacity: 0; }
 @media (prefers-reduced-motion: no-preference) {
   .dmls-char-in-right { animation: dmls-char-in-right 0.32s ease-out both; }
   .dmls-char-in-left { animation: dmls-char-in-left 0.32s ease-out both; }
@@ -359,6 +370,12 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   border: 0; background: none; color: #1a1a2e;
 }
 .dmls-addrow input:focus { outline: none; }
+/* The name field is type="search" (stops iOS Safari offering saved logins,
+   see renderPlayers() in dmls-score.js) — strip the native search styling
+   and its built-in clear "×" so it looks exactly like the plain text box. */
+.dmls-addrow input[type="search"] { -webkit-appearance: none; appearance: none; border-radius: 0; }
+.dmls-addrow input[type="search"]::-webkit-search-cancel-button,
+.dmls-addrow input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; display: none; }
 .dmls-addrow input::placeholder { color: #8a8aa0; }
 .dmls-addrow-plus {
   flex: none; width: 42px; height: 42px; border-radius: 50%;
@@ -366,7 +383,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   display: flex; align-items: center; justify-content: center; padding: 0;
   transition: background 0.15s ease;
 }
-.dmls-addrow-plus:hover { background: #5cab1d; }
+.dmls-addrow-plus:hover { background: #369b3f; }
 .dmls-addrow-plus:active { background: #427e12; }
 .dmls-addrow-plus span { margin-top: -6px; } /* optically centers the "+" glyph in the circle, same fix as .dmls-prod-buy */
 .dmls-hint { font-size: 0.7813em; color: var(--dmls-ink-faint); margin-top: 10px; text-align: center; }
@@ -374,11 +391,13 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 
 .dmls-chips { display: flex; flex-direction: column; gap: 9px; width: 100%; max-width: 420px; margin: 16px auto 2px; }
 .dmls-pill {
-  position: relative; display: flex; align-items: center; justify-content: center;
+  position: relative; display: flex; align-items: center; justify-content: flex-start;
   width: 100%; min-height: 46px;
   background: rgba(255, 255, 255, 0.1); border: 1px solid var(--dmls-line);
-  border-radius: 999px; padding: 0.75em 2.875em; font-size: 0.9688em; font-weight: 600;
-  text-align: center;
+  /* Left-aligned (client request, Oct 2026), lining up with the "Enter name
+     here…" text above; right padding still clears the absolute × button. */
+  border-radius: 999px; padding: 0.75em 2.875em 0.75em 1.25em; font-size: 0.9688em; font-weight: 600;
+  text-align: left;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .dmls-pill-name { overflow-wrap: anywhere; }
@@ -414,8 +433,17 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-step button {
   width: 38px; height: 38px; font-size: 1.25em; font-weight: 700;
   color: var(--dmls-ink);
+  /* No highlight box on tap (client request, Oct 2026): kills the mobile
+     browser's tap flash and any theme focus outline. */
+  -webkit-tap-highlight-color: transparent;
+  outline: none; box-shadow: none;
 }
-.dmls-step button:hover { background: rgba(255, 255, 255, 0.22); }
+.dmls-step button:focus, .dmls-step button:active { outline: none; box-shadow: none; background: none; }
+/* Hover tint on mouse devices only — on phones :hover "sticks" after a tap,
+   leaving a highlighted square on the last-tapped +/−. */
+@media (hover: hover) and (pointer: fine) {
+  .dmls-step button:hover { background: rgba(255, 255, 255, 0.22); }
+}
 .dmls-step input {
   width: 56px; height: 38px; text-align: center; font-size: 1.0625em; font-weight: 700;
   border: 0; border-radius: 16px; background: #fff; color: #1a1a2e;
@@ -463,13 +491,20 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 
 .dmls-win-scores { width: 100%;  margin: 18px auto 0; padding: 0 1.875em; }
 .dmls-win-score-row {
-  display: flex; justify-content: space-between; gap: 12px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
 
   font-size: 1.5em;
 }
+/* One line per row (client request, Oct 2026): the name never wraps and
+   "N points" never breaks onto two lines — fitWinScoreNames() in
+   dmls-score.js shrinks a long name's font-size until it fits beside the
+   points instead. Ellipsis is only the last resort if a name is still too
+   long at the minimum size. */
 .dmls-win-score-name { font-size: 42px;
-    line-height: 50px;font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; font-family: "DMLS Catastrophe", "Segoe UI", cursive; }
-.dmls-win-score-pts { font-weight: 700; }
+    line-height: 50px;font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; font-family: "DMLS Catastrophe", "Segoe UI", cursive;
+    flex: 1 1 auto; min-width: 0; text-align: left;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dmls-win-score-pts { font-weight: 700; flex: none; white-space: nowrap; }
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
 .dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
@@ -539,11 +574,11 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-trophy-plate {
   display: inline-block; max-width: 90%;
   background: linear-gradient(180deg, #ffe9a8, var(--dmls-gold));
-  color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: normal;
   font-size: 1.375em; padding: 0.5em 1.25em; border-radius: 10px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
   margin: 0 auto 1.25em;
-  overflow-wrap: anywhere;
+  white-space: nowrap; overflow: hidden; /* shrink-to-fit, not wrap — see fitTrophyPlate() */
 }
 
 .dmls-trophy-plate-overlay {
@@ -551,12 +586,21 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   display: flex; align-items: center; justify-content: center; text-align: center;
   background: none; box-shadow: none; border-radius: 0; max-width: none; margin: 0;
   padding: 0 0.5em; font-size: 33px; line-height: 1.15;
+  /* One line, never stacked (client request, Oct 2026) — fitTrophyPlate()
+     in dmls-score.js shrinks a long name's font-size to fit the plate. */
 }
 .dmls-trophy-heading {
   font-family: "DMLS Catastrophe", "Segoe UI", cursive; font-weight: 400;
   font-size: clamp(26px, 8vw, 44px); line-height: 1.15; margin-bottom: 15px;
 }
-.dmls-trophy-divider { border: none; border-top: 1px solid var(--dmls-line); width: 80%; margin: 0 auto 1.25em; }
+/* Normal letter spacing on every Catastrophe-font line of the trophy
+   screen (client: "looks like extra kerning", Oct 2026) — explicit, since
+   the plate used to add 0.04em and the h2 heading otherwise inherits the
+   store theme's own heading letter-spacing. */
+#dmls-modal .dmls-trophy-plate,
+#dmls-modal .dmls-trophy-heading,
+#dmls-modal .dmls-trophy-didnot { letter-spacing: normal; }
+.dmls-trophy-divider { border: none; border-top: 1px solid rgba(255, 255, 255, 0.5); width: 80%; margin: 0 auto 1.25em; }
 .dmls-trophy-losers { font-style: italic; font-weight: 700; font-size: 1.0625em; line-height: 1.5; color: white; margin: 0 0 0.375em; overflow-wrap: anywhere; }
 .dmls-trophy-tagline { font-style: italic; font-size: 1.1em; line-height: 1.4; color: white; margin: 0 auto; overflow-wrap: anywhere; max-width: 260px; }
 .dmls-trophy-didnot { font-family: "DMLS Catastrophe", "Segoe UI", cursive;font-weight: 800; font-size: 2.375em; text-transform: uppercase; margin: 0; }
@@ -665,7 +709,7 @@ display: flex;
     text-decoration: none;
     box-shadow: 0 0 8px rgba(0, 255, 40, 0.25), 0 0 18px rgba(0, 255, 60, 0.45), 0 0 32px rgba(0, 255, 60, 0.25), 0 0 50px rgba(0, 255, 60, 0.25);
 }
-.dmls-prod-buy span {     margin-top: -10px;
+.dmls-prod-buy span {     margin-top: -5px; /* was -10px — sat visibly high in the circle (Oct 2026) */
     color: white;
     font-weight: bold; } 
 .dmls-prod-buy[disabled] {     background: rgb(23 201 75);
@@ -828,6 +872,27 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
    size width over a solid backdrop so it doesn't stretch across a monitor.
    Screen size's height is ignored here — every card is exactly the
    viewport's height (100dvh, so mobile browser toolbars don't clip it). */
+/* Welcome screen too: pinned over the whole viewport (just under the
+   panel's z-index, so the panel still covers it once Start is tapped) and
+   page scroll locked for as long as this mode is on — the theme's
+   header/nav/announcement bars never show, not even before Start. */
+html.dmls-fullscreen-mode, html.dmls-fullscreen-mode body { overflow: hidden; }
+html.dmls-fullscreen-mode #dmls-welcome-page {
+  position: fixed; inset: 0; z-index: 2147482999;
+  width: auto; margin: 0; padding: 0;
+  background: var(--dmls-panel);
+  display: flex; flex-direction: column;
+}
+html.dmls-fullscreen-mode #dmls-welcome-page[hidden] { display: none; }
+html.dmls-fullscreen-mode #dmls-root #dmls-welcome-page > .dmls-card {
+  flex: 1 1 auto; height: auto; max-height: none; min-height: 0;
+  border-radius: 0;
+}
+@media (min-width: 768px) {
+  html.dmls-fullscreen-mode #dmls-welcome-page > .dmls-card {
+    width: min(100%, var(--dmls-modal-width, 520px)); margin: 0 auto;
+  }
+}
 body > #dmls-modal.dmls-fullscreen { z-index: 2147483000; } /* above sticky theme headers/announcement-bar apps, which often use huge z-indexes */
 html.dmls-fullscreen-mode .dmls-toast { z-index: 2147483002; }
 html.dmls-fullscreen-mode #dmls-confetti { z-index: 2147483001; }
@@ -988,9 +1053,10 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
 
 .dmls-btn-full { width: 100%; }
 
-@media (min-width: 640px) {
-  .dmls-trophy-share { display: none; }
-}
+/* Share visibility is decided in renderTrophy() (dmls-score.js) by whether
+   the browser can share image files at all — not by screen width — so
+   it's shown on any device where it works and hidden where it'd do nothing. */
+.dmls-trophy-share[hidden] { display: none; }
 
 
 #dmls-screen-welcome { padding:0; padding-top:60px; padding-bottom: 30px;}
@@ -1006,9 +1072,9 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
 
 #dmls-screen-achievements { padding-top: 55px; }
 
- .dmls-widget-guest-cta  p {    color: white;margin-bottom: 18px;
+ .dmls-widget-guest-cta  p {    color: white;
     max-width: 259px;
-    margin: 0 auto;
+    margin: 0 auto 18px; /* was margin-bottom:18px then "margin: 0 auto" — the shorthand wiped the gap above "My Account" */
     font-size: 1.2em;
     line-height: 1.3em;}
 
@@ -1021,3 +1087,25 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
     background: #04201c !important;
     border-color: #37897b !important;
     color: #38897b !important;}
+/* ---------------------------------------------------------------------
+   Every "DMLS Catastrophe" element: ALL CAPS, the font's real weight, and
+   no browser-faked bold (client request, Oct 2026). The font ships a
+   single 400 weight, so anything asking for 700/800 (winner standings,
+   "DID NOT.", or a theme's bold h1/h2 default) made the browser synthesize
+   bold by stroking each glyph — and this font's overlapping contours turn
+   that stroke into hollow, outlined letters (very visible on D and S).
+   Its lowercase set also differs from uppercase and has at least one
+   broken glyph (a hollow "f"), so uppercase is forced everywhere too.
+   ID-scoped so it beats both the per-element rules above and theme CSS.
+   Keep this list in sync with any new font-family: "DMLS Catastrophe". */
+#dmls-root .dmls-title, #dmls-modal .dmls-title,
+#dmls-root .dmls-win-eyebrow, #dmls-modal .dmls-win-eyebrow,
+#dmls-root .dmls-win-name, #dmls-modal .dmls-win-name,
+#dmls-root .dmls-win-score-name, #dmls-modal .dmls-win-score-name,
+#dmls-root .dmls-trophy-heading, #dmls-modal .dmls-trophy-heading,
+#dmls-root .dmls-trophy-didnot, #dmls-modal .dmls-trophy-didnot,
+#dmls-root .dmls-widget-title, #dmls-modal .dmls-widget-title {
+  text-transform: uppercase;
+  font-weight: 400;
+  font-synthesis: none;
+}

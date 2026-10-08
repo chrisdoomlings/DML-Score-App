@@ -124,7 +124,20 @@
   }
 
   // Computed once at boot per spec — included on every POST /game.
-  var DEVICE_TYPE = (window.matchMedia && window.matchMedia("(max-width: 767px)").matches) ? "mobile" : "desktop";
+  // Phone = touch-first pointer AND a short screen side under 600px (every
+  // phone; tablets start ~744px, and count as "desktop/tablet" per the
+  // achievement copy). Uses the physical screen's short side, not viewport
+  // width, so a phone held in landscape (>767px wide) still counts as
+  // mobile — the old (max-width: 767px) check alone didn't. Falls back to
+  // that width check where pointer media queries aren't supported.
+  var DEVICE_TYPE = (function () {
+    var mm = window.matchMedia;
+    if (!mm) return "desktop";
+    var shortSide = Math.min(window.screen.width || 0, window.screen.height || 0) || window.innerWidth;
+    if (mm("(pointer: coarse)").matches) return shortSide < 600 ? "mobile" : "desktop";
+    if (mm("(pointer: fine)").matches) return "desktop";
+    return mm("(max-width: 767px)").matches ? "mobile" : "desktop";
+  })();
   function localDateStr() {
     var d = new Date();
     var m = String(d.getMonth() + 1); if (m.length < 2) m = "0" + m;
@@ -223,6 +236,47 @@
   function fitScrollMid(el) {
     if (!el) return;
     el.classList.toggle("dmls-scroll-fit", el.scrollHeight <= el.clientHeight + 1);
+  }
+  // Winner screen standings: shrink each overflowing .dmls-win-score-name
+  // (nowrap in CSS) until it fits on one line beside its "N points", rather
+  // than letting a long name push the points onto two lines. Resets to the
+  // CSS size first so a re-fit (e.g. after the display font loads) can grow
+  // a name back as well as shrink it. Skips while hidden (zero width).
+  // Generic one-line shrink-to-fit for a white-space:nowrap element: starts
+  // from its CSS font-size and steps down until it no longer overflows, or
+  // hits minPx. lineHeightRatio (optional) keeps a px line-height in step.
+  function fitOneLine(el, minPx, lineHeightRatio) {
+    el.style.fontSize = "";
+    el.style.lineHeight = "";
+    if (!el.clientWidth) return;
+    var size = parseFloat(getComputedStyle(el).fontSize) || 0;
+    while (el.scrollWidth > el.clientWidth + 1 && size > minPx) {
+      size -= 1;
+      el.style.fontSize = size + "px";
+      if (lineHeightRatio) el.style.lineHeight = Math.round(size * lineHeightRatio) + "px";
+    }
+  }
+  function fitWinScoreNames() {
+    var names = document.querySelectorAll("#dmls-modal .dmls-win-score-name");
+    for (var i = 0; i < names.length; i++) fitOneLine(names[i], 18, 50 / 42); // keeps the CSS 42px/50px ratio
+  }
+  // Trophy screen: the winner's name on the plate stays on one line and
+  // shrinks instead of stacking (client request, Oct 2026).
+  function fitTrophyPlate() {
+    var plate = document.querySelector("#dmls-modal .dmls-trophy-plate");
+    if (plate) fitOneLine(plate, 14);
+  }
+  // "Won The End Of The World!" → "Won The End Of<br>The World!" (client
+  // spec, Oct 2026): a newline typed into the admin heading wins if present;
+  // otherwise the last two words go on their own line once there are 4+.
+  // Shared rule with trophyHeadingLines() in app/api/proxy/trophy/route.tsx
+  // so the saved image breaks the same way as the screen.
+  function trophyHeadingLines(text) {
+    var s = String(text || "").trim();
+    if (s.indexOf("\n") !== -1) return s.split(/\s*\n\s*/).filter(Boolean);
+    var words = s.split(/\s+/);
+    if (words.length < 4) return [s];
+    return [words.slice(0, -2).join(" "), words.slice(-2).join(" ")];
   }
   // The display font renders lowercase letters as caps-shaped glyphs, so a
   // name typed lowercase looks fine in the big winner headline but reads
@@ -334,6 +388,28 @@
   function moveModalToBody() {
     if (modalEl.parentNode !== document.body) document.body.appendChild(modalEl);
   }
+  // Settings → General → "Display mode". "fullscreen" (app-like) is the
+  // classic modal stretched edge to edge AND the on-page welcome pinned
+  // full-viewport too (html.dmls-fullscreen-mode in dmls-score.css), so the
+  // theme's header/nav/announcement bars never show at all — page scroll is
+  // locked for as long as the mode is on, not just while the panel's open.
+  // The last-seen mode is cached in localStorage and applied synchronously
+  // at boot, so a returning visitor doesn't see the site header flash in
+  // before /config resolves (first-ever visit still has that one flash).
+  var LAYOUT_KEY = "dmls_layout_mode";
+  function applyLayoutMode(mode) {
+    var isFullscreen = mode === "fullscreen";
+    layoutModeIsModal = mode === "modal" || isFullscreen;
+    if (layoutModeIsModal) moveModalToBody();
+    // Stale cache said modal/fullscreen but the merchant has since switched
+    // to inline — put the panel back in the page flow right after welcome.
+    else if (modalEl.parentNode === document.body && welcomeEl && welcomeEl.parentNode) {
+      welcomeEl.parentNode.insertBefore(modalEl, welcomeEl.nextSibling);
+    }
+    modalEl.classList.toggle("dmls-fullscreen", isFullscreen);
+    document.documentElement.classList.toggle("dmls-fullscreen-mode", isFullscreen);
+  }
+  try { applyLayoutMode(localStorage.getItem(LAYOUT_KEY)); } catch (e) { /* storage blocked — wait for /config */ }
   // Settings → General → "Lock page scroll" (default off) — loadConfig()
   // flips this once /config resolves. Opt-in re-add of body-scroll-lock,
   // which the Sept 2026 inline rebuild deliberately removed; see
@@ -445,6 +521,36 @@
   // combined graphic sliding in as a unit. "mp" (Expansion Points) keeps its
   // original "bgExp" slot-name prefix from before the other 3 steps got
   // their own (see 019_step_content.sql).
+  // Swaps a step character's dmls-char-pending (hidden) for its fly-in
+  // class once the image is loaded and decoded, so the slide is always
+  // visible instead of finishing before the image paints. Already-cached
+  // images go straight through (complete + decode resolves immediately). A
+  // failed load/decode still un-hides it rather than leaving it invisible.
+  function startCharAnim(img, cls) {
+    if (!img) return;
+    var started = false;
+    function go() {
+      if (started) return;
+      started = true;
+      // Next frame, so the pending (opacity:0) state has painted once and
+      // the animation reliably plays from its "from" keyframe.
+      requestAnimationFrame(function () {
+        img.classList.remove("dmls-char-pending");
+        img.classList.add(cls);
+      });
+    }
+    function ready() {
+      if (img.decode) img.decode().then(go, go);
+      else go();
+    }
+    if (img.complete && img.naturalWidth) ready();
+    else {
+      img.addEventListener("load", ready, { once: true });
+      img.addEventListener("error", go, { once: true });
+    }
+    // Safety net: never leave a character hidden if load is very slow.
+    setTimeout(go, 2500);
+  }
   var CHAR_IMAGE_KEY_LEFT = { we: "bgWeLeft", fv: "bgFvLeft", bp: "bgBpLeft", mp: "bgExpLeft" };
   var CHAR_IMAGE_KEY_RIGHT = { we: "bgWeRight", fv: "bgFvRight", bp: "bgBpRight", mp: "bgExpRight" };
   // Sole purpose: tell renderStep() whether to play the characters' fly-in
@@ -624,7 +730,15 @@
       (CUSTOMER
         ? '<p class="dmls-sub">Playing as <strong style="color:var(--dmls-green)">' + esc(cap(CUSTOMER.firstName) || "you") + "</strong> — this game will save to your account.</p>"
         : '<p class="dmls-sub"><a class="dmls-inline-link" href="' + esc(withReturnUrl(loginUrl)) + '">Sign in</a> to keep your game history and earn achievements.</p>') +
-      '<div class="dmls-addrow"><input id="dmls-name" maxlength="30" placeholder="Enter name here…" autocomplete="off"><button type="button" id="dmls-add" class="dmls-addrow-plus" aria-label="Add player"><span aria-hidden="true">+</span></button></div>' +
+      // type="search" + an id without "name" in it: iOS Safari ignores
+      // autocomplete="off" when it decides a field is a login username (it
+      // keyed off the old id "dmls-name" + "Enter name" placeholder, being
+      // the only text box on the page) and offered to fill a saved
+      // doomlings.com email here (Oct 2026). Safari never offers saved
+      // logins on search fields. enterkeyhint keeps the keyboard's key
+      // "return" rather than "search"; data-* attrs opt out of
+      // 1Password/LastPass/Bitwarden for the same reason.
+      '<div class="dmls-addrow"><input type="search" id="dmls-player-entry" maxlength="30" placeholder="Enter name here…" aria-label="Player name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="enter" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"><button type="button" id="dmls-add" class="dmls-addrow-plus" aria-label="Add player"><span aria-hidden="true">+</span></button></div>' +
       "</div>" +
       '<div class="dmls-scroll-mid" id="dmls-chips-scroll"><ul class="dmls-chips" id="dmls-chips">' + chips + "</ul></div>" +
       '<p class="dmls-hint">' + (enough ? "" : "Add at least 2 players") + "</p>" +
@@ -635,7 +749,7 @@
       "</div></div>";
     fitScrollMid(document.getElementById("dmls-chips-scroll"));
 
-    var input = document.getElementById("dmls-name");
+    var input = document.getElementById("dmls-player-entry");
     function add() {
       var v = input.value.trim();
       if (!v) { toast("Type a name first"); return; }
@@ -647,7 +761,7 @@
       // renderPlayers() just replaced the whole card, so `input` above is a
       // detached node — grab the freshly-mounted one and refocus it, or the
       // on-screen keyboard drops after every single name on mobile.
-      var freshInput = document.getElementById("dmls-name");
+      var freshInput = document.getElementById("dmls-player-entry");
       if (freshInput) freshInput.focus();
     }
     document.getElementById("dmls-add").addEventListener("click", add);
@@ -732,12 +846,19 @@
     var charRightUrl = images[CHAR_IMAGE_KEY_RIGHT[st.key]] || "";
     var animateChars = stepNavDirection !== null;
     stepNavDirection = null;
+    // When animating, each <img> starts hidden (dmls-char-pending) and only
+    // gets its fly-in class once the image has actually loaded + decoded —
+    // see startCharAnim() below. Adding the animation class up front (the
+    // old way) meant on slower phones/connections the 0.32s slide finished
+    // before the image had arrived, so it just popped in afterwards with no
+    // slide. Not loading="lazy" either: they're always above the fold, and
+    // lazy only added another delay before the fetch even started.
     var charHTML =
       (charLeftUrl
-        ? '<img class="dmls-card-character-left' + (animateChars ? " dmls-char-in-left" : "") + '" src="' + charLeftUrl.replace(/"/g, "%22") + '" alt="" loading="lazy">'
+        ? '<img class="dmls-card-character-left' + (animateChars ? " dmls-char-pending" : "") + '" id="dmls-char-left" src="' + charLeftUrl.replace(/"/g, "%22") + '" alt="">'
         : "") +
       (charRightUrl
-        ? '<img class="dmls-card-character-right' + (animateChars ? " dmls-char-in-right" : "") + '" src="' + charRightUrl.replace(/"/g, "%22") + '" alt="" loading="lazy">'
+        ? '<img class="dmls-card-character-right' + (animateChars ? " dmls-char-pending" : "") + '" id="dmls-char-right" src="' + charRightUrl.replace(/"/g, "%22") + '" alt="">'
         : "");
 
     app.innerHTML =
@@ -757,6 +878,10 @@
       '<button type="button" class="dmls-btn dmls-btn-go" id="dmls-next">Next</button>' +
       "</div></div>";
     fitScrollMid(document.getElementById("dmls-rows-scroll"));
+    if (animateChars) {
+      startCharAnim(document.getElementById("dmls-char-left"), "dmls-char-in-left");
+      startCharAnim(document.getElementById("dmls-char-right"), "dmls-char-in-right");
+    }
 
     var wrap = document.getElementById("dmls-rows");
     wrap.addEventListener("click", function (e) {
@@ -1250,6 +1375,11 @@
       '<div class="dmls-widgets" id="dmls-widgets">' + loyaltyHTML + "</div>" +
       "</div></div>";
 
+    fitWinScoreNames();
+    // The Catastrophe display font can finish loading after this render,
+    // changing every name's width — re-fit once it has.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWinScoreNames);
+
     // Move the products widget (populated by renderProducts(), see loadConfig())
     // into the widgets column and show it, if there's anything to show.
     var widgets = document.getElementById("dmls-widgets");
@@ -1371,12 +1501,24 @@
     // player actually taps one of the buttons below. Both handlers await this
     // same promise instead of firing their own fetch, so there's only ever
     // one request per visit to this screen.
-    var trophyImageReady = false;
-    var trophyImageBlob = fetch(shareImageUrl).then(function (r) {
-      if (!r.ok) throw new Error("trophy image " + r.status);
-      return r.blob();
-    });
-    trophyImageBlob.then(function () { trophyImageReady = true; }, function () {});
+    // Converted to JPG client-side (the route renders PNG via next/og) — the
+    // client asked for a JPG in the camera roll, and it's also a fraction
+    // of the size to share. trophy.file holds the finished File once ready
+    // so Share/Download can call navigator.share() synchronously inside the
+    // tap's user activation (awaiting anything first risks it expiring, and
+    // the share sheet then silently never opens).
+    var trophy = { file: null, failed: false };
+    trophy.promise = fetch(shareImageUrl)
+      .then(function (r) {
+        if (!r.ok) throw new Error("trophy image " + r.status);
+        return r.blob();
+      })
+      .then(toJpeg)
+      .then(function (jpg) {
+        trophy.file = new File([jpg], "doomlings-trophy.jpg", { type: "image/jpeg" });
+        return trophy.file;
+      });
+    trophy.promise.catch(function () { trophy.failed = true; });
 
     // Anchored inside .dmls-trophy-top-wrap (the trophy art's own wrapper,
     // not the whole card) so top:50% in CSS centers the share/download
@@ -1398,7 +1540,7 @@
       '<div class="dmls-trophy-fill">' +
       (trophyTopUrl
         ? '<div class="dmls-trophy-top-wrap">' +
-          '<img class="dmls-trophy-top" src="' + trophyTopUrl + '" alt="" loading="lazy">' +
+          '<img class="dmls-trophy-top" src="' + trophyTopUrl + '" alt="">' +
           '<p class="dmls-trophy-plate dmls-trophy-plate-overlay">' + winnerName + "</p>" +
           floatActionsHTML +
           "</div>"
@@ -1406,7 +1548,7 @@
           '<p class="dmls-trophy-plate">' + winnerName + "</p>" +
           floatActionsHTML +
           "</div>") +
-      '<h2 class="dmls-trophy-heading">' + esc(trophyHeading) + "</h2>" +
+      '<h2 class="dmls-trophy-heading">' + trophyHeadingLines(trophyHeading).map(esc).join("<br>") + "</h2>" +
       '<hr class="dmls-trophy-divider">' +
       (loserNames
         ? '<p class="dmls-trophy-losers">' + loserNames + "</p>" +
@@ -1425,91 +1567,104 @@
     document.getElementById("dmls-trophy-rematch").addEventListener("click", rematch);
     document.getElementById("dmls-trophy-new-players").addEventListener("click", newPlayers);
     document.getElementById("dmls-trophy-achv").addEventListener("click", function () { openAchievementsModal(false); });
-    document.getElementById("dmls-trophy-share").addEventListener("click", function () {
-      shareTrophyImage(shareImageUrl, trophyImageBlob, trophyImageReady);
-    });
+    fitTrophyPlate();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTrophyPlate);
+    // The trophy art is what sizes the plate overlay's box — re-fit once it loads.
+    var trophyTopImg = trophyEl.querySelector(".dmls-trophy-top");
+    if (trophyTopImg && !trophyTopImg.complete) trophyTopImg.addEventListener("load", fitTrophyPlate, { once: true });
+
+    // Share only where the browser can actually share an image file (most
+    // phones, plus Safari/Edge/Chrome on some desktops) — hidden elsewhere
+    // rather than shown as a button that does nothing.
+    var shareBtn = document.getElementById("dmls-trophy-share");
+    if (!canShareImageFiles()) shareBtn.hidden = true;
+    shareBtn.addEventListener("click", function () { shareTrophyImage(trophy); });
     document.getElementById("dmls-trophy-download").addEventListener("click", function () {
-      downloadTrophyImage(trophyImageBlob, trophyImageReady);
+      downloadTrophyImage(trophy);
     });
   }
 
-  // Prefers the native share sheet with the actual PNG attached (works well
-  // on mobile — can share straight to Messages/Instagram/etc); falls back to
-  // sharing just the URL, then to opening it in a new tab (desktop, or any
-  // browser without the Web Share API) where a long-press/right-click saves it.
-  // blobPromise is the single fetch kicked off in renderTrophy() as soon as
-  // this screen opened — reused here instead of fetching the image again —
-  // and wasReady says whether it had already resolved by click time, so a toast
-  // only appears for the (usually rare) case the generation is still running.
-  function shareTrophyImage(url, blobPromise, wasReady) {
-    if (!navigator.share) { window.open(url, "_blank", "noopener"); return; }
-    var btn = document.getElementById("dmls-trophy-share");
-    function setLoading(on) {
-      if (!btn) return;
-      btn.classList.toggle("dmls-trophy-share-loading", on);
-      btn.disabled = on;
-    }
-    if (!wasReady) toast("Generating trophy image…");
-    if (!navigator.canShare) {
-      setLoading(true);
-      navigator.share({ url: url, title: "Doomlings Trophy" })
-        .catch(function () {})
-        .then(function () { setLoading(false); });
+  // Probe with a tiny dummy file — canShare({files}) is the only reliable
+  // test; navigator.share existing alone doesn't mean files are supported.
+  function canShareImageFiles() {
+    try {
+      return !!(navigator.share && navigator.canShare &&
+        navigator.canShare({ files: [new File([""], "t.jpg", { type: "image/jpeg" })] }));
+    } catch (e) { return false; }
+  }
+  // Touch-first device (phone/tablet) — where "download" should mean "get
+  // it into Photos", which only the OS share sheet can do from a web page.
+  function isTouchDevice() {
+    return !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  }
+  function toJpeg(blob) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(blob);
+      var img = new Image();
+      img.onload = function () {
+        var c = document.createElement("canvas");
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#10153f"; // flatten any transparency onto the trophy's own dark bg, not black
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (jpg) { jpg ? resolve(jpg) : reject(new Error("jpeg encode failed")); }, "image/jpeg", 0.92);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("trophy image decode failed")); };
+      img.src = url;
+    });
+  }
+  function trophyNotReady(trophy) {
+    toast(trophy.failed ? "Couldn’t generate the image — check your connection." : "Still making your trophy — tap again in a sec");
+  }
+  // Opens the OS share sheet with the JPG. Called synchronously from the
+  // tap (trophy.file is already built) so the user activation is still
+  // live. AbortError = the player just closed the sheet, not a failure.
+  function openShareSheet(file) {
+    return navigator.share({ files: [file], title: "Doomlings Trophy" })
+      .catch(function (err) {
+        if (err && err.name === "AbortError") return;
+        toast("Couldn’t open sharing on this device.");
+      });
+  }
+  function saveFileDirectly(file) {
+    var blobUrl = URL.createObjectURL(file);
+    var a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+  }
+
+  // Share button: OS share sheet with the trophy JPG attached (Messages,
+  // Instagram, etc). Only shown where canShareImageFiles() is true. The old
+  // version pre-opened a blank "fallback" tab before awaiting the image —
+  // on phones that blank tab took over the screen and the share sheet never
+  // appeared, which is why Share "went nowhere" (Oct 2026). Now: no extra
+  // tab, and share() is called synchronously from the tap once the image
+  // is ready (it's generated as soon as the trophy screen opens).
+  function shareTrophyImage(trophy) {
+    if (!trophy.file) { trophyNotReady(trophy); return; }
+    openShareSheet(trophy.file);
+  }
+
+  // Download button. Phones: a web page can't write into the Photos app
+  // directly — an <a download> only lands in the browser's Downloads — so on
+  // touch devices this opens the share sheet instead, whose "Save Image"
+  // (iOS) / "Save to Photos"/"Upload to Photos" (Android) is the one route
+  // into the camera roll. Desktop (or a phone browser that can't share
+  // files): a normal .jpg file download.
+  function downloadTrophyImage(trophy) {
+    if (!trophy.file) { trophyNotReady(trophy); return; }
+    if (isTouchDevice() && canShareImageFiles()) {
+      openShareSheet(trophy.file);
       return;
     }
-    setLoading(true);
-    // Opened synchronously, inside the click's user-activation window — the
-    // blobPromise below is awaited before navigator.share() runs, and by the
-    // time that resolves the browser can consider the activation expired,
-    // silently blocking a window.open() called from inside the .catch as a
-    // non-gesture popup (and separately, navigator.share() itself can reject
-    // with NotAllowedError for the same reason). Pre-opening this blank tab
-    // now — then either closing it (share succeeded) or pointing it at the
-    // image (fallback needed) — keeps the fallback from silently doing nothing.
-    var fallbackWin = window.open("", "_blank", "noopener");
-    blobPromise
-      .then(function (blob) {
-        var file = new File([blob], "doomlings-trophy.png", { type: "image/png" });
-        if (navigator.canShare({ files: [file] })) {
-          return navigator.share({ files: [file], title: "Doomlings Trophy" });
-        }
-        return navigator.share({ url: url, title: "Doomlings Trophy" });
-      })
-      .then(function () { if (fallbackWin) fallbackWin.close(); })
-      .catch(function (err) {
-        if (err && err.name === "AbortError") { if (fallbackWin) fallbackWin.close(); return; } // user dismissed the share sheet
-        if (fallbackWin) fallbackWin.location = url;
-        else window.open(url, "_blank", "noopener");
-      })
-      .then(function () { setLoading(false); });
-  }
-
-  // Explicit "save this file" action, separate from Share — a browser-triggered
-  // download via a temporary <a download> always saves the PNG regardless of
-  // whether the OS has any share targets configured (the gap the "export
-  // button not working" reports on desktop kept running into).
-  function downloadTrophyImage(blobPromise, wasReady) {
-    var btn = document.getElementById("dmls-trophy-download");
-    function setLoading(on) {
-      if (!btn) return;
-      btn.classList.toggle("dmls-trophy-download-loading", on);
-      btn.disabled = on;
-    }
-    if (!wasReady) toast("Generating trophy image…");
-    setLoading(true);
-    blobPromise
-      .then(function (blob) {
-        var blobUrl = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = blobUrl;
-        a.download = "doomlings-trophy.png";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
-      })
-      .catch(function () { toast("Couldn’t generate the image — check your connection."); })
-      .then(function () { setLoading(false); });
+    saveFileDirectly(trophy.file);
   }
 
   function winnerClicks(e) {
@@ -1709,16 +1864,8 @@
         modalEl.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
       }
       lockScrollEnabled = Boolean(c.lockPageScroll);
-      // "fullscreen" (Oct 2026, app-like) is the classic modal with its
-      // card stretched edge to edge over the whole viewport (site header,
-      // nav and announcement/countdown bars all covered) — same move-to-body
-      // + always-locked page scroll as "modal", plus a class the CSS keys
-      // its edge-to-edge overrides off.
-      layoutModeIsModal = c.layoutMode === "modal" || c.layoutMode === "fullscreen";
-      if (layoutModeIsModal) moveModalToBody();
-      var isFullscreen = c.layoutMode === "fullscreen";
-      modalEl.classList.toggle("dmls-fullscreen", isFullscreen);
-      document.documentElement.classList.toggle("dmls-fullscreen-mode", isFullscreen);
+      applyLayoutMode(c.layoutMode);
+      try { localStorage.setItem(LAYOUT_KEY, c.layoutMode || "inline"); } catch (e) { /* ignore */ }
       // Config can resolve after the tool was already opened (e.g. deep-linked
       // straight onto a hash on first paint) — apply immediately if so.
       if (modalOpen && lockScrollEnabled && !layoutModeIsModal) lockPageScroll();

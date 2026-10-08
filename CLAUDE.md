@@ -130,7 +130,10 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   `html.dmls-fullscreen-mode` for toast/confetti z-index). CSS: solid backdrop, card is
   edge-to-edge at `100dvh`, z-index near max to beat theme/app announcement bars; on ≥768px
   it's a centered column at the Screen size width. Screen size's height is ignored in this
-  mode. No migration — `layout_mode` is validated in app code via `isLayoutMode()` in
+  mode. The on-page welcome is pinned full-viewport too (`html.dmls-fullscreen-mode
+  #dmls-welcome-page`), so the theme header never shows even before Start; page scroll stays
+  locked for as long as the mode is on. Mode is cached in localStorage (`dmls_layout_mode`)
+  and applied at boot via `applyLayoutMode()` to avoid a header flash on return visits. No migration — `layout_mode` is validated in app code via `isLayoutMode()` in
   `lib/score/settings.ts`.
 
 ## Phase 4 note (recommended-products widget moves off Liquid, September 2026)
@@ -157,8 +160,10 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
     `{ error: "reauth_required", shop }` (403) if the stored session lacks `read_products` —
     the Settings page shows a "Reconnect the app" link (`/auth?shop=...`, `target="_top"`
     since OAuth can't run inside the embedded iframe) rather than failing silently.
-  - `lib/score/products.ts`: resolves the chosen collection's first 3 products via Admin
-    GraphQL, cached in `score_settings.products_cache`/`products_cache_at` (15 min TTL) so
+  - `lib/score/products.ts`: resolves the chosen collection's first 3 *eligible* products via
+    Admin GraphQL (since Oct 2026: status ACTIVE + published to Online Store + a variant
+    `availableForSale`, scanning up to 30 in collection order; add-to-cart uses the first
+    purchasable variant), cached in `score_settings.products_cache`/`products_cache_at` (15 min TTL) so
     `/apps/score/config` doesn't hit the Admin API on every storefront page load; falls back
     to a stale cache rather than an empty widget if a live fetch fails. Cache is invalidated
     in `saveSettings()` whenever `recsCollectionId` changes.

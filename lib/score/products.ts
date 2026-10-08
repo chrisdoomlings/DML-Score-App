@@ -18,18 +18,30 @@ export interface ProductCard {
 // every /apps/score/config request from every storefront visitor.
 const CACHE_TTL_MS = 15 * 60 * 1000;
 
+// How many products the widget shows.
+const MAX_PRODUCTS = 3;
+
+// Fetches more than MAX_PRODUCTS (in the collection's own sort order) so
+// that after skipping ineligible products there are still enough left to
+// fill the widget. Eligible = status ACTIVE, published to the Online Store
+// (onlineStoreUrl is null otherwise — covers drafts/unpublished/scheduled),
+// and at least one variant availableForSale. Before Oct 2026 this took the
+// first 3 products unconditionally, so a draft/out-of-stock product the
+// merchant didn't consider live could show up with a dead add-to-cart.
 const COLLECTION_PRODUCTS_QUERY = `
   query CollectionProducts($id: ID!) {
     collection(id: $id) {
       handle
-      products(first: 3) {
+      products(first: 30) {
         edges {
           node {
             title
             handle
+            status
+            onlineStoreUrl
             featuredImage { url }
             priceRangeV2 { minVariantPrice { amount currencyCode } }
-            variants(first: 1) { edges { node { id availableForSale } } }
+            variants(first: 20) { edges { node { id availableForSale } } }
           }
         }
       }
@@ -45,6 +57,8 @@ interface CollectionProductsResponse {
         node: {
           title: string;
           handle: string;
+          status: "ACTIVE" | "ARCHIVED" | "DRAFT" | string;
+          onlineStoreUrl: string | null;
           featuredImage: { url: string } | null;
           priceRangeV2: { minVariantPrice: { amount: string; currencyCode: string } };
           variants: { edges: { node: { id: string; availableForSale: boolean } }[] };
@@ -91,18 +105,25 @@ async function fetchFromAdminApi(shop: string, collectionId: string): Promise<Re
     return null;
   }
 
-  const products = edges.map(({ node }) => {
-    const variant = node.variants.edges[0]?.node;
-    return {
+  const products: ProductCard[] = [];
+  for (const { node } of edges) {
+    if (products.length >= MAX_PRODUCTS) break;
+    if (node.status !== "ACTIVE" || !node.onlineStoreUrl) continue;
+    // First purchasable variant, not just the first variant — a product
+    // whose default variant is sold out but another isn't still qualifies,
+    // and add-to-cart then targets the one that can actually be bought.
+    const variant = node.variants.edges.map((e) => e.node).find((v) => v.availableForSale);
+    if (!variant) continue;
+    products.push({
       id: node.handle,
       title: node.title,
       url: `/products/${node.handle}`,
       imageUrl: node.featuredImage?.url ?? "",
       price: formatPrice(node.priceRangeV2.minVariantPrice.amount, node.priceRangeV2.minVariantPrice.currencyCode),
-      variantId: variant ? numericIdFromGid(variant.id) : 0,
-      available: variant?.availableForSale ?? false,
-    };
-  });
+      variantId: numericIdFromGid(variant.id),
+      available: true,
+    });
+  }
   const collectionHandle = result.data?.collection?.handle;
   return { products, collectionUrl: collectionHandle ? `/collections/${collectionHandle}` : "" };
 }

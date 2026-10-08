@@ -275,7 +275,8 @@ function monthDay(date: string | Date): string {
  * condition is true for this game — the "first ever" semantics for
  * first_game_ever/first_game_mobile/first_game_desktop/first_tie come from
  * the caller's idempotent insert (ON CONFLICT DO NOTHING), not from querying
- * unlock history here.
+ * unlock history here. (first_game_ever is additionally gated on
+ * gamesLoggedBefore === 0; the mobile/desktop ones are not — see below.)
  */
 export function evaluateSingleGameAchievements(
   players: GamePlayer[],
@@ -296,8 +297,13 @@ export function evaluateSingleGameAchievements(
   const isFirstGame = gamesLoggedBefore === 0;
 
   hit("first_game_ever", isFirstGame);
-  hit("first_game_mobile", isFirstGame && deviceType === "mobile");
-  hit("first_game_desktop", isFirstGame && deviceType === "desktop");
+  // "First game logged ON a mobile device / desktop" — not "first game ever
+  // AND it was on mobile". Until Oct 2026 both also required isFirstGame,
+  // so anyone whose first-ever logged game was on the other device type
+  // could never unlock these at all. Once-only is still enforced by the
+  // caller's ON CONFLICT DO NOTHING insert, same as first_tie.
+  hit("first_game_mobile", deviceType === "mobile");
+  hit("first_game_desktop", deviceType === "desktop");
 
   hit("score_50_plus", totals.some((t) => t > 50));
   hit("score_100_plus", totals.some((t) => t > 100));

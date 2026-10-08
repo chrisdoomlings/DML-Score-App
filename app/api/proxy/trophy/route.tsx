@@ -72,6 +72,28 @@ function sanitizeDateLabel(v: string | null): string {
   }
   return new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
+/** Same line-break rule as trophyHeadingLines() in dmls-score.js, so the
+ *  saved image breaks the heading exactly like the screen does: an explicit
+ *  newline wins, else the last two words go on their own line once there
+ *  are 4+ ("Won The End Of" / "The World!"). */
+function trophyHeadingLines(text: string): string[] {
+  const s = text.trim();
+  if (s.includes("\n")) return s.split(/\s*\n\s*/).filter(Boolean);
+  const words = s.split(/\s+/);
+  if (words.length < 4) return [s];
+  return [words.slice(0, -2).join(" "), words.slice(-2).join(" ")];
+}
+
+/** Satori can't measure text, so the plate name is kept on one line by
+ *  estimating its width: DMLS Catastrophe uppercase averages roughly 0.62em
+ *  per character (+ letterSpacing). Shrinks from `max` only when the name
+ *  wouldn't fit `boxPx`; never below `min`. */
+function fitNameFontSize(name: string, boxPx: number, max: number, min: number, letterSpacing = 0): number {
+  const len = Math.max(1, name.length);
+  const fit = Math.floor((boxPx - letterSpacing * len) / (len * 0.62));
+  return Math.max(min, Math.min(max, fit));
+}
+
 /** The trophy-graphic URL is fetched server-side and embedded in the
  *  generated image — restrict it to this app's own R2 bucket (where every
  *  admin-uploaded trophy design actually lives) so a crafted query string
@@ -173,11 +195,15 @@ export async function GET(req: NextRequest) {
                   style={{
                     display: "flex",
                     fontFamily: "DMLS Catastrophe",
-                    fontSize: 78, // was 52 — 50% bigger per feedback
+                    // was 52 → 78 (50% bigger per feedback); long names now
+                    // shrink to stay on one line instead of stacking (Oct
+                    // 2026). 84% of the 864px art = the overlay's width.
+                    fontSize: fitNameFontSize(name, 864 * 0.84, 78, 32),
                     fontWeight: 400,
                     color: "#ffffff",
                     textTransform: "uppercase",
-                    letterSpacing: 2,
+                    // letterSpacing: 2 removed — normal spacing, matching the screen (Oct 2026)
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {name}
@@ -189,7 +215,8 @@ export async function GET(req: NextRequest) {
               style={{
                 display: "flex",
                 fontFamily: "DMLS Catastrophe",
-                fontSize: 64,
+                fontSize: fitNameFontSize(name, 864 - 96, 64, 28),
+                whiteSpace: "nowrap",
                 fontWeight: 400,
                 color: "#4a3200",
                 textTransform: "uppercase",
@@ -206,20 +233,28 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
               fontFamily: "DMLS Catastrophe",
               fontSize: 78, // was 56 — ~40% bigger per feedback
               fontWeight: 400,
               color: "#ffffff",
+              // All caps like every other Catastrophe line (Oct 2026) — the
+              // font's lowercase glyphs differ and its "f" renders hollow.
+              textTransform: "uppercase",
               marginTop: 48,
               maxWidth: 820,
               textAlign: "center",
               lineHeight: 1.15,
             }}
           >
-            {heading}
+            {trophyHeadingLines(heading).map((line, i) => (
+              <div key={i} style={{ display: "flex" }}>{line}</div>
+            ))}
           </div>
 
-          <div style={{ display: "flex", width: "70%", height: 1, backgroundColor: "rgba(255,255,255,0.2)", marginTop: 40 }} />
+          {/* White at 50% (client request, Oct 2026) — matches .dmls-trophy-divider on screen. */}
+          <div style={{ display: "flex", width: "70%", height: 2, backgroundColor: "rgba(255,255,255,0.5)", marginTop: 40 }} />
 
           {losers ? (
             <div
