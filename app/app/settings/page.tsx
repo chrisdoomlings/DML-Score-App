@@ -32,7 +32,7 @@ interface Settings {
   modalHeight: number;
   modalHeightUnit: "vh" | "px";
   lockPageScroll: boolean;
-  layoutMode: "inline" | "modal";
+  layoutMode: "inline" | "modal" | "fullscreen";
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -589,15 +589,22 @@ export default function SettingsPage() {
                   Inline (default) flows the tool&rsquo;s card in the page itself, right after the welcome section.
                   Full-screen modal restores the tool&rsquo;s original look &mdash; a centered overlay with a dark
                   backdrop, fixed in place over the page, with the page behind it always locked from scrolling
-                  while it&rsquo;s open.
+                  while it&rsquo;s open. Full-screen (app-like) takes over the entire screen edge to edge, hiding
+                  the store&rsquo;s header, navigation and announcement bars while the tool is open &mdash; on
+                  desktop it&rsquo;s a centered column at the Screen size width. Screen size&rsquo;s height is ignored
+                  in this mode (it always fills the screen).
                 </p>
                 <label className="dml-label">Layout</label>
                 <select
                   className="dml-input dml-input-sm" value={settings.layoutMode}
-                  onChange={(e) => setSettings({ ...settings, layoutMode: e.target.value === "modal" ? "modal" : "inline" })}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setSettings({ ...settings, layoutMode: v === "modal" || v === "fullscreen" ? v : "inline" });
+                  }}
                 >
                   <option value="inline">Inline (default)</option>
                   <option value="modal">Full-screen modal (classic)</option>
+                  <option value="fullscreen">Full-screen (app-like)</option>
                 </select>
                 {settings.layoutMode === "inline" && (
                   <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>

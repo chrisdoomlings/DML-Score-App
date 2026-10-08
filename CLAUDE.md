@@ -123,6 +123,15 @@ fixes the CLI bug upstream — don't mistake it for a real integration in the me
   screen. The classic full-screen modal (`body > #dmls-modal .dmls-modal-card`) already
   worked this way before this change — `width`/`height` (not just `max-height`) were
   already explicit there; this change brought inline mode in line with it.
+- **Third display mode, "Full-screen (app-like)" (`layoutMode: "fullscreen"`, October 2026)**
+  — client wanted the tool to cover the site header/nav/countdown bar on phones. Reuses the
+  classic modal path in `dmls-score.js` (`layoutModeIsModal` is true for both, node moved to
+  `<body>`, scroll always locked) plus a `.dmls-fullscreen` class on `#dmls-modal` (and
+  `html.dmls-fullscreen-mode` for toast/confetti z-index). CSS: solid backdrop, card is
+  edge-to-edge at `100dvh`, z-index near max to beat theme/app announcement bars; on ≥768px
+  it's a centered column at the Screen size width. Screen size's height is ignored in this
+  mode. No migration — `layout_mode` is validated in app code via `isLayoutMode()` in
+  `lib/score/settings.ts`.
 
 ## Phase 4 note (recommended-products widget moves off Liquid, September 2026)
 - The winner-screen recommended-products widget's settings (show/hide, which collection,

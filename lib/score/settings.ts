@@ -3,6 +3,13 @@ import { mergeAchievementConfig, type AchievementConfig } from "@/lib/score/achi
 import { mergeStepConfig, type StepConfig } from "@/lib/score/steps";
 import { sanitizeImageUrl } from "@/lib/score/imageUrl";
 
+// Validated in app code, not a DB CHECK constraint (see 028_layout_mode.sql).
+export const LAYOUT_MODES = ["inline", "modal", "fullscreen"] as const;
+export type LayoutMode = (typeof LAYOUT_MODES)[number];
+export function isLayoutMode(v: unknown): v is LayoutMode {
+  return typeof v === "string" && (LAYOUT_MODES as readonly string[]).includes(v);
+}
+
 // worldsend/drop/iconBonus are the inline icons the storefront swaps in for
 // the ➹/💧/⊕ Unicode glyphs embedded in the step descriptions (see
 // stepSubHTML() in dmls-score.js and 031_step_sub_icons.sql) — worldsend and
@@ -55,7 +62,7 @@ export interface ScoreSettings {
   modalHeight: number; // raw number, interpreted per modalHeightUnit; height of the #dmls-modal shell itself
   modalHeightUnit: "vh" | "px"; // which unit modalHeight is in
   lockPageScroll: boolean; // while the tool's card is open, lock the underlying page from scrolling so only the card's own content scrolls (inline layoutMode only — modal mode always locks)
-  layoutMode: "inline" | "modal"; // "inline" (default, Sept 2026 rebuild) renders in the page's own flow; "modal" restores the pre-rebuild full-screen overlay (fixed position, backdrop, always-locked page scroll)
+  layoutMode: LayoutMode; // "inline" (default, Sept 2026 rebuild) renders in the page's own flow; "modal" restores the pre-rebuild full-screen overlay (fixed position, backdrop, always-locked page scroll); "fullscreen" (Oct 2026) is that overlay stretched edge to edge over the whole viewport, covering the theme's header/announcement bars
   winnerImageSize: number; // px; max-width of the winner reveal art
   charactersWidth: number; // px; welcome-screen character illustration — can exceed the card width to bleed off the edges (card clips via overflow:hidden)
   headingWidth: number; // px; max-width of the welcome heading, controls line wrapping
@@ -254,7 +261,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     modalHeight: r?.modalHeight ?? DEFAULTS.modalHeight,
     modalHeightUnit: r?.modalHeightUnit === "px" ? "px" : DEFAULTS.modalHeightUnit,
     lockPageScroll: r?.lockPageScroll ?? DEFAULTS.lockPageScroll,
-    layoutMode: r?.layoutMode === "modal" ? "modal" : DEFAULTS.layoutMode,
+    layoutMode: r && isLayoutMode(r.layoutMode) ? r.layoutMode : DEFAULTS.layoutMode,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
     charactersWidth: r?.charactersWidth ?? DEFAULTS.charactersWidth,
     headingWidth: r?.headingWidth ?? DEFAULTS.headingWidth,
@@ -338,7 +345,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
         ? clampInt(s.modalHeight ?? current.modalHeight, 300, 1200)
         : clampInt(s.modalHeight ?? current.modalHeight, 50, 100),
     lockPageScroll: typeof s.lockPageScroll === "boolean" ? s.lockPageScroll : current.lockPageScroll,
-    layoutMode: s.layoutMode === "modal" ? "modal" : s.layoutMode === "inline" ? "inline" : current.layoutMode,
+    layoutMode: isLayoutMode(s.layoutMode) ? s.layoutMode : current.layoutMode,
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
     charactersWidth: clampInt(s.charactersWidth ?? current.charactersWidth, 60, 900),
     headingWidth: clampInt(s.headingWidth ?? current.headingWidth, 100, 600),

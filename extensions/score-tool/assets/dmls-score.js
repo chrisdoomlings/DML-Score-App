@@ -1709,8 +1709,16 @@
         modalEl.style.setProperty("--dmls-modal-height", c.modalHeight + modalHeightUnit);
       }
       lockScrollEnabled = Boolean(c.lockPageScroll);
-      layoutModeIsModal = c.layoutMode === "modal";
+      // "fullscreen" (Oct 2026, app-like) is the classic modal with its
+      // card stretched edge to edge over the whole viewport (site header,
+      // nav and announcement/countdown bars all covered) — same move-to-body
+      // + always-locked page scroll as "modal", plus a class the CSS keys
+      // its edge-to-edge overrides off.
+      layoutModeIsModal = c.layoutMode === "modal" || c.layoutMode === "fullscreen";
       if (layoutModeIsModal) moveModalToBody();
+      var isFullscreen = c.layoutMode === "fullscreen";
+      modalEl.classList.toggle("dmls-fullscreen", isFullscreen);
+      document.documentElement.classList.toggle("dmls-fullscreen-mode", isFullscreen);
       // Config can resolve after the tool was already opened (e.g. deep-linked
       // straight onto a hash on first paint) — apply immediately if so.
       if (modalOpen && lockScrollEnabled && !layoutModeIsModal) lockPageScroll();

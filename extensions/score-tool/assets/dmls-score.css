@@ -814,6 +814,41 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
   }
 }
 
+/* ---------------------------------------------------------------------
+   Settings → General → "Display mode" = "Full-screen (app-like)".
+   Same `body > #dmls-modal` overlay as classic above (dmls-score.js moves
+   the node to <body> and always locks page scroll), plus .dmls-fullscreen
+   on #dmls-modal: no centered card, no see-through backdrop — the tool
+   covers the entire viewport, so the theme's header, nav and any
+   announcement/countdown bar are hidden while it's open. Phones (the ~99%
+   case) get every pixel; on desktop the column is centered at the Screen
+   size width over a solid backdrop so it doesn't stretch across a monitor.
+   Screen size's height is ignored here — every card is exactly the
+   viewport's height (100dvh, so mobile browser toolbars don't clip it). */
+body > #dmls-modal.dmls-fullscreen { z-index: 2147483000; } /* above sticky theme headers/announcement-bar apps, which often use huge z-indexes */
+html.dmls-fullscreen-mode .dmls-toast { z-index: 2147483002; }
+html.dmls-fullscreen-mode #dmls-confetti { z-index: 2147483001; }
+body > #dmls-modal.dmls-fullscreen .dmls-modal-backdrop { background: var(--dmls-panel); }
+body > #dmls-modal.dmls-fullscreen .dmls-modal-card {
+  left: 0; top: 0; transform: none;
+  width: 100%; height: 100%; max-height: none;
+}
+body > #dmls-modal.dmls-fullscreen .dmls-card {
+  height: 100vh; height: 100dvh; max-height: none; min-height: 0;
+  border-radius: 0;
+}
+@media (min-width: 768px) {
+  body > #dmls-modal.dmls-fullscreen .dmls-modal-card {
+    left: 50%; transform: translateX(-50%);
+    width: min(100%, var(--dmls-modal-width, 520px));
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  body > #dmls-modal.dmls-fullscreen.dmls-modal-open .dmls-modal-card { animation: dmls-fs-fade 0.18s ease; }
+  @keyframes dmls-fs-fade { from { opacity: 0; } to { opacity: 1; } }
+}
+body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe-area-inset-top, 0px)); }
+
 #dmls-modal .dmls-modal-close {
   position: absolute; top: 10px; right: 10px; z-index: 1;
   width: 36px; height: 36px; border-radius: 50%;
