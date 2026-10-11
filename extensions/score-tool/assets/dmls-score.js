@@ -417,8 +417,11 @@
   var LAYOUT_KEY = "dmls_layout_mode";
   var desktopLayout = window.matchMedia("(min-width: 768px)");
   var configuredLayoutMode = "inline";
+  var normalViewRequested = false;
+  try { normalViewRequested = sessionStorage.getItem("dmls_normal_view") === "true"; } catch (e) { /* storage unavailable */ }
   function applyLayoutMode(mode) {
     configuredLayoutMode = mode || "inline";
+    if (normalViewRequested) mode = "inline";
     var isFullscreen = mode === "fullscreen" || (mode === "fullscreen-mobile" && !desktopLayout.matches);
     positionFullscreenRoot(isFullscreen);
     layoutModeIsModal = mode === "modal" || isFullscreen;
@@ -716,6 +719,7 @@
     var hasFish = !!images.fishNormal;
     welcomeEl.innerHTML =
       '<div class="dmls-card dmls-anim-in" id="dmls-screen-welcome">' +
+      '<button type="button" class="dmls-normal-view" id="dmls-normal-view" aria-label="Show store header and footer" title="Normal page view"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"/></svg></button>' +
       '<div class="dmls-card-body">' +
       logoHTML("dmls-logo") +
       // Bee/fish overlay the top corners of the hero image (like the
@@ -739,6 +743,12 @@
       '<div class="dmls-nav"><span class="dmls-spacer"></span><button type="button" class="dmls-btn dmls-btn-go" id="dmls-start">Start scoring</button><span class="dmls-spacer"></span></div>' +
       "</div>" +
       (homeTip ? '<div class="dmls-tip"><span class="dmls-tip-icon" aria-hidden="true">i</span><p>' + esc(homeTip) + "</p></div>" : "");
+    document.getElementById("dmls-normal-view").addEventListener("click", function () {
+      normalViewRequested = true;
+      try { sessionStorage.setItem("dmls_normal_view", "true"); } catch (e) { /* storage unavailable */ }
+      applyLayoutMode(configuredLayoutMode);
+      welcomeEl.scrollIntoView({ block: "start" });
+    });
     document.getElementById("dmls-start").addEventListener("click", function () {
       // Only reset to a fresh game if one hasn't already been started this
       // session (state.screen stays >0 after a mid-game modal close) — a

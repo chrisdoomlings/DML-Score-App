@@ -241,6 +241,15 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-card-character-left { left: 0; }
 .dmls-card-character-right { right: 0; }
 .dmls-card-body, .dmls-nav { position: relative; }
+#dmls-root .dmls-normal-view {
+  display: none;
+  position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); right: 10px;
+  z-index: 3; width: 40px; height: 40px; padding: 0;
+  align-items: center; justify-content: center;
+  border-radius: 50%; color: white; background: rgba(16, 21, 63, 0.65);
+  cursor: pointer;
+}
+html.dmls-fullscreen-mode #dmls-root .dmls-normal-view { display: flex; }
 /* Held hidden until startCharAnim() in dmls-score.js sees the image loaded
    and swaps in the fly-in class below. */
 .dmls-card-character-left.dmls-char-pending,
