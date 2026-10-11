@@ -476,6 +476,18 @@
   root.addEventListener("wheel", routeWheelScroll, { passive: true });
   modalEl.addEventListener("wheel", routeWheelScroll, { passive: true });
 
+  // Keep storefront swipe handlers from cancelling native scrolling inside
+  // the tool. Passive listeners leave the browser in charge of the gesture.
+  function routeTouchScroll(event) {
+    if (event.target.closest && event.target.closest(".dmls-scroll-mid, .dmls-card-body:not(.dmls-split)")) {
+      event.stopPropagation();
+    }
+  }
+  [root, modalEl].forEach(function (surface) {
+    surface.addEventListener("touchstart", routeTouchScroll, { passive: true });
+    surface.addEventListener("touchmove", routeTouchScroll, { passive: true });
+  });
+
   // Simple overflow:hidden toggle on <html> — not the fixed-position +
   // saved-scrollY technique some scroll-locks use, since that reintroduces
   // exactly the "fixed positioning" behavior the Sept 2026 rebuild removed

@@ -958,6 +958,36 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-card.dmls-modal-step-players {
 }
 #dmls-screen-players .dmls-nav { margin-top: 8px; }
 
+/* Phones use the available viewport, including changes to browser chrome.
+   A definite card height keeps its flex children inside that viewport so
+   the middle list, rather than a clipped outer card, owns scrolling. */
+@media (max-width: 767px) {
+  html.dmls-fullscreen-mode #dmls-root #dmls-welcome-page > .dmls-card {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    min-height: 0;
+    margin: 0;
+  }
+  body > #dmls-modal.dmls-fullscreen .dmls-modal-card,
+  body > #dmls-modal.dmls-fullscreen .dmls-modal-card.dmls-modal-step-players {
+    inset: 0;
+    transform: none;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+}
+:where(#dmls-root, #dmls-modal) .dmls-scroll-mid,
+:where(#dmls-root, #dmls-modal) .dmls-card-body:not(.dmls-split) {
+  touch-action: pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+}
+
 body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe-area-inset-top, 0px)); }
 
 #dmls-modal .dmls-modal-close {
