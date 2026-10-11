@@ -418,7 +418,6 @@
   var desktopLayout = window.matchMedia("(min-width: 768px)");
   var configuredLayoutMode = "inline";
   var normalViewRequested = false;
-  try { normalViewRequested = sessionStorage.getItem("dmls_normal_view") === "true"; } catch (e) { /* storage unavailable */ }
   function applyLayoutMode(mode) {
     configuredLayoutMode = mode || "inline";
     if (normalViewRequested) mode = "inline";
@@ -745,7 +744,6 @@
       (homeTip ? '<div class="dmls-tip"><span class="dmls-tip-icon" aria-hidden="true">i</span><p>' + esc(homeTip) + "</p></div>" : "");
     document.getElementById("dmls-normal-view").addEventListener("click", function () {
       normalViewRequested = true;
-      try { sessionStorage.setItem("dmls_normal_view", "true"); } catch (e) { /* storage unavailable */ }
       applyLayoutMode(configuredLayoutMode);
       welcomeEl.scrollIntoView({ block: "start" });
     });
