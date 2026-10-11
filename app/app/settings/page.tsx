@@ -32,7 +32,7 @@ interface Settings {
   modalHeight: number;
   modalHeightUnit: "vh" | "px";
   lockPageScroll: boolean;
-  layoutMode: "inline" | "modal" | "fullscreen";
+  layoutMode: "inline" | "modal" | "fullscreen" | "fullscreen-mobile";
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -596,7 +596,7 @@ export default function SettingsPage() {
                 </p>
                 <label className="dml-label">Layout</label>
                 <select
-                  className="dml-input dml-input-sm" value={settings.layoutMode}
+                  className="dml-input dml-input-sm" value={settings.layoutMode === "fullscreen-mobile" ? "fullscreen" : settings.layoutMode}
                   onChange={(e) => {
                     const v = e.target.value;
                     setSettings({ ...settings, layoutMode: v === "modal" || v === "fullscreen" ? v : "inline" });
@@ -606,6 +606,20 @@ export default function SettingsPage() {
                   <option value="modal">Full-screen modal (classic)</option>
                   <option value="fullscreen">Full-screen (app-like)</option>
                 </select>
+                {(settings.layoutMode === "fullscreen" || settings.layoutMode === "fullscreen-mobile") && (
+                  <>
+                    <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+                      <input
+                        type="checkbox" checked={settings.layoutMode === "fullscreen-mobile"}
+                        onChange={(e) => setSettings({ ...settings, layoutMode: e.target.checked ? "fullscreen-mobile" : "fullscreen" })}
+                      />
+                      Mobile only
+                    </label>
+                    <p className="dml-card-hint">
+                      When enabled, screens below 768px use app-like fullscreen. Larger screens use the inline layout.
+                    </p>
+                  </>
+                )}
                 {settings.layoutMode === "inline" && (
                   <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
                     <input

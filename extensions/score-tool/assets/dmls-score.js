@@ -237,11 +237,6 @@
     if (!el) return;
     el.classList.toggle("dmls-scroll-fit", el.scrollHeight <= el.clientHeight + 1);
   }
-  // Winner screen standings: shrink each overflowing .dmls-win-score-name
-  // (nowrap in CSS) until it fits on one line beside its "N points", rather
-  // than letting a long name push the points onto two lines. Resets to the
-  // CSS size first so a re-fit (e.g. after the display font loads) can grow
-  // a name back as well as shrink it. Skips while hidden (zero width).
   // Generic one-line shrink-to-fit for a white-space:nowrap element: starts
   // from its CSS font-size and steps down until it no longer overflows, or
   // hits minPx. lineHeightRatio (optional) keeps a px line-height in step.
@@ -258,7 +253,18 @@
   }
   function fitWinScoreNames() {
     var names = document.querySelectorAll("#dmls-modal .dmls-win-score-name");
-    for (var i = 0; i < names.length; i++) fitOneLine(names[i], 18, 50 / 42); // keeps the CSS 42px/50px ratio
+    for (var i = 0; i < names.length; i++) {
+      var name = names[i];
+      var text = name.querySelector(".dmls-win-score-text");
+      if (!text || !name.clientWidth) continue;
+      var distance = Math.max(0, text.scrollWidth - name.clientWidth);
+      var truncated = distance > 1;
+      name.classList.toggle("dmls-name-truncated", truncated);
+      name.style.setProperty("--dmls-name-travel", -distance + "px");
+      name.style.setProperty("--dmls-name-duration", Math.max(3, distance / 35 + 1) + "s");
+      if (truncated) name.setAttribute("tabindex", "0");
+      else name.removeAttribute("tabindex");
+    }
   }
   // Trophy screen: the winner's name on the plate stays on one line and
   // shrinks instead of stacking (client request, Oct 2026).
@@ -336,14 +342,14 @@
      dmls-score.css keys its fixed/backdrop/centered-card rules off that
      DOM position (`body > #dmls-modal`) rather than a mode class — so the
      default inline mode is completely untouched by any of it. The backdrop
-     div and dialog ARIA attributes below are always present either way:
-     inert (zero-size, unpositioned) in inline mode, real in modal mode. */
+     div is inert in inline mode; dialog ARIA attributes are only applied
+     in overlay modes. */
   var modalEl = document.createElement("div");
   modalEl.id = "dmls-modal";
   modalEl.setAttribute("aria-hidden", "true");
   modalEl.innerHTML =
     '<div class="dmls-modal-backdrop" id="dmls-modal-backdrop"></div>' +
-    '<div class="dmls-modal-card" id="dmls-modal-card" role="dialog" aria-modal="true" aria-label="Doomlings Score Tool">' +
+    '<div class="dmls-modal-card" id="dmls-modal-card" aria-label="Doomlings Score Tool">' +
     '<button type="button" class="dmls-modal-close" id="dmls-modal-close" aria-label="Back to start">&times;</button>' +
     '<div class="dmls-modal-body" id="dmls-modal-body">' +
     '<div id="dmls-app" aria-live="polite"></div>' +
@@ -357,6 +363,7 @@
   var trophyEl = document.getElementById("dmls-trophy");
   var productsEl = document.getElementById("dmls-products");
   var modalCardEl = document.getElementById("dmls-modal-card");
+  if (typeof ResizeObserver === "function") new ResizeObserver(fitWinScoreNames).observe(modalCardEl);
   // #dmls-modal-card itself is created once at boot and never re-rendered
   // (unlike #dmls-app's innerHTML, swapped per screen by render() below), so
   // it needs its own step class kept in sync separately — lets CSS style the
@@ -388,6 +395,17 @@
   function moveModalToBody() {
     if (modalEl.parentNode !== document.body) document.body.appendChild(modalEl);
   }
+  var rootAnchor = null;
+  function positionFullscreenRoot(isFullscreen) {
+    if (isFullscreen && root.parentNode !== document.body) {
+      rootAnchor = document.createComment("dmls-root");
+      root.parentNode.insertBefore(rootAnchor, root);
+      document.body.appendChild(root);
+    } else if (!isFullscreen && rootAnchor && rootAnchor.parentNode) {
+      rootAnchor.parentNode.replaceChild(root, rootAnchor);
+      rootAnchor = null;
+    }
+  }
   // Settings → General → "Display mode". "fullscreen" (app-like) is the
   // classic modal stretched edge to edge AND the on-page welcome pinned
   // full-viewport too (html.dmls-fullscreen-mode in dmls-score.css), so the
@@ -397,9 +415,20 @@
   // at boot, so a returning visitor doesn't see the site header flash in
   // before /config resolves (first-ever visit still has that one flash).
   var LAYOUT_KEY = "dmls_layout_mode";
+  var desktopLayout = window.matchMedia("(min-width: 768px)");
+  var configuredLayoutMode = "inline";
   function applyLayoutMode(mode) {
-    var isFullscreen = mode === "fullscreen";
+    configuredLayoutMode = mode || "inline";
+    var isFullscreen = mode === "fullscreen" || (mode === "fullscreen-mobile" && !desktopLayout.matches);
+    positionFullscreenRoot(isFullscreen);
     layoutModeIsModal = mode === "modal" || isFullscreen;
+    if (layoutModeIsModal) {
+      modalCardEl.setAttribute("role", "dialog");
+      modalCardEl.setAttribute("aria-modal", "true");
+    } else {
+      modalCardEl.removeAttribute("role");
+      modalCardEl.removeAttribute("aria-modal");
+    }
     if (layoutModeIsModal) moveModalToBody();
     // Stale cache said modal/fullscreen but the merchant has since switched
     // to inline — put the panel back in the page flow right after welcome.
@@ -408,7 +437,14 @@
     }
     modalEl.classList.toggle("dmls-fullscreen", isFullscreen);
     document.documentElement.classList.toggle("dmls-fullscreen-mode", isFullscreen);
+    document.documentElement.classList.toggle("dmls-modal-lock", modalOpen && layoutModeIsModal);
+    document.body.classList.toggle("dmls-modal-lock", modalOpen && layoutModeIsModal);
+    document.documentElement.classList.toggle("dmls-page-scroll-locked", modalOpen && !layoutModeIsModal && !!lockScrollEnabled);
+    if (welcomeEl) welcomeEl.hidden = modalOpen && !layoutModeIsModal;
   }
+  desktopLayout.addEventListener("change", function () {
+    if (configuredLayoutMode === "fullscreen-mobile") applyLayoutMode(configuredLayoutMode);
+  });
   try { applyLayoutMode(localStorage.getItem(LAYOUT_KEY)); } catch (e) { /* storage blocked — wait for /config */ }
   // Settings → General → "Lock page scroll" (default off) — loadConfig()
   // flips this once /config resolves. Opt-in re-add of body-scroll-lock,
@@ -416,6 +452,29 @@
   // lockPageScroll() below for why it's a simple overflow toggle rather
   // than the old fixed-position/scroll-restore approach.
   var lockScrollEnabled = false;
+
+  function routeWheelScroll(event) {
+    if (event.ctrlKey || event.defaultPrevented) return;
+    if (document.documentElement.classList.contains("dmls-fullscreen-mode") ||
+        (modalOpen && (layoutModeIsModal || lockScrollEnabled))) {
+      event.stopPropagation();
+      return;
+    }
+    if (!event.deltaY || event.shiftKey) return;
+    var node = event.target;
+    while (node && node !== event.currentTarget) {
+      if (node.matches && node.matches(".dmls-scroll-mid, .dmls-card-body:not(.dmls-split)")) {
+        var remaining = node.scrollHeight - node.clientHeight - node.scrollTop;
+        if ((event.deltaY > 0 && remaining > 1) || (event.deltaY < 0 && node.scrollTop > 1)) {
+          event.stopPropagation();
+          return;
+        }
+      }
+      node = node.parentElement;
+    }
+  }
+  root.addEventListener("wheel", routeWheelScroll, { passive: true });
+  modalEl.addEventListener("wheel", routeWheelScroll, { passive: true });
 
   // Simple overflow:hidden toggle on <html> — not the fixed-position +
   // saved-scrollY technique some scroll-locks use, since that reintroduces
@@ -1363,7 +1422,7 @@
       '<ul class="dmls-win-scores">' +
       ranked.map(function (p) {
         return '<li class="dmls-win-score-row">' +
-          '<span class="dmls-win-score-name">' + catastropheSafeHTML(p.name) + "</span>" +
+          '<span class="dmls-win-score-name"><span class="dmls-win-score-text">' + catastropheSafeHTML(p.name) + "</span></span>" +
           '<span class="dmls-win-score-pts">' + total(p) + " points</span></li>";
       }).join("") +
       "</ul>" +
@@ -1866,13 +1925,6 @@
       lockScrollEnabled = Boolean(c.lockPageScroll);
       applyLayoutMode(c.layoutMode);
       try { localStorage.setItem(LAYOUT_KEY, c.layoutMode || "inline"); } catch (e) { /* ignore */ }
-      // Config can resolve after the tool was already opened (e.g. deep-linked
-      // straight onto a hash on first paint) — apply immediately if so.
-      if (modalOpen && lockScrollEnabled && !layoutModeIsModal) lockPageScroll();
-      if (modalOpen && layoutModeIsModal) {
-        document.documentElement.classList.add("dmls-modal-lock");
-        document.body.classList.add("dmls-modal-lock");
-      }
       if (typeof c.winnerImageSize === "number") modalEl.style.setProperty("--dmls-win-art-size", c.winnerImageSize + "px");
       // Everything else is baked into already-rendered HTML strings — merge
       // into ICONS so any future render() picks up the override, and only

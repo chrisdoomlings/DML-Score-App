@@ -138,7 +138,11 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   min-height: 0; /* lets it shrink below content size once .dmls-card hits its max-height, instead of pushing the card taller */
   overflow-y: auto;
   overflow-x: hidden;
-  overscroll-behavior: contain; /* stops wheel/touch scroll from chaining to the page once this hits its own top/bottom */
+  /* No overscroll-behavior: contain here (removed Oct 2026). Chrome applies
+     it even when this box has nothing to scroll, so a swipe starting on a
+     card — e.g. the ~90vh-tall inline welcome — moved neither the card nor
+     the page, and the whole page felt frozen on phones. It was never
+     needed: overlay modes and "Lock page scroll" already lock the page. */
   padding-right: 0.125em; /* keeps the scrollbar (where visible) off the text */
   /* -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%);
   mask-image: linear-gradient(180deg, #000 calc(100% - 40px), transparent 100%); */
@@ -155,7 +159,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
    list (history rows, score rows, achievement grid) visibly left of center
    (Oct 2026). Mouse devices get the gutter back in the scrollbar media
    query below, where the styled scrollbar actually occupies it. */
-.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 0;  }
+.dmls-card-body.dmls-split > .dmls-scroll-mid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0;  } /* no overscroll-behavior: contain — see .dmls-card-body */
 /* fitScrollMid() in dmls-score.js adds this once it measures that the list
    doesn't actually overflow — no scrollbar, so no need to reserve room for one. */
 .dmls-card-body.dmls-split > .dmls-scroll-mid.dmls-scroll-fit { padding-right: 0; }
@@ -230,10 +234,10 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-card-character-right {
   max-width: 22%; 
 }
-#dmls-screen-step-mp .dmls-card-character-left,
+/* #dmls-screen-step-mp .dmls-card-character-left,
 #dmls-screen-step-mp .dmls-card-character-right {
   max-width: 28%; 
-}
+} */
 .dmls-card-character-left { left: 0; }
 .dmls-card-character-right { right: 0; }
 .dmls-card-body, .dmls-nav { position: relative; }
@@ -359,7 +363,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 
 
 .dmls-addrow {
-  display: flex; align-items: center; gap: 6px; max-width: 380px; margin: 19px 4px 6px;
+  display: flex; align-items: center; gap: 6px; width: 80%; margin: 19px 4px 6px;
   background: #fff; border: 2px solid #9287b0; border-radius: 999px;
   padding: 5px 5px 5px 1.125em;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
@@ -426,7 +430,7 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   border-radius: 35px; padding: 0.3em 0.625em 0.3em 1em;
 }
 .dmls-scores .dmls-nm {
-  flex: 0 1 auto; min-width: 0; max-width: 40%; text-align: left; font-size: 1.0313em; font-weight: 600;
+  flex: 0 1 auto; min-width: 0;  text-align: left; font-size: 1.0313em; font-weight: 600;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .dmls-step { display: flex; align-items: center; gap: 6px; }
@@ -480,31 +484,41 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.4));
 }
 .dmls-win-art-caption {
-  position: absolute; left: 0; right: 0; top: 8%;
+  position: absolute; left: 0; right: 0; top: 15%;
   text-align: center; pointer-events: none;
 }
 .dmls-win-art-caption .dmls-win-eyebrow,
 .dmls-win-art-caption .dmls-win-name,
 .dmls-win-art-caption .dmls-win-points {
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.5);
+    /* text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); */
+  text-shadow:4px 12px 20px rgba(0, 0, 0, 0.7), 0 0 20px rgb(0 0 0 / 98%);
 }
 
 .dmls-win-scores { width: 100%;  margin: 18px auto 0; padding: 0 1.875em; }
 .dmls-win-score-row {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
-
   font-size: 1.5em;
 }
-/* One line per row (client request, Oct 2026): the name never wraps and
-   "N points" never breaks onto two lines — fitWinScoreNames() in
-   dmls-score.js shrinks a long name's font-size until it fits beside the
-   points instead. Ellipsis is only the last resort if a name is still too
-   long at the minimum size. */
+
 .dmls-win-score-name { font-size: 42px;
     line-height: 50px;font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; font-family: "DMLS Catastrophe", "Segoe UI", cursive;
     flex: 1 1 auto; min-width: 0; text-align: left;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dmls-win-score-pts { font-weight: 700; flex: none; white-space: nowrap; }
+.dmls-win-score-text { display: block; overflow: hidden; text-overflow: ellipsis; }
+.dmls-win-score-name.dmls-name-truncated:is(:hover, :focus) .dmls-win-score-text {
+  width: max-content; overflow: visible;
+  animation: dmls-name-scroll var(--dmls-name-duration, 4s) linear 0.4s infinite alternate;
+}
+.dmls-win-score-name:focus-visible { outline: 2px solid var(--dmls-green); outline-offset: 2px; }
+@keyframes dmls-name-scroll {
+  0%, 15% { transform: translateX(0); }
+  85%, 100% { transform: translateX(var(--dmls-name-travel, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dmls-win-score-name.dmls-name-truncated:is(:hover, :focus) { overflow-x: auto; }
+  .dmls-win-score-name.dmls-name-truncated:is(:hover, :focus) .dmls-win-score-text { animation: none; }
+}
 
 .dmls-btn-outline-gold { border: 2px solid var(--dmls-gold); color: var(--dmls-gold); background: transparent; }
 .dmls-btn-outline-gold:hover { background: rgba(255, 213, 74, 0.12); }
@@ -658,14 +672,18 @@ html.dmls-page-scroll-locked body { overflow: hidden; }
 .dmls-widget-center .dmls-widget-title { text-align: center; }
 .dmls-win-stat-num { font-size: 2.75em; font-weight: 800; line-height: 1; color: #fff; margin: 0 0 4px; }
 .dmls-win-achv-item { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0 0 6px; }
-.dmls-win-achv-item .dmls-achv-icon { width: 150px; height: 150px; }
-.dmls-win-achv-item .dmls-achv-name { font-size:1.5em; }
-
+/* .dmls-win-achv-item .dmls-achv-icon { width: 150px; height: 150px; } */
+.dmls-win-achv-item .dmls-achv-name { font-size:1em;    line-height: 1.2em; }
+.dmls-win-achv-list{
+  display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
 .dmls-win-achv-list.dmls-win-achv-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 8px; width: 100%;
 }
-.dmls-win-achv-list.dmls-win-achv-grid .dmls-win-achv-item { margin: 0; }
-.dmls-win-achv-list.dmls-win-achv-grid .dmls-win-achv-item .dmls-achv-icon { width: 96px; height: 96px; }
+/* .dmls-win-achv-list.dmls-win-achv-grid .dmls-win-achv-item { margin: 0; } */
+.dmls-win-achv-list.dmls-win-achv-grid .dmls-win-achv-item .dmls-achv-icon { width: 130px; }
 
 .dmls-bonuses { margin-top: 10px; text-align: left; }
 .dmls-bonuses li {
@@ -840,18 +858,26 @@ body > #dmls-modal .dmls-modal-card {
   max-height: min(96vh, var(--dmls-modal-height, 90vh));
   display: flex; flex-direction: column;
 }
-body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-/* Cards no longer sit under #dmls-root once moved to <body>, so they miss
-   out on #dmls-root .dmls-card's min-height:0/max-height reset further up
-   this file — back to the plain floor-height .dmls-card default, and the
-   modal-card's own fixed height (not just max-height) above is what makes
-   that floor scroll instead of overflow, same as the original modal. */
-@media (max-height: 600px) {
-  /* Very short viewports (phones in landscape) have too little room for
-     that floor — drop it so the card shrinks to fit instead of clipping
-     off-screen; .dmls-card-body/.dmls-scroll-mid already scroll their own
-     content regardless. */
-  body > #dmls-modal .dmls-card { min-height: 0; }
+/* Exactly one scroll container per screen, in both overlay modes (classic
+   modal and full-screen): .dmls-modal-body itself never scrolls — the
+   visible #dmls-app/#dmls-achv/#dmls-trophy and its .dmls-card are flexed
+   to fill it exactly, so only .dmls-card-body / .dmls-scroll-mid scroll.
+   Before Oct 2026 the classic modal let its cards grow to content and
+   scrolled .dmls-modal-body instead — but the inner lists then carried
+   overscroll-behavior: contain (since removed), which Chrome honours even when that list
+   has nothing to scroll, so a swipe starting on a list moved nothing at
+   all (reproduced with real touch events on emulated Android). Also fixes
+   full-screen's earlier 100dvh-in-a-scroller rounding overflow that iOS
+   latched swipes onto. */
+body > #dmls-modal .dmls-modal-body {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+body > #dmls-modal .dmls-modal-body > :not([hidden]) {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+}
+body > #dmls-modal .dmls-modal-body > :not([hidden]) > .dmls-card {
+  flex: 1 1 auto; height: auto; max-height: none; min-height: 0;
 }
 @media (prefers-reduced-motion: no-preference) {
   body > #dmls-modal.dmls-modal-open .dmls-modal-card { animation: dmls-modal-pop 0.22s ease; }
@@ -861,32 +887,25 @@ body > #dmls-modal .dmls-modal-body { flex: 1 1 auto; min-height: 0; overflow-y:
   }
 }
 
-/* ---------------------------------------------------------------------
-   Settings → General → "Display mode" = "Full-screen (app-like)".
-   Same `body > #dmls-modal` overlay as classic above (dmls-score.js moves
-   the node to <body> and always locks page scroll), plus .dmls-fullscreen
-   on #dmls-modal: no centered card, no see-through backdrop — the tool
-   covers the entire viewport, so the theme's header, nav and any
-   announcement/countdown bar are hidden while it's open. Phones (the ~99%
-   case) get every pixel; on desktop the column is centered at the Screen
-   size width over a solid backdrop so it doesn't stretch across a monitor.
-   Screen size's height is ignored here — every card is exactly the
-   viewport's height (100dvh, so mobile browser toolbars don't clip it). */
-/* Welcome screen too: pinned over the whole viewport (just under the
-   panel's z-index, so the panel still covers it once Start is tapped) and
-   page scroll locked for as long as this mode is on — the theme's
-   header/nav/announcement bars never show, not even before Start. */
 html.dmls-fullscreen-mode, html.dmls-fullscreen-mode body { overflow: hidden; }
 html.dmls-fullscreen-mode #dmls-welcome-page {
-  position: fixed; inset: 0; z-index: 2147482999;
-  width: auto; margin: 0; padding: 0;
-  background: var(--dmls-panel);
-  display: flex; flex-direction: column;
+ position: fixed;
+    inset: 0;
+    z-index: 2147482999;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--dmls-panel);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 html.dmls-fullscreen-mode #dmls-welcome-page[hidden] { display: none; }
 html.dmls-fullscreen-mode #dmls-root #dmls-welcome-page > .dmls-card {
-  flex: 1 1 auto; height: auto; max-height: none; min-height: 0;
-  border-radius: 0;
+ height: auto;
+    max-height: none;
+    border-radius: 10px;
 }
 @media (min-width: 768px) {
   html.dmls-fullscreen-mode #dmls-welcome-page > .dmls-card {
@@ -898,29 +917,16 @@ html.dmls-fullscreen-mode .dmls-toast { z-index: 2147483002; }
 html.dmls-fullscreen-mode #dmls-confetti { z-index: 2147483001; }
 body > #dmls-modal.dmls-fullscreen .dmls-modal-backdrop { background: var(--dmls-panel); }
 body > #dmls-modal.dmls-fullscreen .dmls-modal-card {
-  left: 0; top: 0; transform: none;
+  left: 0; top: 50%; transform: translateY(-50%);
   width: 100%; height: 100%; max-height: none;
 }
-/* Exactly one scroll container per screen: .dmls-modal-body itself never
-   scrolls here — the visible #dmls-app/#dmls-achv/#dmls-trophy and its
-   .dmls-card are flexed to fill it exactly, so only .dmls-card-body /
-   .dmls-scroll-mid scroll. (Sizing the card to 100dvh inside a still-
-   scrollable .dmls-modal-body left a 1–2px outer overflow on phones whose
-   dvh rounds differently from the fixed box — iOS then latched swipes onto
-   that near-empty outer scroller and the list felt stuck mid-gesture.) */
-body > #dmls-modal.dmls-fullscreen .dmls-modal-body {
-  display: flex; flex-direction: column; overflow: hidden;
-}
-body > #dmls-modal.dmls-fullscreen .dmls-modal-body > :not([hidden]) {
-  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
-}
+/* Keep the outer panel background rounded in full-screen mode too. */
 body > #dmls-modal.dmls-fullscreen .dmls-modal-body > :not([hidden]) > .dmls-card {
-  flex: 1 1 auto; height: auto; max-height: none; min-height: 0;
-  border-radius: 0;
+  border-radius: 10px;
 }
 @media (min-width: 768px) {
   body > #dmls-modal.dmls-fullscreen .dmls-modal-card {
-    left: 50%; transform: translateX(-50%);
+    left: 50%; transform: translate(-50%, -50%);
     width: min(100%, var(--dmls-modal-width, 520px));
   }
 }
@@ -928,6 +934,30 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-body > :not([hidden]) > .dmls-car
   body > #dmls-modal.dmls-fullscreen.dmls-modal-open .dmls-modal-card { animation: dmls-fs-fade 0.18s ease; }
   @keyframes dmls-fs-fade { from { opacity: 0; } to { opacity: 1; } }
 }
+/* Add Names grows with its list, then scrolls at the viewport/configured
+   cap. Keep the footer close to short lists in every display mode. */
+#dmls-root #dmls-screen-players {
+  height: auto;
+  min-height: 0;
+  max-height: min(96vh, var(--dmls-modal-height, 90vh));
+  max-height: min(96dvh, var(--dmls-modal-height, 90dvh));
+}
+body > #dmls-modal .dmls-modal-card.dmls-modal-step-players {
+  height: auto;
+  border-radius: 10px;
+  max-height: min(96vh, var(--dmls-modal-height, 90vh));
+  max-height: min(96dvh, var(--dmls-modal-height, 90dvh));
+}
+body > #dmls-modal.dmls-fullscreen .dmls-modal-card.dmls-modal-step-players {
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+#dmls-screen-players .dmls-card-body,
+#dmls-screen-players .dmls-scroll-mid {
+  flex: 0 1 auto;
+}
+#dmls-screen-players .dmls-nav { margin-top: 8px; }
+
 body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe-area-inset-top, 0px)); }
 
 #dmls-modal .dmls-modal-close {
@@ -974,27 +1004,27 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
    the welcome page, losing the direct "came from the winner screen"
    context). See the #dmls-achv-back click handler in dmls-score.js. */
 .dmls-achv-head-top { text-align: left; margin: 0 0 10px; flex: none; }
-.dmls-achv-tabs { display: flex; gap: 8px; margin: 4px 0 16px; flex: none; justify-content: space-around;}
-.dmls-achv-tab {
-  flex: 1; padding: 0.625em; border-radius: 999px; background: #8f83c9;
-  border: solid 1px transparent;
-  font-weight: 700; font-size: 0.8125em; letter-spacing: 0.04em; color: var(--dmls-night);
+.dmls-achv-tabs { display: flex; gap: 30px; margin: 4px 0 16px; flex: none; justify-content:space-evenly; }
+#dmls-modal .dmls-achv-tab {
+  /* flex: 1 1 0; min-width: 0;  */
+  min-height: 48px; padding: 8px 32px;
+  border-radius: 999px; background: transparent;
+  border: solid 1px #9287b0;
+  font-weight: 700; font-size: 20px; line-height: 1.2; letter-spacing: 0; color: #9287b0;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
-/* Active and inactive tabs share the same pill look — no separate visual
-   state, just which is selected (aria-selected/data-tab still track that
-   for a11y/JS). */
-.dmls-achv-tab.dmls-achv-tab-on { background: #8f83c9; border-color: transparent; color: var(--dmls-night); }
+/* Filled selected pill and outlined unselected pill match the design. */
+#dmls-modal .dmls-achv-tab.dmls-achv-tab-on { background: #9287b0; border-color: #9287b0; color: var(--dmls-night); }
 
 .dmls-achv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .dmls-achv-tile {
   /* No box/border per the mock — icon + name + description sit directly on
      the card's own background, not inside a bordered card-within-a-card. */
-  padding: 0.875em 0.625em; text-align: center;
+  padding: 0; text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
 .dmls-achv-icon {
-  width: 104px; height: 104px; margin-bottom: 4px;
+  width: 130px; height: 130px; margin-bottom: 4px;
    background-size: cover; background-position: center;
   
   
@@ -1021,7 +1051,7 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
   box-shadow: none;
 }
 .dmls-achv-name { font-size: 0.7813em; font-weight: 700; line-height: 1.3; }
-.dmls-achv-desc { font-size: 0.6875em; color: var(--dmls-ink-dim); line-height: 1.35; }
+.dmls-achv-desc { font-size: 0.8em; color: var(--dmls-ink-dim); line-height: 1.35; }
 .dmls-achv-tile.dmls-achv-locked .dmls-achv-desc { letter-spacing: 0.12em; }
 .dmls-achv-date { font-size: 0.625em; color: var(--dmls-ink-faint); margin-top: 2px; }
 
@@ -1059,15 +1089,15 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
 .dmls-trophy-share[hidden] { display: none; }
 
 
-#dmls-screen-welcome { padding:0; padding-top:60px; padding-bottom: 30px;}
+#dmls-screen-welcome { padding:0;}
 #dmls-screen-welcome h2{    max-width: none;
     font-size: 46px;
     padding: 15px 30px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
 .dmls-prod-note{display:none;}
-#dmls-screen-winner { padding-top: 45px;}
-
+/* #dmls-screen-winner { padding-top: 45px;} */
+img.dmls-win-logo { padding-top: 45px;}
 #dmls-screen-welcome .dmls-sub{ display:none;}
 
 #dmls-screen-achievements { padding-top: 55px; }
@@ -1087,17 +1117,7 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
     background: #04201c !important;
     border-color: #37897b !important;
     color: #38897b !important;}
-/* ---------------------------------------------------------------------
-   Every "DMLS Catastrophe" element: ALL CAPS, the font's real weight, and
-   no browser-faked bold (client request, Oct 2026). The font ships a
-   single 400 weight, so anything asking for 700/800 (winner standings,
-   "DID NOT.", or a theme's bold h1/h2 default) made the browser synthesize
-   bold by stroking each glyph — and this font's overlapping contours turn
-   that stroke into hollow, outlined letters (very visible on D and S).
-   Its lowercase set also differs from uppercase and has at least one
-   broken glyph (a hollow "f"), so uppercase is forced everywhere too.
-   ID-scoped so it beats both the per-element rules above and theme CSS.
-   Keep this list in sync with any new font-family: "DMLS Catastrophe". */
+
 #dmls-root .dmls-title, #dmls-modal .dmls-title,
 #dmls-root .dmls-win-eyebrow, #dmls-modal .dmls-win-eyebrow,
 #dmls-root .dmls-win-name, #dmls-modal .dmls-win-name,
@@ -1108,4 +1128,16 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
   text-transform: uppercase;
   font-weight: 400;
   font-synthesis: none;
+}
+
+
+img#dmls-char-right, img#dmls-char-left { max-width: 97px;}
+#dmls-screen-welcome {padding-top: 45px; padding-bottom: 30px;}
+
+.dmls-widget-new-achievement button {margin-top: 25px;}
+.dmls-card-body.dmls-split > .dmls-card-head {
+    flex: none;
+    /* display: flex; */
+    align-items: center;
+    flex-direction: column;
 }
