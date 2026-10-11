@@ -277,7 +277,7 @@ html.dmls-fullscreen-mode #dmls-root .dmls-normal-view { display: flex; }
 
 /* width is set inline per the admin's "Logo width" setting — margin:auto keeps
    it centered regardless of that value; max-width is just an overflow guard. */
-.dmls-logo { display: block; height: auto; max-width: 90%; margin: 0 auto; }
+.dmls-logo { display: block; height: auto; max-width: 90%; margin: 0 auto; padding-top: 60px; }
 
 /* Sits below .dmls-launcher, on the theme's own page background (not the
    card's dark gradient) — needs its own fully opaque dark surface, not a
@@ -1149,9 +1149,9 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
 
 
 #dmls-screen-welcome { padding:0;}
-#dmls-screen-welcome h2{    max-width: none;
-    font-size: 42px;
-    /* padding: 15px 30px;} */
+#dmls-screen-welcome h2{    max-width: 335px;
+    font-size: 2.8em;
+    padding: 15px 10px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
 .dmls-prod-note{display:none;}
