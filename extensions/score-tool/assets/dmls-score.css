@@ -832,6 +832,26 @@ display: flex;
 #dmls-modal .dmls-modal-card { position: relative; }
 #dmls-modal .dmls-modal-backdrop { display: none; } /* only ever shown in modal mode below */
 
+/* Inline panels need the same bounded flex chain as overlays. Otherwise
+   intermediate wrappers grow with the list and its inner scroller never
+   receives a usable height. */
+#dmls-root #dmls-modal .dmls-modal-card {
+  display: flex; flex-direction: column; min-height: 0;
+  height: min(96vh, var(--dmls-modal-height, 90vh));
+  height: min(96dvh, var(--dmls-modal-height, 90dvh));
+  max-height: min(96vh, var(--dmls-modal-height, 90vh));
+  max-height: min(96dvh, var(--dmls-modal-height, 90dvh));
+}
+#dmls-root #dmls-modal .dmls-modal-card.dmls-modal-step-players { height: auto; }
+#dmls-root #dmls-modal .dmls-modal-body,
+#dmls-root #dmls-modal .dmls-modal-body > :not([hidden]) {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+}
+#dmls-root #dmls-modal .dmls-modal-body { overflow: hidden; }
+#dmls-root #dmls-modal .dmls-modal-body > :not([hidden]) > .dmls-card {
+  flex: 1 1 auto; height: auto; max-height: none; min-height: 0;
+}
+
 /* render() in dmls-score.js keeps exactly one of these on #dmls-modal-card
    at a time, in sync with state.screen — dmls-modal-step-players,
    -we, -fv, -bp, -mp, -winner. Lets you style the whole card shell (not
