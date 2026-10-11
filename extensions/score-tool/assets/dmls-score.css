@@ -1150,7 +1150,7 @@ body > #dmls-modal.dmls-fullscreen .dmls-modal-close { top: calc(10px + env(safe
 
 #dmls-screen-welcome { padding:0;}
 #dmls-screen-welcome h2{    max-width: none;
-    font-size: 45px;
+    font-size: 42px;
     padding: 15px 30px;}
 /* .dmls-sub {display:none;} */
 .dmls-welcome-links{display:none;}
