@@ -1656,13 +1656,16 @@
       '<div class="dmls-trophy-actions">' +
       '<button type="button" class="dmls-btn dmls-btn-go dmls-trophy-action-btn" id="dmls-trophy-rematch">Rematch!</button>' +
       '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn1" id="dmls-trophy-new-players">Or New Players</button>' +
-      '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn2" id="dmls-trophy-achv">Achievements</button>' +
+      (CUSTOMER
+        ? '<button type="button" class="dmls-btn dmls-btn-ghost dmls-trophy-action-btn2" id="dmls-trophy-achv">Achievements</button>'
+        : '<p class="dmls-sub" style="margin:20px 0 0">Log in to your Doomlings account to check your achievements.</p>') +
       "</div></div>" +
       "</div></div>";
 
     document.getElementById("dmls-trophy-rematch").addEventListener("click", rematch);
     document.getElementById("dmls-trophy-new-players").addEventListener("click", newPlayers);
-    document.getElementById("dmls-trophy-achv").addEventListener("click", function () { openAchievementsModal(false); });
+    var trophyAchvButton = document.getElementById("dmls-trophy-achv");
+    if (trophyAchvButton) trophyAchvButton.addEventListener("click", function () { openAchievementsModal(false); });
     fitTrophyPlate();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTrophyPlate);
     // The trophy art is what sizes the plate overlay's box — re-fit once it loads.
