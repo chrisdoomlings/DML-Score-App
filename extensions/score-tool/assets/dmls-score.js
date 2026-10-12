@@ -420,6 +420,11 @@
   var normalViewRequested = false;
   function applyLayoutMode(mode) {
     configuredLayoutMode = mode || "inline";
+    // Existing single-mode settings remain valid; paired settings store
+    // desktop first, mobile second in the same configuration field.
+    var modes = configuredLayoutMode.split(":");
+    if (modes.length === 2) mode = modes[desktopLayout.matches ? 0 : 1];
+    else if (mode === "fullscreen-mobile") mode = desktopLayout.matches ? "inline" : "fullscreen";
     if (normalViewRequested) mode = "inline";
     var isFullscreen = mode === "fullscreen" || (mode === "fullscreen-mobile" && !desktopLayout.matches);
     positionFullscreenRoot(isFullscreen);
@@ -445,7 +450,7 @@
     if (welcomeEl) welcomeEl.hidden = modalOpen && !layoutModeIsModal;
   }
   desktopLayout.addEventListener("change", function () {
-    if (configuredLayoutMode === "fullscreen-mobile") applyLayoutMode(configuredLayoutMode);
+    applyLayoutMode(configuredLayoutMode);
   });
   try { applyLayoutMode(localStorage.getItem(LAYOUT_KEY)); } catch (e) { /* storage blocked — wait for /config */ }
   // Settings → General → "Lock page scroll" (default off) — loadConfig()

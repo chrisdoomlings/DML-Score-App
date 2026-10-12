@@ -11,6 +11,7 @@ import {
   type AchievementKey,
 } from "@/lib/score/achievements";
 import { STEP_KEYS, DEFAULT_STEPS, type StepConfig, type StepKey } from "@/lib/score/steps";
+import { deviceLayouts, combineLayouts, type DeviceLayout, type LayoutMode } from "@/lib/score/layout";
 
 interface Settings {
   achievements: AchievementConfig;
@@ -32,7 +33,7 @@ interface Settings {
   modalHeight: number;
   modalHeightUnit: "vh" | "px";
   lockPageScroll: boolean;
-  layoutMode: "inline" | "modal" | "fullscreen" | "fullscreen-mobile";
+  layoutMode: LayoutMode;
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -594,33 +595,26 @@ export default function SettingsPage() {
                   desktop it&rsquo;s a centered column at the Screen size width. Screen size&rsquo;s height is ignored
                   in this mode (it always fills the screen).
                 </p>
-                <label className="dml-label">Layout</label>
-                <select
-                  className="dml-input dml-input-sm" value={settings.layoutMode === "fullscreen-mobile" ? "fullscreen" : settings.layoutMode}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setSettings({ ...settings, layoutMode: v === "modal" || v === "fullscreen" ? v : "inline" });
-                  }}
-                >
-                  <option value="inline">Inline (default)</option>
-                  <option value="modal">Full-screen modal (classic)</option>
-                  <option value="fullscreen">Full-screen (app-like)</option>
-                </select>
-                {(settings.layoutMode === "fullscreen" || settings.layoutMode === "fullscreen-mobile") && (
-                  <>
-                    <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
-                      <input
-                        type="checkbox" checked={settings.layoutMode === "fullscreen-mobile"}
-                        onChange={(e) => setSettings({ ...settings, layoutMode: e.target.checked ? "fullscreen-mobile" : "fullscreen" })}
-                      />
-                      Mobile only
+                {(["desktop", "mobile"] as const).map((device) => (
+                  <div key={device} style={{ marginTop: 12 }}>
+                    <label className="dml-label" htmlFor={`layout-${device}`}>
+                      {device === "desktop" ? "Desktop layout" : "Mobile layout"}
                     </label>
-                    <p className="dml-card-hint">
-                      When enabled, screens below 768px use app-like fullscreen. Larger screens use the inline layout.
-                    </p>
-                  </>
-                )}
-                {settings.layoutMode === "inline" && (
+                    <select id={`layout-${device}`} className="dml-input dml-input-sm"
+                      value={deviceLayouts(settings.layoutMode)[device]}
+                      onChange={(e) => {
+                        const layouts = deviceLayouts(settings.layoutMode);
+                        layouts[device] = e.target.value as DeviceLayout;
+                        setSettings({ ...settings, layoutMode: combineLayouts(layouts.desktop, layouts.mobile) });
+                      }}>
+                      <option value="inline">Inline (default)</option>
+                      <option value="modal">Full-screen modal (classic)</option>
+                      <option value="fullscreen">Full-screen (app-like)</option>
+                    </select>
+                  </div>
+                ))}
+                <p className="dml-card-hint">Mobile applies below 768px. Desktop applies at 768px and above.</p>
+                {(deviceLayouts(settings.layoutMode).desktop === "inline" || deviceLayouts(settings.layoutMode).mobile === "inline") && (
                   <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
                     <input
                       type="checkbox" checked={settings.lockPageScroll}

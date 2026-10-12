@@ -4,11 +4,8 @@ import { mergeStepConfig, type StepConfig } from "@/lib/score/steps";
 import { sanitizeImageUrl } from "@/lib/score/imageUrl";
 
 // Validated in app code, not a DB CHECK constraint (see 028_layout_mode.sql).
-export const LAYOUT_MODES = ["inline", "modal", "fullscreen", "fullscreen-mobile"] as const;
-export type LayoutMode = (typeof LAYOUT_MODES)[number];
-export function isLayoutMode(v: unknown): v is LayoutMode {
-  return typeof v === "string" && (LAYOUT_MODES as readonly string[]).includes(v);
-}
+import { isLayoutMode, type LayoutMode } from "@/lib/score/layout";
+export { isLayoutMode, type LayoutMode } from "@/lib/score/layout";
 
 // worldsend/drop/iconBonus are the inline icons the storefront swaps in for
 // the ➹/💧/⊕ Unicode glyphs embedded in the step descriptions (see
