@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
         modalHeightUnit: settings.modalHeightUnit,
         lockPageScroll: settings.lockPageScroll,
         layoutMode: settings.layoutMode,
+        showWinnerGreeting: settings.showWinnerGreeting,
         winnerImageSize: settings.winnerImageSize,
         charactersWidth: settings.charactersWidth,
         headingWidth: settings.headingWidth,

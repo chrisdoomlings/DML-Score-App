@@ -60,6 +60,7 @@ export interface ScoreSettings {
   modalHeightUnit: "vh" | "px"; // which unit modalHeight is in
   lockPageScroll: boolean; // while the tool's card is open, lock the underlying page from scrolling so only the card's own content scrolls (inline layoutMode only — modal mode always locks)
   layoutMode: LayoutMode; // "inline" (default, Sept 2026 rebuild) renders in the page's own flow; "modal" restores the pre-rebuild full-screen overlay (fixed position, backdrop, always-locked page scroll); "fullscreen" (Oct 2026) is that overlay stretched edge to edge over the whole viewport, covering the theme's header/announcement bars
+  showWinnerGreeting: boolean; // personalized winner greeting, hidden by default
   winnerImageSize: number; // px; max-width of the winner reveal art
   charactersWidth: number; // px; welcome-screen character illustration — can exceed the card width to bleed off the edges (card clips via overflow:hidden)
   headingWidth: number; // px; max-width of the welcome heading, controls line wrapping
@@ -96,6 +97,7 @@ const DEFAULTS = {
   modalHeightUnit: "vh" as const,
   lockPageScroll: false,
   layoutMode: "inline" as const,
+  showWinnerGreeting: false,
   winnerImageSize: 260,
   charactersWidth: 320,
   headingWidth: 320,
@@ -167,6 +169,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
       modalHeightUnit: string;
       lockPageScroll: boolean;
       layoutMode: string;
+      showWinnerGreeting: boolean;
       winnerImageSize: number;
       charactersWidth: number;
       headingWidth: number;
@@ -225,6 +228,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
            modal_height_unit AS "modalHeightUnit",
            lock_page_scroll AS "lockPageScroll",
            layout_mode AS "layoutMode",
+           show_winner_greeting AS "showWinnerGreeting",
            winner_image_size AS "winnerImageSize",
            characters_width  AS "charactersWidth",
            heading_width     AS "headingWidth",
@@ -259,6 +263,7 @@ export async function getSettings(shop: string): Promise<ScoreSettings> {
     modalHeightUnit: r?.modalHeightUnit === "px" ? "px" : DEFAULTS.modalHeightUnit,
     lockPageScroll: r?.lockPageScroll ?? DEFAULTS.lockPageScroll,
     layoutMode: r && isLayoutMode(r.layoutMode) ? r.layoutMode : DEFAULTS.layoutMode,
+    showWinnerGreeting: r?.showWinnerGreeting ?? DEFAULTS.showWinnerGreeting,
     winnerImageSize: r?.winnerImageSize ?? DEFAULTS.winnerImageSize,
     charactersWidth: r?.charactersWidth ?? DEFAULTS.charactersWidth,
     headingWidth: r?.headingWidth ?? DEFAULTS.headingWidth,
@@ -343,6 +348,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
         : clampInt(s.modalHeight ?? current.modalHeight, 50, 100),
     lockPageScroll: typeof s.lockPageScroll === "boolean" ? s.lockPageScroll : current.lockPageScroll,
     layoutMode: isLayoutMode(s.layoutMode) ? s.layoutMode : current.layoutMode,
+    showWinnerGreeting: typeof s.showWinnerGreeting === "boolean" ? s.showWinnerGreeting : current.showWinnerGreeting,
     winnerImageSize: clampInt(s.winnerImageSize ?? current.winnerImageSize, 100, 500),
     charactersWidth: clampInt(s.charactersWidth ?? current.charactersWidth, 60, 900),
     headingWidth: clampInt(s.headingWidth ?? current.headingWidth, 100, 600),
@@ -363,7 +369,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       image_bg_we_custom, image_bg_fv_custom, image_bg_bp_custom, image_bg_exp_custom,
       image_logo, image_bg_winner, image_bee_normal, image_bee_hover, image_fish_normal, image_fish_hover,
       image_trophy_bg, trophy_top_images,
-      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, modal_height_unit, lock_page_scroll, layout_mode, winner_image_size,
+      tip_text, home_heading, home_subheading, discord_url, winner_footer_url, trophy_heading, trophy_subheading, trophy_tagline, trophy_actions_bg, logo_width, card_min_height, modal_width, modal_height, modal_height_unit, lock_page_scroll, layout_mode, show_winner_greeting, winner_image_size,
       characters_width, heading_width, heading_font_size,
       show_products, recs_collection_id, recs_collection_title, products_heading, products_note,
       updated_at
@@ -376,7 +382,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       ${next.images.bgWeCustom}, ${next.images.bgFvCustom}, ${next.images.bgBpCustom}, ${next.images.bgExpCustom},
       ${next.images.logo}, ${next.images.bgWinner}, ${next.images.beeNormal}, ${next.images.beeHover}, ${next.images.fishNormal}, ${next.images.fishHover},
       ${next.images.trophyBg}, ${jsonb(next.trophyTopImages)},
-      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.modalHeightUnit}, ${next.lockPageScroll}, ${next.layoutMode}, ${next.winnerImageSize},
+      ${next.tipText}, ${next.homeHeading}, ${next.homeSubheading}, ${next.discordUrl}, ${next.winnerFooterUrl}, ${next.trophyHeading}, ${next.trophySubheading}, ${next.trophyTagline}, ${next.trophyActionsBg}, ${next.logoWidth}, ${next.cardMinHeight}, ${next.modalWidth}, ${next.modalHeight}, ${next.modalHeightUnit}, ${next.lockPageScroll}, ${next.layoutMode}, ${next.showWinnerGreeting}, ${next.winnerImageSize},
       ${next.charactersWidth}, ${next.headingWidth}, ${next.headingFontSize},
       ${next.showProducts}, ${next.recsCollectionId}, ${next.recsCollectionTitle}, ${next.productsHeading}, ${next.productsNote},
       NOW()
@@ -429,6 +435,7 @@ export async function saveSettings(shop: string, s: Partial<ScoreSettings>): Pro
       modal_height_unit = EXCLUDED.modal_height_unit,
       lock_page_scroll = EXCLUDED.lock_page_scroll,
       layout_mode      = EXCLUDED.layout_mode,
+      show_winner_greeting = EXCLUDED.show_winner_greeting,
       winner_image_size = EXCLUDED.winner_image_size,
       characters_width  = EXCLUDED.characters_width,
       heading_width     = EXCLUDED.heading_width,

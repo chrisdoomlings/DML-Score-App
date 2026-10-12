@@ -1455,7 +1455,7 @@
         : '<p class="dmls-win-eyebrow">The winner is&hellip;</p>' +
           '<h1 class="dmls-win-name' + winnerNameSizeClass + '">' + winnerName + "</h1>" +
           '<p class="dmls-win-points">' + top + " points</p>") +
-      (meWon ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
+      (meWon && serverConfig && serverConfig.showWinnerGreeting === true ? '<p class="dmls-sub">Hi ' + esc(cap(CUSTOMER.firstName) || "there") + ", that’s you!</p>" : "") +
       '<ul class="dmls-win-scores">' +
       ranked.map(function (p) {
         return '<li class="dmls-win-score-row">' +

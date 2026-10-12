@@ -34,6 +34,7 @@ interface Settings {
   modalHeightUnit: "vh" | "px";
   lockPageScroll: boolean;
   layoutMode: LayoutMode;
+  showWinnerGreeting: boolean;
   winnerImageSize: number;
   charactersWidth: number;
   headingWidth: number;
@@ -805,6 +806,12 @@ export default function SettingsPage() {
             <>
               <section className="dml-card dml-card-wide">
                 <h2 className="dml-card-title">Winner screen</h2>
+                <label className="dml-label" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <input type="checkbox" checked={settings.showWinnerGreeting ?? false}
+                    onChange={(e) => setSettings({ ...settings, showWinnerGreeting: e.target.checked })} />
+                  Show personalized greeting ("Hi Azam, that?s you!")
+                </label>
+
                 <div className="dml-field-row" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
                   <div>
                     <label className="dml-label">Winner image size (px, unused — image is full-width)</label>

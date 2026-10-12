@@ -1,0 +1,2 @@
+ALTER TABLE score_settings
+  ADD COLUMN IF NOT EXISTS show_winner_greeting BOOLEAN NOT NULL DEFAULT FALSE;
