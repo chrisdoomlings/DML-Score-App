@@ -736,7 +736,7 @@ display: flex;
     text-decoration: none;
     box-shadow: 0 0 8px rgba(0, 255, 40, 0.25), 0 0 18px rgba(0, 255, 60, 0.45), 0 0 32px rgba(0, 255, 60, 0.25), 0 0 50px rgba(0, 255, 60, 0.25);
 }
-.dmls-prod-buy span {     margin-top: -5px; /* was -10px — sat visibly high in the circle (Oct 2026) */
+.dmls-prod-buy span {     margin-top: -9px; /* was -10px — sat visibly high in the circle (Oct 2026) */
     color: white;
     font-weight: bold; } 
 .dmls-prod-buy[disabled] {     background: rgb(23 201 75);
@@ -1195,8 +1195,8 @@ img#dmls-char-right, img#dmls-char-left { max-width: 97px;}
 
 .dmls-widget-new-achievement button {margin-top: 25px;}
 .dmls-card-body.dmls-split > .dmls-card-head {
-    flex: none;
-    /* display: flex; */
+    flex: none;   
     align-items: center;
     flex-direction: column;
 }
+#dmls-screen-players .dmls-card-head { /* display: flex; */}

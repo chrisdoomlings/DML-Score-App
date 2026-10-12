@@ -814,15 +814,10 @@
       (CUSTOMER
         ? '<p class="dmls-sub">Playing as <strong style="color:var(--dmls-green)">' + esc(cap(CUSTOMER.firstName) || "you") + "</strong> — this game will save to your account.</p>"
         : '<p class="dmls-sub"><a class="dmls-inline-link" href="' + esc(withReturnUrl(loginUrl)) + '">Sign in</a> to keep your game history and earn achievements.</p>') +
-      // type="search" + an id without "name" in it: iOS Safari ignores
-      // autocomplete="off" when it decides a field is a login username (it
-      // keyed off the old id "dmls-name" + "Enter name" placeholder, being
-      // the only text box on the page) and offered to fill a saved
-      // doomlings.com email here (Oct 2026). Safari never offers saved
-      // logins on search fields. enterkeyhint keeps the keyboard's key
-      // "return" rather than "search"; data-* attrs opt out of
-      // 1Password/LastPass/Bitwarden for the same reason.
-      '<div class="dmls-addrow"><input type="search" id="dmls-player-entry" maxlength="30" placeholder="Enter name here…" aria-label="Player name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="enter" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"><button type="button" id="dmls-add" class="dmls-addrow-plus" aria-label="Add player"><span aria-hidden="true">+</span></button></div>' +
+      // Keep game entry separate from any storefront login form. Safari
+      // may still override autocomplete=off, so detected credential fills
+      // are handled below rather than being mistaken for player names.
+      '<form class="dmls-addrow" id="dmls-entry-form" role="search" autocomplete="off"><input type="search" id="dmls-player-entry" name="game-player-entry" maxlength="30" placeholder="Enter name here…" aria-label="Player name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="enter" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other"><button type="button" id="dmls-add" class="dmls-addrow-plus" aria-label="Add player"><span aria-hidden="true">+</span></button></form>' +
       "</div>" +
       '<div class="dmls-scroll-mid" id="dmls-chips-scroll"><ul class="dmls-chips" id="dmls-chips">' + chips + "</ul></div>" +
       '<p class="dmls-hint">' + (enough ? "" : "Add at least 2 players") + "</p>" +
@@ -834,7 +829,24 @@
     fitScrollMid(document.getElementById("dmls-chips-scroll"));
 
     var input = document.getElementById("dmls-player-entry");
+    document.getElementById("dmls-entry-form").addEventListener("submit", function (event) {
+      event.preventDefault();
+    });
+    function rejectCredentialFill() {
+      var autofilled = false;
+      try { autofilled = input.matches(":autofill"); } catch (e) { /* unsupported selector */ }
+      try { autofilled = autofilled || input.matches(":-webkit-autofill"); } catch (e) { /* unsupported selector */ }
+      if (autofilled && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim())) {
+        input.value = "";
+        toast("Use Sign in to log into your Doomlings account. Enter a player nickname here.");
+        return true;
+      }
+      return false;
+    }
+    input.addEventListener("input", rejectCredentialFill);
+    input.addEventListener("change", rejectCredentialFill);
     function add() {
+      if (rejectCredentialFill()) return;
       var v = input.value.trim();
       if (!v) { toast("Type a name first"); return; }
       if (state.players.length >= 12) { toast("Max players reached for one game"); return; }
@@ -1117,7 +1129,7 @@
   function renderAchvError() {
     achvChrome(
       '<h2 class="dmls-title">Achievements</h2>' +
-      '<p class="dmls-sub">Couldn’t load your achievements right now — check your connection and try again.</p>' +
+      '<p class="dmls-sub">Couldn’t load your achievements right now. Make sure you’re logged into your Doomlings account first - and try again.</p>' +
       '<button type="button" class="dmls-btn dmls-btn-ghost" id="dmls-achv-retry">Retry</button>',
       "dmls-screen-achv-error"
     );
