@@ -1199,4 +1199,5 @@ img#dmls-char-right, img#dmls-char-left { max-width: 97px;}
     align-items: center;
     flex-direction: column;
 }
+
 #dmls-screen-players .dmls-card-head { display: flex;}
